@@ -1,4 +1,9 @@
 ﻿import * as pako from "./pako.esm.js"
+import * as kissfft from "./kissfft.js"
+
+const xdim = 256;
+const ydim = 256;
+const zdim = 256;
 
 var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
@@ -93,15 +98,59 @@ function calcInversionRecovery(ti, tr) {
 
         result[x] = val
     }
-    return result;
+
+    var k_result = new Uint8ClampedArray(xdim * ydim * zdim);
+    for (var z = 0; z < zdim; z++) {
+        var slice_data = new Float32Array(xdim * ydim)
+        for (var x = 0; x < xdim * ydim; x++) {
+            slice_data[x] = result[x + z * xdim * ydim]
+        }
+
+        var k_data_im_re = kissfft.rfft2d(slice_data, xdim, ydim)
+        var k_data = new Float32Array(xdim * ydim);
+        var maxval = 0;
+        var minval = 999999999;
+        for (var i = 0; i < xdim * ydim; i++) {
+            k_data[i] = Math.sqrt(k_data_im_re[2 * i] * k_data_im_re[2 * i] + k_data_im_re[2 * i + 1] * k_data_im_re[2 * i + 1]);
+            if (k_data[i] == -Infinity) {
+                k_data[i] = 0;
+            }
+            maxval = Math.max(maxval, k_data[i]);
+            minval = Math.min(minval, k_data[i]);
+        }
+        
+        var x = xdim / 2, y = ydim / 2
+        for (var i = 0; i < (xdim / 2 + 1) * ydim; i++) {
+            var val = (k_data[i] - minval) * 255 / maxval;
+
+            var j = y * xdim + x;
+            var k = (y + 1) * xdim - (x + 1);
+
+            k_result[j + z * xdim * ydim] = val;
+            k_result[k + z * xdim * ydim] = val;
+
+            x++;
+            if (x == xdim + 1) {
+                x = xdim / 2;
+                y++;
+                if (y == ydim) {
+                    y = 0;
+                }
+            }
+        }
+    }
+
+
+
+    return [result, k_result];
 }
 
 var queryableFunctions = {
     spinEcho: function (te, tr) {
-        reply('spinEcho', calcSpinEcho(te, tr));
+        reply('result', calcSpinEcho(te, tr));
     },
     inversionRecovery: function (ti, tr) {
-        reply('inversionRecovery', calcInversionRecovery(ti, tr));
+        reply('result', calcInversionRecovery(ti, tr));
     },
     loadData: async function () {
         reply('loadData', await loadDataSet());
