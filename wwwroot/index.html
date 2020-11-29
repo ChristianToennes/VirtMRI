@@ -6,8 +6,6 @@
     <title>Virtual MRI</title>
     <base href="./" />
     <script src="./geotiff.js"></script>
-    <!--<script src="a.out.js"></script>
-    <script src="kissfft.js"></script>-->
     <script src="./vmri.js"></script>
     <link rel="stylesheet" href="custom.css" />
 </head>
@@ -15,7 +13,8 @@
 <body class="text-monospace">
     <div class="main">
         <div class="top-row px-4">
-            <input type="button" class="btn-primary oi-data-transfer-download" onclick="loadFuzzyDataSet()" value="Load Dataset" id="loadDataset" />
+            <input type="button" class="btn-primary oi-data-transfer-download" onclick="loadFuzzyDataSet()"
+                value="Load Dataset" id="loadDataset" />
             <div class="ml-2 spinner-border hidden" role="status" id="datasetLoading">
                 <span class="sr-only">Loading...</span>
             </div>
@@ -23,7 +22,7 @@
             <h1>Virtual MRI</h1>
         </div>
         <div class="content px-4 pt-2 hidden" id="content">
-            <div class="row">
+            <div class="row" onwheel="scrollDataset(event)">
                 <figure class="col pr-0 figure text-center">
                     <figcaption class="figure-caption">Proton density</figcaption>
                     <canvas class="figure-img img-fluid rounded" id="imgPD"></canvas>
@@ -42,7 +41,8 @@
                     <label class="mb-0 py-1 align-self-center" for="slice">Slice:</label>
                 </div>
                 <div class="col">
-                    <input type="range" class="pl-0 pr-0 align-self-center form-control form-control-range" min="0" max="zdim" name="slice" id="slice" value="100" onchange="displayDataSet();" />
+                    <input type="range" class="pl-0 pr-0 align-self-center form-control form-control-range" min="0"
+                        max="zdim" name="slice" id="slice" value="100" onchange="displayDataSet();" />
                 </div>
             </div>
 
@@ -50,7 +50,8 @@
                 <div class="col" id="sequence">
                     <div class="row">
                         <div class="col nav nav-tabs">
-                            <div class="nav-link active" id="params-ir-tab" onclick="setInversionRecovery()">Inversion Recovery</div>
+                            <div class="nav-link active" id="params-ir-tab" onclick="setInversionRecovery()">Inversion
+                                Recovery</div>
                             <div class="nav-link" id="params-se-tab" onclick="setSpinEcho()">Spin Echo</div>
                         </div>
                     </div>
@@ -85,7 +86,8 @@
                         </div>
                     </div>
                     <div class="row mx-2 my-2">
-                        <input type="button" class="col btn-primary" onclick="startScan()" value="Start Scan" id="sequence_start" />
+                        <input type="button" class="col btn-primary" onclick="startScan()" value="Start Scan"
+                            id="sequence_start" />
                     </div>
                 </div>
             </div>
@@ -101,24 +103,32 @@
             <div class="row pt-3 hidden" id="result">
                 <div class="col-auto">
                     <label for="ti">Window Center: </label>
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" name="wc" id="wc" min="0" max="4096" value="2048" onchange="displayAndWindow3DImage();" />
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" name="wc" id="wc" min="0"
+                        max="4096" value="2048" onchange="displayAndWindow3DImage();" />
 
                     <label for="tr">Window Width:</label>
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" name="ww" id="ww" min="0" max="4096" value="4096" onchange="displayAndWindow3DImage();" />
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" name="ww" id="ww" min="0"
+                        max="4096" value="4096" onchange="displayAndWindow3DImage();" />
 
                     <label for="slice">Slice:</label>
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim" name="slice" id="r_slice" value="100" onchange="displayAndWindow3DImage();" />
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
+                        name="slice" id="r_slice" value="100" onchange="displayAndWindow3DImage();" />
+                    <figure>
+                        <div class="figcaption">K-Space</div>
+                        <canvas class="border img-fluid" onwheel="scrollResult(event)" id="kResult"></canvas>
+                    </figure>
+                    <label for="slice">K-Space brighten:</label>
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="100"
+                        name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
                 </div>
-
-                <canvas class="border col mx-2 p-0 img-fluid" id="imgResult"></canvas>
-
-                <canvas class="border col mx-2 p-0 img-fluid" id="kResult"></canvas>
+                    <canvas class="border col mx-3 px-0 mb-2 img-fluid img-result" onwheel="scrollResult(event)"
+                        onmousedown="startWindowing()" onmouseup="endWindowing()" onmouseout="endWindowing()"
+                        onmousemove="windowResult(event)" id="imgResult"></canvas>
             </div>
-
-
 
         </div>
     </div>
+
 </body>
 
 </html>

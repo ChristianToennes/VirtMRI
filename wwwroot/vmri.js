@@ -1,10 +1,11 @@
-
 function QueryableWorker(url) {
     var instance = this,
-        worker = new Worker(url, {type:"module"}),
+        worker = new Worker(url, {
+            type: "module"
+        }),
         listeners = {};
 
-    this.defaultListener = function () { };
+    this.defaultListener = function () {};
 
     this.postMessage = function (message) {
         worker.postMessage(message);
@@ -126,19 +127,71 @@ function display3DImage(canvas, data) {
     //element.src = dataUri;
 }
 
+function scrollDataset(event) {
+    slice = document.getElementById("slice")
+    slice.value = slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
+    if ("createEvent" in document) {
+        var evt = document.createEvent("HTMLEvents");
+        evt.initEvent("change", false, true);
+        slice.dispatchEvent(evt);
+    } else
+        slice.fireEvent("onchange");
+    event.preventDefault();
+}
+
+function scrollResult(event) {
+    r_slice = document.getElementById("r_slice")
+    r_slice.value = r_slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
+    if ("createEvent" in document) {
+        var evt = document.createEvent("HTMLEvents");
+        evt.initEvent("change", false, true);
+        r_slice.dispatchEvent(evt);
+    } else
+        r_slice.fireEvent("onchange");
+    event.preventDefault();
+}
+
+var windowing = false;
+
+function startWindowing() {
+    windowing = true;
+}
+
+function endWindowing() {
+    windowing = false;
+}
+
+function windowResult(event) {
+    if (windowing) {
+        ww = document.getElementById("ww")
+        wc = document.getElementById("wc")
+
+        ww.value = ww.valueAsNumber - event.movementY * 4
+        wc.value = wc.valueAsNumber - event.movementX * 4
+
+        if ("createEvent" in document) {
+            var evt = document.createEvent("HTMLEvents");
+            evt.initEvent("change", false, true);
+            ww.dispatchEvent(evt);
+        } else {
+            ww.fireEvent("onchange");
+        }
+    }
+}
+
 function displayAndWindow3DImage() {
     //canvas = document.createElement('canvas');
-    res_element = document.getElementById("result");
-    canvas = res_element.getElementsByTagName("canvas")[0];
+    //res_element = document.getElementById("result");
+    canvas = document.getElementById("imgResult");
+
     ctx = canvas.getContext('2d');
     canvas.width = xdim;
     canvas.height = ydim;
     idata = ctx.createImageData(xdim, ydim);
 
-    inputs = res_element.getElementsByTagName("input");
-    in_wc = inputs[0]
-    in_ww = inputs[1]
-    in_slice = inputs[2]
+    in_ww = document.getElementById("ww");
+    in_wc = document.getElementById("wc");
+    in_slice = document.getElementById("r_slice");
     slice = parseInt(in_slice.value);
 
     image_result = new Uint8ClampedArray(xdim * ydim * 4);
@@ -147,9 +200,13 @@ function displayAndWindow3DImage() {
 
     for (var x = 0; x < xdim * ydim; x++) {
         val = imgResult[x + slice * xdim * ydim] * 4096
-        if (val <= (wc - ww)) { val = 0 }
-        else if (val >= (wc + ww)) { val = 255; }
-        else { val = 255 * (val - (wc - ww)) / (ww) }
+        if (val <= (wc - ww)) {
+            val = 0
+        } else if (val >= (wc + ww)) {
+            val = 255;
+        } else {
+            val = 255 * (val - (wc - ww)) / (ww)
+        }
         image_result[4 * x] = val
         image_result[4 * x + 1] = val
         image_result[4 * x + 2] = val
@@ -159,15 +216,16 @@ function displayAndWindow3DImage() {
     idata.data.set(image_result);
     ctx.putImageData(idata, 0, 0);
 
-    k_canvas = res_element.getElementsByTagName("canvas")[1];
+    k_canvas = document.getElementById("kResult");
     k_canvas.width = xdim;
     k_canvas.height = ydim
     k_ctx = k_canvas.getContext('2d');
     kdata = k_ctx.createImageData(xdim, ydim);
 
+    var mult = document.getElementById("kspacemult").valueAsNumber;
     k_result = new Uint8ClampedArray(xdim * ydim * 4);
     for (var x = 0; x < xdim * ydim; x++) {
-        val = kResult[x + slice * xdim * ydim]
+        val = kResult[x + slice * xdim * ydim]*mult
         k_result[4 * x] = val
         k_result[4 * x + 1] = val
         k_result[4 * x + 2] = val
