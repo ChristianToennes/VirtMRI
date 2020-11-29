@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/bin/Debug/netcoreapp3.1
+/.vs/VMRI
+/obj
+/scss/bootstrap_old
+/package.json
+/package-lock.json

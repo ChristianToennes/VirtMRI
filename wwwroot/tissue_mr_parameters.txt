@@ -1,0 +1,88 @@
+################################################################
+#
+# MRISIM: Tissue MR parameters
+#
+# http://www.bic.mni.mcgill.ca/brainweb/
+#
+# Jul 31, 1996
+#
+################################################################
+#
+Tissue Name                 : BACKGROUND
+Tissue Label                : 0                     
+T1 (ms)                     : 0                     
+T2 (ms)                     : 0                     
+T2* (ms)                    : 0                     
+PD                          : 0                     
+#
+Tissue Name                 : CSF
+Tissue Label                : 1                     
+T1 (ms)                     : 2569                  
+T2 (ms)                     : 329                   
+T2* (ms)                    : 58                    
+PD                          : 1                     
+#
+Tissue Name                 : GREY MATTER
+Tissue Label                : 2                     
+T1 (ms)                     : 833                   
+T2 (ms)                     : 83                    
+T2* (ms)                    : 69                    
+PD                          : 0.86                  
+#
+Tissue Name                 : WHITE MATTER
+Tissue Label                : 3                     
+T1 (ms)                     : 500                   
+T2 (ms)                     : 70                    
+T2* (ms)                    : 61                    
+PD                          : 0.77                  
+#
+Tissue Name                 : FAT
+Tissue Label                : 4                     
+T1 (ms)                     : 350                   
+T2 (ms)                     : 70                    
+T2* (ms)                    : 58                    
+PD                          : 1                     
+#
+Tissue Name                 : MUSCLE / SKIN
+Tissue Label                : 5                     
+T1 (ms)                     : 900                   
+T2 (ms)                     : 47                    
+T2* (ms)                    : 30                    
+PD                          : 1.0                    
+#
+Tissue Name                 : SKIN
+Tissue Label                : 6                     
+T1 (ms)                     : 2569                  
+T2 (ms)                     : 329                   
+T2* (ms)                    : 58                    
+PD                          : 1                     
+#
+Tissue Name                 : SKULL
+Tissue Label                : 7                     
+T1 (ms)                     : 0                     
+T2 (ms)                     : 0                     
+T2* (ms)                    : 0                     
+PD                          : 0                     
+#
+Tissue Name                 : Glial MATTER
+Tissue Label                : 8                     
+T1 (ms)                     : 833                   
+T2 (ms)                     : 83                    
+T2* (ms)                    : 69                    
+PD                          : 0.86                  
+#
+Tissue Name                 : MEAT
+Tissue Label                : 9                     
+T1 (ms)                     : 500                   
+T2 (ms)                     : 70                    
+T2* (ms)                    : 61                    
+PD                          : 0.77                  
+#
+Tissue Name                 : MS LESION
+Tissue Label                : 10                    
+T1 (ms)                     : 752                   
+T2 (ms)                     : 237                   
+T2* (ms)                    : 204                   
+PD                          : 0.76                  
+#
+################################################################
