@@ -1,5 +1,5 @@
-﻿import * as pako from "./pako.esm.js"
-import * as kissfft from "./kissfft.js"
+﻿self.importScripts("./kissfft.js")
+self.importScripts("./pako.min.js")
 
 const xdim = 256;
 const ydim = 256;
@@ -74,8 +74,7 @@ function calcKSpace(result) {
             slice_data[x] = result[x + z * xdim * ydim]
         }
 
-        var fft_res = kissfft.rfft2d(slice_data, xdim, ydim);
-        //var img_result = kissfft.irfft2d(fft_res, xdim, ydim)
+        var fft_res = rfft2d(slice_data, xdim, ydim);
         k_data_im_re.set(fft_res, z * xdim * ydim * 2)
 
         k_result.set(transformKSpace(fft_res), z * xdim * ydim);
@@ -112,7 +111,7 @@ function transformKSpace(fft_res) {
     return k_result;
 }
 
-function genFilterKSpace(xlines, ylines, fmin, fmax) {
+function genMapKSpace(xlines, ylines, fmin, fmax) {
     var dx = xdim / xlines;
     var dy = xdim / ylines;
     return function filterKSpace(value, d_index, array) {
@@ -131,21 +130,43 @@ function genFilterKSpace(xlines, ylines, fmin, fmax) {
     }
 }
 
+function genFilterKSpace(xlines, ylines, fmin, fmax) {
+    var dx = xdim / xlines;
+    var dy = xdim / ylines;
+    return function filterKSpace(value, d_index, array) {
+        var index = Math.floor((d_index - 1) / 2);
+        var y = (Math.floor(index / (xdim / 2 + 1))) % ydim;
+        if(y>ydim/2) { 
+            y = ydim-y;
+        }
+        var x = index % (xdim / 2 + 1);
+        if(index > ydim*(xdim+2)/2) {
+            x = x + xdim / 2 + 1;
+        }
+        var res1 = Math.sqrt(x*x+y*y) >= fmin && Math.sqrt(x*x+y*y) <= fmax;
+        var res = res1 && (Math.ceil(x / dx) * dx - x) < 1 && (Math.ceil(y / dy) * dy - y) < 1;
+        return res ? true : false;
+    }
+}
+
 function inverseKSpace(kSpace, xlines, ylines, fmin, fmax) {
-    var filterKSpace = genFilterKSpace(xlines, ylines, fmin, fmax)
+    var filterKSpace = genFilterKSpace(xlines, ylines, 0, xdim*xdim)
+    var mapKSpace = genMapKSpace(xlines, ylines, fmin, fmax)
     var result = new Float32Array(xdim * ydim * zdim);
     var k_result = new Float32Array(xdim * ydim * zdim);
     for (var z = 0; z < zdim; z++) {
         var slice_data = kSpace.subarray(z * xdim * ydim * 2, (z + 1) * xdim * ydim * 2);
 
-        var input_data = slice_data.map(filterKSpace);
+        var input_data = slice_data.map(mapKSpace);
 
         k_result.set(transformKSpace(input_data), z * xdim * ydim);
 
-        var img_result = kissfft.irfft2d(input_data, xdim, ydim)
+        //input_data = input_data.filter(filterKSpace);
+
+        var img_result = irfft2d(input_data, xdim, ydim)
         var maxval = 0;
         var minval = 999999999;
-        for (var i = 0; i < xdim * ydim; i++) {
+        for (var i = 0; i < img_result.length; i++) {
             maxval = Math.max(maxval, img_result[i]);
             minval = Math.min(minval, img_result[i]);
         }

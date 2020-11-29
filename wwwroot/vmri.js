@@ -226,7 +226,7 @@ function displayAndWindow3DImage() {
     var mult = document.getElementById("kspacemult").valueAsNumber;
     k_result = new Uint8ClampedArray(xdim * ydim * 4);
     for (var x = 0; x < xdim * ydim; x++) {
-        val = kResult[x + slice * xdim * ydim]*mult
+        val = kResult[x + slice * xdim * ydim] * mult
         k_result[4 * x] = val
         k_result[4 * x + 1] = val
         k_result[4 * x + 2] = val
