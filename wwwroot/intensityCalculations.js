@@ -64,41 +64,7 @@ async function loadDataSet() {
     return [array_pd, array_t1, array_t2];
 }
 
-function calcSpinEcho(te, tr) {
-    var result = new Float32Array(array_t1.length);
-    for (var x = 0; x < result.length; x++) {
-        var t1 = array_t1[x]
-        var t2 = array_t2[x]
-        var pd = array_pd[x]
-        if (t1 == 0) {
-            t1 = 1;
-        }
-        if (t2 == 0) {
-            t2 = 1;
-        }
-        var val = ((pd) * (Math.exp((-te) / (t2))) * (1 - Math.exp((-tr) / (t1))));
-
-        result[x] = val
-    }
-    return result;
-}
-
-function calcInversionRecovery(ti, tr) {
-    var result = new Float32Array(array_t1.length);
-    for (var x = 0; x < result.length; x++) {
-        // Berechnen der Intensitaetsmatrix
-        var t1 = array_t1[x]
-        var t2 = array_t2[x]
-        var pd = array_pd[x]
-        // Divison durch 0 abfangen
-        if (t1 == 0) {
-            t1 = 1.0;
-        }
-        var val = Math.abs(pd * (1.0 - 2.0 * Math.exp(-ti / t1) + Math.exp(-tr / ti)));
-
-        result[x] = val
-    }
-
+function calcKSpace(result) {
     var k_result = new Uint8ClampedArray(xdim * ydim * zdim);
     for (var z = 0; z < zdim; z++) {
         var slice_data = new Float32Array(xdim * ydim)
@@ -118,7 +84,7 @@ function calcInversionRecovery(ti, tr) {
             maxval = Math.max(maxval, k_data[i]);
             minval = Math.min(minval, k_data[i]);
         }
-        
+
         var x = xdim / 2, y = ydim / 2
         for (var i = 0; i < (xdim / 2 + 1) * ydim; i++) {
             var val = (k_data[i] - minval) * 255 / maxval;
@@ -139,9 +105,46 @@ function calcInversionRecovery(ti, tr) {
             }
         }
     }
+    return k_result
+}
 
+function calcSpinEcho(te, tr) {
+    var result = new Float32Array(array_t1.length);
+    for (var x = 0; x < result.length; x++) {
+        var t1 = array_t1[x]
+        var t2 = array_t2[x]
+        var pd = array_pd[x]
+        if (t1 == 0) {
+            t1 = 1;
+        }
+        if (t2 == 0) {
+            t2 = 1;
+        }
+        var val = ((pd) * (Math.exp((-te) / (t2))) * (1 - Math.exp((-tr) / (t1))));
 
+        result[x] = val
+    }
 
+    var k_result = calcKSpace(result);
+    return [result, k_result];
+}
+
+function calcInversionRecovery(ti, tr) {
+    var result = new Float32Array(array_t1.length);
+    for (var x = 0; x < result.length; x++) {
+        // Berechnen der Intensitaetsmatrix
+        var t1 = array_t1[x]
+        var t2 = array_t2[x]
+        var pd = array_pd[x]
+        // Divison durch 0 abfangen
+        if (t1 == 0) {
+            t1 = 1.0;
+        }
+        var val = Math.abs(pd * (1.0 - 2.0 * Math.exp(-ti / t1) + Math.exp(-tr / ti)));
+
+        result[x] = val
+    }
+    var k_result = calcKSpace(result);
     return [result, k_result];
 }
 

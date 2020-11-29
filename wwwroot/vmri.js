@@ -246,7 +246,7 @@ function spinEcho() {
     r.classList.add("hidden");
     spin.classList.remove("hidden");
 
-    var te = parseFloat(document.getElementById("se_ti").value)
+    var te = parseFloat(document.getElementById("se_te").value)
     var tr = parseFloat(document.getElementById("se_tr").value)
 
     w.sendQuery("spinEcho", te, tr);
@@ -263,7 +263,7 @@ function setInversionRecovery() {
     irTabHead.classList.add("active");
 }
 
-async function inversionRecovery() {
+function inversionRecovery() {
     r = document.getElementById("result");
     spin = document.getElementById("scanningSpinner");
     slice = document.getElementById("r_slice");
@@ -275,6 +275,17 @@ async function inversionRecovery() {
     var tr = parseFloat(document.getElementById("ir_tr").value)
 
     w.sendQuery("inversionRecovery", ti, tr);
+}
+
+function startScan() {
+    var seTab = document.getElementById("params-se-tab").classList.contains("active");
+    var irTab = document.getElementById("params-ir-tab").classList.contains("active");
+    if (seTab) {
+        spinEcho();
+    }
+    if (irTab) {
+        inversionRecovery();
+    }
 }
 
 function displayDataSet() {
