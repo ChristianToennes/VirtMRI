@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 
 <head>
     <meta charset="utf-8" />
@@ -6,8 +6,8 @@
     <title>Virtual MRI</title>
     <base href="./" />
     <script src="./geotiff.js"></script>
-    <script src="compiled/a.out.js"></script>
-    <script src="kissfft.js"></script>
+    <!--<script src="a.out.js"></script>
+    <script src="kissfft.js"></script>-->
     <script src="./vmri.js"></script>
     <link rel="stylesheet" href="custom.css" />
 </head>
@@ -42,109 +42,80 @@
                     <label class="mb-0 py-1 align-self-center" for="slice">Slice:</label>
                 </div>
                 <div class="col">
-                <input type="range" class="pl-0 pr-0 align-self-center form-control form-control-range" min="0" max="zdim" name="slice" id="slice" value="100" onchange="displayDataSet();" />
+                    <input type="range" class="pl-0 pr-0 align-self-center form-control form-control-range" min="0" max="zdim" name="slice" id="slice" value="100" onchange="displayDataSet();" />
                 </div>
             </div>
 
-            <div class="card-deck my-2">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-title">Inversion Recovery</div>
-                        <div class="row border py-2 mx-2">
-                            <div class="col">
-                                <div class="form-row">
-                                    <div class="col-auto w-25">
-                                        <label class="mb-0 align-self-center">TI:</label>
-                                    </div>
-                                    <input class="col-sm form-control" type="number" value="400" name="ir_ti" id="ir_ti" />
-                                </div>
-                                <div class="form-row">
-                                    <div class="col-auto w-25">
-                                        <label class="mb-0 align-self-center">TR:</label>
-                                    </div>
-                                    <input class="col-sm form-control" type="number" value="6000" name="ir_tr" id="ir_tr" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mx-2">
-                            <input type="button" class="col btn-primary" onclick="inversionRecovery()" value="Start Scan" />
-                        </div>
-                        <div class="row pb-2 pt-3 hidden" id="inversionRecoveryLoading">
-                            <div class="flex-fill"></div>
-                            <div class="spinner-border" role="status">
-                                <span class="sr-only">Loading...</span>
-                            </div>
-                            <div class="flex-fill"></div>
-                        </div>
-
-                        <div class="row pt-3 hidden" id="ir_result">
-                            <div class="col-auto">
-                                <label for="ti">Window Center: </label>
-                                <input type="range" class="pl-0 pr-0 form-control form-control-range" name="wc" id="ir_wc" min="0" max="4096" value="2048" onchange="displayAndWindow3DImage(document.getElementById('ir_result'), inversionRecoveryResult);" />
-
-                                <label for="tr">Window Width:</label>
-                                <input type="range" class="pl-0 pr-0 form-control form-control-range" name="ww" id="ir_ww" min="0" max="4096" value="4096" onchange="displayAndWindow3DImage(document.getElementById('ir_result'), inversionRecoveryResult);" />
-
-                                <label for="slice">Slice:</label>
-                                <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim" name="slice" id="ir_slice" value="100" onchange="displayAndWindow3DImage(document.getElementById('ir_result'), inversionRecoveryResult);" />
-                            </div>
-
-                            <canvas class="border col mx-2 p-0 img-fluid" id="ir_imgResult"></canvas>
-
-                            <canvas class="border col mx-2 p-0 img-fluid" id="se_kResult"></canvas>
+            <div class="row mt-2">
+                <div class="col" id="sequence">
+                    <div class="row">
+                        <div class="col nav nav-tabs">
+                            <div class="nav-link active" id="params-ir-tab" onclick="setInversionRecovery()">Inversion Recovery</div>
+                            <div class="nav-link" id="params-se-tab" onclick="setSpinEcho()">Spin Echo</div>
                         </div>
                     </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-title">Spin Echo</div>
-                        <div class="row border py-2 mx-2">
-                            <div class="col">
-                                <div class="form-row">
-                                    <div class="col-auto w-25">
-                                        <label class="mb-0 align-self-center">TE:</label>
-                                    </div>
-                                    <input class="col-sm form-control" type="number" value="400" name="se_te" id="se_te" />
+                    <div class="row border py-2 tab-content" id="params">
+                        <div class="col tab-pane active" id="params-ir">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TI:</label>
                                 </div>
-                                <div class="form-row">
-                                    <div class="col-auto w-25">
-                                        <label class="mb-0 align-self-center">TR:</label>
-                                    </div>
-                                    <input class="col-sm form-control" type="number" value="6000" name="se_tr" id="se_tr" />
+                                <input class="col-sm form-control" type="number" value="400" name="ti" id="ir_ti" />
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
                                 </div>
+                                <input class="col-sm form-control" type="number" value="6000" name="tr" id="ir_tr" />
                             </div>
                         </div>
-                        <div class="row mx-2">
-                            <input type="button" class="col btn-primary" onclick="spinEcho()" value="Start Scan" />
-                        </div>
-                        <div class="row pb-2 pt-3 hidden" id="spinEchoLoading">
-                            <div class="flex-fill"></div>
-                            <div class="spinner-border" role="status">
-                                <span class="sr-only">Loading...</span>
+                        <div class="col tab-pane" id="params-se">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="400" name="ti" id="se_te" />
                             </div>
-                            <div class="flex-fill"></div>
-                        </div>
-
-                        <div class="row pt-3 hidden" id="se_result">
-                            <div class="col-auto">
-                                <label for="ti">Window Center: </label>
-                                <input type="range" class="pl-0 pr-0 form-control form-control-range" name="wc" id="se_wc" min="0" max="4096" value="2048" onchange="displayAndWindow3DImage(document.getElementById('se_result'), spinEchoResult);" />
-
-                                <label for="tr">Window Width:</label>
-                                <input type="range" class="pl-0 pr-0 form-control form-control-range" name="ww" id="se_ww" min="0" max="4096" value="4096" onchange="displayAndWindow3DImage(document.getElementById('se_result'), spinEchoResult);" />
-
-                                <label for="slice">Slice:</label>
-                                <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim" name="slice" id="se_slice" value="0" onchange="displayAndWindow3DImage(document.getElementById('se_result'), spinEchoResult);" />
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="6000" name="tr" id="se_tr" />
                             </div>
-
-                            <canvas class="border col mx-2 p-0 img-fluid" id="se_imgResult"></canvas>
-
-                            <canvas class="border col mx-2 p-0 img-fluid" id="se_kResult"></canvas>
                         </div>
+                    </div>
+                    <div class="row mx-2 my-2">
+                        <input type="button" class="col btn-primary" onclick="inversionRecovery()" value="Start Scan" id="sequence_start" />
                     </div>
                 </div>
             </div>
+
+            <div class="row pb-2 pt-3 hidden" id="scanningSpinner">
+                <div class="flex-fill"></div>
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <div class="flex-fill"></div>
+            </div>
+
+            <div class="row pt-3 hidden" id="result">
+                <div class="col-auto">
+                    <label for="ti">Window Center: </label>
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" name="wc" id="wc" min="0" max="4096" value="2048" onchange="displayAndWindow3DImage();" />
+
+                    <label for="tr">Window Width:</label>
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" name="ww" id="ww" min="0" max="4096" value="4096" onchange="displayAndWindow3DImage();" />
+
+                    <label for="slice">Slice:</label>
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim" name="slice" id="r_slice" value="100" onchange="displayAndWindow3DImage();" />
+                </div>
+
+                <canvas class="border col mx-2 p-0 img-fluid" id="imgResult"></canvas>
+
+                <canvas class="border col mx-2 p-0 img-fluid" id="kResult"></canvas>
+            </div>
+
+
 
         </div>
     </div>
