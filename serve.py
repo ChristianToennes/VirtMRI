@@ -2,10 +2,27 @@ import sass
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from functools import partial
 import mimetypes
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
-css = sass.compile(filename='scss/custom.scss', output_style='compressed')
-with open("wwwroot/custom.css", "w") as f:
-    f.write(css)
+def compile_scss():
+    try:
+        css = sass.compile(filename="./scss/custom.scss", output_style='compressed')
+        with open("./wwwroot/custom.css", "w") as f:
+            f.write(css)
+        print("css updated")
+    except Exception:
+        pass
+
+compile_scss()
+
+class FileChangeEventHandler(FileSystemEventHandler):
+    def on_any_event(self, event):
+        compile_scss()
+
+observer = Observer()
+observer.schedule(FileChangeEventHandler(), "scss", recursive=True)
+observer.start()
 
 class RequestHandler(SimpleHTTPRequestHandler):
 
@@ -25,4 +42,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
 handler_class = RequestHandler
 httpd = HTTPServer(('', 8000), handler_class)
+
 httpd.serve_forever()
+
+observer.join()
