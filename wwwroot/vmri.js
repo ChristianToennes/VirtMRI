@@ -70,6 +70,7 @@ w.addListener('loadData', loadDataMessageHandler);
 var imgResult;
 var kResult;
 const resultMessageHandler = function (data) {
+    console.log("image result");
     imgResult = data[0];
     kResult = data[1];
     r = document.getElementById("result");
@@ -253,38 +254,6 @@ function loadFuzzyDataSet() {
     });
 }
 
-function loadDataSet() {
-    GeoTIFF.fromUrl("PD.tif").then(tiff => {
-        tiff.getImage().then(image => {
-            tiff_pd = image;
-            image.readRasters().then(data => {
-                array_pd = data[0];
-                displayImage(document.getElementById("imgPD"), array_pd);
-            })
-        })
-    })
-
-    GeoTIFF.fromUrl("T1.tif").then(tiff => {
-        tiff.getImage().then(image => {
-            tiff_t1 = image;
-            image.readRasters().then(data => {
-                array_t1 = data[0];
-                displayImage(document.getElementById("imgT1"), array_t1);
-            })
-        })
-    })
-
-    GeoTIFF.fromUrl("T2.tif").then(tiff => {
-        tiff.getImage().then(image => {
-            tiff_t2 = image;
-            image.readRasters().then(data => {
-                array_t2 = data[0];
-                displayImage(document.getElementById("imgT2"), array_t2);
-            })
-        })
-    })
-}
-
 function setSpinEcho() {
     var seTab = document.getElementById("params-se");
     var irTab = document.getElementById("params-ir");
@@ -333,6 +302,14 @@ function inversionRecovery() {
     var tr = parseFloat(document.getElementById("ir_tr").value)
 
     w.sendQuery("inversionRecovery", ti, tr);
+}
+
+function reco() {
+    var xlines = document.getElementById("k_xline").valueAsNumber;
+    var ylines = document.getElementById("k_yline").valueAsNumber;
+    var fmin = document.getElementById("k_fmin").valueAsNumber;
+    var fmax = document.getElementById("k_fmax").valueAsNumber;
+    w.sendQuery("reco", xlines, ylines, fmin, fmax);
 }
 
 function startScan() {

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Virtual MRI</title>
     <base href="./" />
-    <script src="./geotiff.js"></script>
     <script src="./vmri.js"></script>
     <link rel="stylesheet" href="custom.css" />
 </head>
@@ -120,10 +119,27 @@
                     <label for="slice">K-Space brighten:</label>
                     <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="100"
                         name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
+
+                    <label for="slice">K-Space y-lines:</label>
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
+                        name="k_yline" id="k_yline" value="256" onchange="reco();" />
+                    <label for="slice">K-Space x-lines:</label>
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
+                        name="k_xline" id="k_xline" value="256" onchange="reco();" />
+
+                    <label for="slice">K-Space f min:</label>
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="128"
+                        name="k_fmin" id="k_fmin" value="0" onchange="reco();" />
+                    <label for="slice">K-Space f max:</label>
+                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="256"
+                        name="k_fmax" id="k_fmax" value="256" onchange="reco();" />
+
+                    <input class="btn btn-secondary" type="button" name="reco" id="reco" onclick="reco()"
+                        value="Reconstruct image from K-Space" />
                 </div>
-                    <canvas class="border col mx-3 px-0 mb-2 img-fluid img-result" onwheel="scrollResult(event)"
-                        onmousedown="startWindowing()" onmouseup="endWindowing()" onmouseout="endWindowing()"
-                        onmousemove="windowResult(event)" id="imgResult"></canvas>
+                <canvas class="border col mx-3 px-0 mb-2 img-fluid img-result" onwheel="scrollResult(event)"
+                    onmousedown="startWindowing()" onmouseup="endWindowing()" onmouseout="endWindowing()"
+                    onmousemove="windowResult(event)" id="imgResult"></canvas>
             </div>
 
         </div>

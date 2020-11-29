@@ -46,7 +46,7 @@ export function irfft2d(spectrum, m, n) {
     data.set(new Float32Array(instance.HEAPU8.buffer,
                               heapData.byteOffset, m*n));
 
-    for (i=0;i<m*n;i++) {
+    for (var i=0;i<m*n;i++) {
         data[i] /= m*n;
     }
 

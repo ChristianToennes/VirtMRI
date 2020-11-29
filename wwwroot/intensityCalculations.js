@@ -8,6 +8,7 @@ const zdim = 256;
 var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
 var array_t2 = new Uint16Array(256 * 256);
+var k_data_im_re, k_result;
 
 async function loadDataSet() {
     array_pd = await new Promise((resolve, reject) => {
@@ -65,47 +66,95 @@ async function loadDataSet() {
 }
 
 function calcKSpace(result) {
-    var k_result = new Uint8ClampedArray(xdim * ydim * zdim);
+    k_result = new Uint8ClampedArray(xdim * ydim * zdim);
+    k_data_im_re = new Float32Array(xdim * ydim * zdim * 2);
     for (var z = 0; z < zdim; z++) {
         var slice_data = new Float32Array(xdim * ydim)
         for (var x = 0; x < xdim * ydim; x++) {
             slice_data[x] = result[x + z * xdim * ydim]
         }
 
-        var k_data_im_re = kissfft.rfft2d(slice_data, xdim, ydim)
-        var k_data = new Float32Array(xdim * ydim);
+        var fft_res = kissfft.rfft2d(slice_data, xdim, ydim);
+        //var img_result = kissfft.irfft2d(fft_res, xdim, ydim)
+        k_data_im_re.set(fft_res, z * xdim * ydim * 2)
+
+        k_result.set(transformKSpace(fft_res), z * xdim * ydim);
+    }
+    return k_result
+}
+
+function transformKSpace(fft_res) {
+    var k_data = new Float32Array(xdim * ydim);
+    var k_result = new Float32Array(xdim * ydim);
+    var maxval = 0;
+    var minval = 999999999;
+    for (var i = 0; i < xdim * ydim; i++) {
+        k_data[i] = Math.sqrt(fft_res[2 * i] * fft_res[2 * i] + fft_res[2 * i + 1] * fft_res[2 * i + 1]);
+        if (k_data[i] == -Infinity) {
+            k_data[i] = 0;
+        }
+        maxval = Math.max(maxval, k_data[i]);
+        minval = Math.min(minval, k_data[i]);
+    }
+
+    for (var i = 0; i < (xdim / 2 + 1) * ydim; i++) {
+        var val = (k_data[i] - minval) * 255 / maxval;
+
+        var y = (Math.floor(i / (xdim / 2 + 1)) + ydim / 2) % ydim;
+        var x = i % (xdim / 2 + 1) + xdim / 2;
+
+        var j = y * xdim + x - 1;
+        var k = y * xdim + (xdim - x);
+
+        k_result[j] = val;
+        k_result[k] = val;
+    }
+    return k_result;
+}
+
+function genFilterKSpace(xlines, ylines, fmin, fmax) {
+    var dx = xdim / xlines;
+    var dy = xdim / ylines;
+    return function filterKSpace(value, d_index, array) {
+        var index = Math.floor((d_index - 1) / 2);
+        var y = (Math.floor(index / (xdim / 2 + 1))) % ydim;
+        if(y>ydim/2) { 
+            y = ydim-y;
+        }
+        var x = index % (xdim / 2 + 1);
+        if(index > ydim*(xdim+2)/2) {
+            x = x + xdim / 2 + 1;
+        }
+        var res1 = Math.sqrt(x*x+y*y) >= fmin && Math.sqrt(x*x+y*y) <= fmax;
+        var res = res1 && (Math.ceil(x / dx) * dx - x) < 1 && (Math.ceil(y / dy) * dy - y) < 1;
+        return res ? value : 0;
+    }
+}
+
+function inverseKSpace(kSpace, xlines, ylines, fmin, fmax) {
+    var filterKSpace = genFilterKSpace(xlines, ylines, fmin, fmax)
+    var result = new Float32Array(xdim * ydim * zdim);
+    var k_result = new Float32Array(xdim * ydim * zdim);
+    for (var z = 0; z < zdim; z++) {
+        var slice_data = kSpace.subarray(z * xdim * ydim * 2, (z + 1) * xdim * ydim * 2);
+
+        var input_data = slice_data.map(filterKSpace);
+
+        k_result.set(transformKSpace(input_data), z * xdim * ydim);
+
+        var img_result = kissfft.irfft2d(input_data, xdim, ydim)
         var maxval = 0;
         var minval = 999999999;
         for (var i = 0; i < xdim * ydim; i++) {
-            k_data[i] = Math.sqrt(k_data_im_re[2 * i] * k_data_im_re[2 * i] + k_data_im_re[2 * i + 1] * k_data_im_re[2 * i + 1]);
-            if (k_data[i] == -Infinity) {
-                k_data[i] = 0;
-            }
-            maxval = Math.max(maxval, k_data[i]);
-            minval = Math.min(minval, k_data[i]);
+            maxval = Math.max(maxval, img_result[i]);
+            minval = Math.min(minval, img_result[i]);
         }
-
-        var x = xdim / 2, y = ydim / 2
-        for (var i = 0; i < (xdim / 2 + 1) * ydim; i++) {
-            var val = (k_data[i] - minval) * 255 / maxval;
-
-            var j = y * xdim + x;
-            var k = (y + 1) * xdim - (x + 1);
-
-            k_result[j + z * xdim * ydim] = val;
-            k_result[k + z * xdim * ydim] = val;
-
-            x++;
-            if (x == xdim + 1) {
-                x = xdim / 2;
-                y++;
-                if (y == ydim) {
-                    y = 0;
-                }
-            }
+        for (var i = 0; i < img_result.length; i++) {
+            result[i + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
+            result[i + 1 + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
         }
     }
-    return k_result
+    return [result, k_result];
 }
 
 function calcSpinEcho(te, tr) {
@@ -155,6 +204,9 @@ var queryableFunctions = {
     inversionRecovery: function (ti, tr) {
         reply('result', calcInversionRecovery(ti, tr));
     },
+    reco: function (xlines, ylines, fmin, fmax) {
+        reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax));
+    },
     loadData: async function () {
         reply('loadData', await loadDataSet());
     }
@@ -168,8 +220,14 @@ function defaultReply(message) {
 }
 
 function reply() {
-    if (arguments.length < 1) { throw new TypeError('reply - not enough arguments'); return; }
-    postMessage({ 'queryMethodListener': arguments[0], 'queryMethodArguments': Array.prototype.slice.call(arguments, 1) });
+    if (arguments.length < 1) {
+        throw new TypeError('reply - not enough arguments');
+        return;
+    }
+    postMessage({
+        'queryMethodListener': arguments[0],
+        'queryMethodArguments': Array.prototype.slice.call(arguments, 1)
+    });
 }
 
 onmessage = async function (oEvent) {
