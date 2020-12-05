@@ -88,15 +88,20 @@ function transformKSpace(fft_res) {
     var maxval = 0;
     var minval = 999999999;
     for (var i = 0; i < xdim * ydim; i++) {
-        k_data[i] = Math.sqrt(fft_res[2 * i] * fft_res[2 * i] + fft_res[2 * i + 1] * fft_res[2 * i + 1]);
-        if (k_data[i] == -Infinity) {
-            k_data[i] = 0;
+        if (fft_res[2 * i] == -1) {
+            k_data[i] = -1;
+        } else {
+            k_data[i] = Math.sqrt(fft_res[2 * i] * fft_res[2 * i] + fft_res[2 * i + 1] * fft_res[2 * i + 1]);
+            if (k_data[i] == -Infinity) {
+                k_data[i] = 0;
+            }
+            maxval = Math.max(maxval, k_data[i]);
+            minval = Math.min(minval, k_data[i]);
         }
-        maxval = Math.max(maxval, k_data[i]);
-        minval = Math.min(minval, k_data[i]);
     }
 
     for (var i = 0; i < (xdim / 2 + 1) * ydim; i++) {
+
         var val = (k_data[i] - minval) * 255 / maxval;
 
         var y = (Math.floor(i / (xdim / 2 + 1)) + ydim / 2) % ydim;
@@ -104,53 +109,65 @@ function transformKSpace(fft_res) {
 
         var j = y * xdim + x - 1;
         var k = y * xdim + (xdim - x);
-
-        k_result[j] = val;
-        k_result[k] = val;
+        if (k_data[i] == -1) {
+            k_result[j] = -1;
+            k_result[k] = -1;
+        } else {
+            k_result[j] = val;
+            k_result[k] = val;
+        }
     }
     return k_result;
 }
 
 function genMapKSpace(xlines, ylines, fmin, fmax) {
     var dx = xdim / xlines;
-    var dy = xdim / ylines;
+    var dy = ydim / ylines;
     return function filterKSpace(value, d_index, array) {
-        var index = Math.floor((d_index - 1) / 2);
-        var y = (Math.floor(index / (xdim / 2 + 1))) % ydim;
-        if(y>ydim/2) { 
-            y = ydim-y;
+        var index = Math.floor((d_index) / 2);
+        var y = (Math.floor(index / (xdim/2 + 1))) % ydim;
+        if (y > ydim / 2) {
+            y = ydim - y;
         }
         var x = index % (xdim / 2 + 1);
-        if(index > ydim*(xdim+2)/2) {
+        if (index > ydim * (xdim + 2) / 2) {
             x = x + xdim / 2 + 1;
         }
-        var res1 = Math.sqrt(x*x+y*y) >= fmin && Math.sqrt(x*x+y*y) <= fmax;
-        var res = res1 && (Math.ceil(x / dx) * dx - x) < 1 && (Math.ceil(y / dy) * dy - y) < 1;
+        var f = Math.sqrt((x) * (x) + (y) * (y));
+
+        var y = (Math.floor(index / (xdim / 2 + 1)) + ydim / 2);
+        var x = index % (xdim / 2 + 1) + xdim / 2;
+        
+        var res1 = f >= fmin && f <= fmax;
+        var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
+
+
         return res ? value : 0;
     }
 }
 
 function genFilterKSpace(xlines, ylines, fmin, fmax) {
     var dx = xdim / xlines;
-    var dy = xdim / ylines;
+    var dy = ydim / ylines;
     return function filterKSpace(value, d_index, array) {
-        var index = Math.floor((d_index - 1) / 2);
-        var y = (Math.floor(index / (xdim / 2 + 1))) % ydim;
-        if(y>ydim/2) { 
-            y = ydim-y;
+        //var index = Math.floor((d_index - 1) / 2);
+        var index = d_index;
+        var y = (Math.floor(index / (ydim / 2 + 1))) % ydim;
+        if (y > ydim / 2) {
+            y = ydim - y;
         }
         var x = index % (xdim / 2 + 1);
-        if(index > ydim*(xdim+2)/2) {
+        if (index > ydim * (xdim + 2) / 2) {
             x = x + xdim / 2 + 1;
         }
-        var res1 = Math.sqrt(x*x+y*y) >= fmin && Math.sqrt(x*x+y*y) <= fmax;
+        var res1 = Math.sqrt(x * x + y * y) >= fmin && Math.sqrt(x * x + y * y) <= fmax;
         var res = res1 && (Math.ceil(x / dx) * dx - x) < 1 && (Math.ceil(y / dy) * dy - y) < 1;
         return res ? true : false;
     }
 }
 
-function inverseKSpace(kSpace, xlines, ylines, fmin, fmax) {
-    var filterKSpace = genFilterKSpace(xlines, ylines, 0, xdim*xdim)
+function inverseKSpace(kSpace, xlines, ylines, fmin, fmax, noIfft = false) {
+    var filterKSpace = genFilterKSpace(xlines, ylines, 0, xdim * xdim)
     var mapKSpace = genMapKSpace(xlines, ylines, fmin, fmax)
     var result = new Float32Array(xdim * ydim * zdim);
     var k_result = new Float32Array(xdim * ydim * zdim);
@@ -158,22 +175,24 @@ function inverseKSpace(kSpace, xlines, ylines, fmin, fmax) {
         var slice_data = kSpace.subarray(z * xdim * ydim * 2, (z + 1) * xdim * ydim * 2);
 
         var input_data = slice_data.map(mapKSpace);
-
         k_result.set(transformKSpace(input_data), z * xdim * ydim);
 
-        //input_data = input_data.filter(filterKSpace);
-
-        var img_result = irfft2d(input_data, xdim, ydim)
-        var maxval = 0;
-        var minval = 999999999;
-        for (var i = 0; i < img_result.length; i++) {
-            maxval = Math.max(maxval, img_result[i]);
-            minval = Math.min(minval, img_result[i]);
+        if (!noIfft) {
+            var img_result = irfft2d(input_data, xdim, ydim)
+            var maxval = 0;
+            var minval = 999999999;
+            for (var i = 0; i < img_result.length; i++) {
+                maxval = Math.max(maxval, img_result[i]);
+                minval = Math.min(minval, img_result[i]);
+            }
+            for (var i = 0; i < img_result.length; i++) {
+                result[i + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
+                result[i + 1 + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
+            }
         }
-        for (var i = 0; i < img_result.length; i++) {
-            result[i + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
-            result[i + 1 + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
-        }
+    }
+    if (noIfft) {
+        return [undefined, k_result];
     }
     return [result, k_result];
 }
@@ -225,8 +244,11 @@ var queryableFunctions = {
     inversionRecovery: function (ti, tr) {
         reply('result', calcInversionRecovery(ti, tr));
     },
-    reco: function (xlines, ylines, fmin, fmax) {
-        reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax));
+    reco: function (xlines, ylines, fmin, fmax, noIfft) {
+        reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax, noIfft));
+    },
+    filterKSpace: function (xlines, ylines, fmin, fmax) {
+        reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax, true));
     },
     loadData: async function () {
         reply('loadData', await loadDataSet());

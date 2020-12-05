@@ -100,46 +100,64 @@
             </div>
 
             <div class="row pt-3 hidden" id="result">
-                <div class="col-auto">
-                    <label for="ti">Window Center: </label>
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" name="wc" id="wc" min="0"
-                        max="4096" value="2048" onchange="displayAndWindow3DImage();" />
-
-                    <label for="tr">Window Width:</label>
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" name="ww" id="ww" min="0"
-                        max="4096" value="4096" onchange="displayAndWindow3DImage();" />
-
-                    <label for="slice">Slice:</label>
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                        name="slice" id="r_slice" value="100" onchange="displayAndWindow3DImage();" />
+                <div class="col-3">
                     <figure>
                         <div class="figcaption">K-Space</div>
-                        <canvas class="border img-fluid" onwheel="scrollResult(event)" id="kResult"></canvas>
+                        <canvas class="border img-fluid w-100" onwheel="scrollResult(event)" id="kResult"></canvas>
                     </figure>
                     <label for="slice">K-Space brighten:</label>
                     <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="100"
                         name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
 
                     <label for="slice">K-Space y-lines:</label>
+                    <input type="number" id="k_yline_number" class="form-control" min="1" max="256" value="256"
+                        onchange="reco(true, true);" />
                     <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
-                        name="k_yline" id="k_yline" value="256" onchange="reco();" />
+                        name="k_yline" id="k_yline" value="256" onchange="reco(false, true);" />
                     <label for="slice">K-Space x-lines:</label>
+                    <input type="number" id="k_xline_number" class="form-control" min="1" max="256" value="256"
+                        onchange="reco(true, true);" />
                     <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
-                        name="k_xline" id="k_xline" value="256" onchange="reco();" />
+                        name="k_xline" id="k_xline" value="256" onchange="reco(false, true);" />
 
                     <label for="slice">K-Space f min:</label>
+                    <input type="number" id="k_fmin_number" class="form-control" min="0" max="256" value="0"
+                        onchange="reco(true, true);" />
                     <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="128"
-                        name="k_fmin" id="k_fmin" value="0" onchange="reco();" />
+                        name="k_fmin" id="k_fmin" value="0" onchange="reco(false, true);" />
                     <label for="slice">K-Space f max:</label>
+                    <input type="number" id="k_fmax_number" class="form-control" min="0" max="256" value="256"
+                        onchange="reco(true, true);" />
                     <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="256"
-                        name="k_fmax" id="k_fmax" value="256" onchange="reco();" />
+                        name="k_fmax" id="k_fmax" value="256" onchange="reco(false, true);" />
 
                     <input class="btn btn-secondary" type="button" name="reco" id="reco" onclick="reco()"
                         value="Reconstruct image from K-Space" />
                 </div>
-                <canvas class="border col mx-3 px-0 mb-2 img-fluid img-result" onwheel="scrollResult(event)"
-                    onmousedown="startWindowing()" onmouseup="endWindowing()" onmouseout="endWindowing()"
-                    onmousemove="windowResult(event)" id="imgResult"></canvas>
+                <div class="col mx-3 mb-2">
+                    <div class="row">
+                    <canvas class="border img-fluid img-result w-100" onwheel="scrollResult(event)"
+                        onmousedown="startWindowing()" onmouseup="endWindowing()" onmouseout="endWindowing()"
+                        onmousemove="windowResult(event)" id="imgResult"></canvas>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label for="ti">Window Center: </label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" name="wc" id="wc"
+                                min="0" max="4096" value="2048" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="tr">Window Width:</label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" name="ww" id="ww"
+                                min="0" max="4096" value="4096" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="slice">Slice:</label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
+                                name="slice" id="r_slice" value="100" onchange="displayAndWindow3DImage();" />
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>

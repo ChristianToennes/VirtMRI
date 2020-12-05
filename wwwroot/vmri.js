@@ -1,8 +1,7 @@
 function QueryableWorker(url) {
     var instance = this,
-        worker = new Worker(url, {
-            type: "module"
-        }),
+        worker = new Worker(url//, {type: "module"}
+        ),
         listeners = {};
 
     this.defaultListener = function () {};
@@ -70,9 +69,13 @@ w.addListener('loadData', loadDataMessageHandler);
 var imgResult;
 var kResult;
 const resultMessageHandler = function (data) {
-    console.log("image result");
-    imgResult = data[0];
-    kResult = data[1];
+    //console.log("image result");
+    if (data[0] != undefined) {
+        imgResult = data[0];
+    }
+    if (data[1] != undefined) {
+        kResult = data[1];
+    }
     r = document.getElementById("result");
     spin = document.getElementById("scanningSpinner");
     r.classList.remove("hidden");
@@ -224,13 +227,33 @@ function displayAndWindow3DImage() {
     kdata = k_ctx.createImageData(xdim, ydim);
 
     var mult = document.getElementById("kspacemult").valueAsNumber;
+    var xlines = document.getElementById("k_xline").valueAsNumber;
+    var ylines = document.getElementById("k_yline").valueAsNumber;
+    var fmin = document.getElementById("k_fmin").valueAsNumber;
+    var fmax = document.getElementById("k_fmax").valueAsNumber;
+    var dx = xdim / xlines;
+    var dy = ydim / ylines;
     k_result = new Uint8ClampedArray(xdim * ydim * 4);
-    for (var x = 0; x < xdim * ydim; x++) {
-        val = kResult[x + slice * xdim * ydim] * mult
-        k_result[4 * x] = val
-        k_result[4 * x + 1] = val
-        k_result[4 * x + 2] = val
-        k_result[4 * x + 3] = 255
+    for (var index = 0; index < xdim * ydim; index++) {
+        val = kResult[index + slice * xdim * ydim] * mult
+
+        var y = Math.floor(index / xdim);
+        var x = index % xdim;
+        var f = Math.sqrt((x-xdim/2) * (x-xdim/2) + (y-ydim/2) * (y-ydim/2));
+        var res1 = f >= fmin && f <= fmax;
+        var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
+
+        if (!res) {
+            k_result[4 * index] = 255
+            k_result[4 * index + 1] = 0
+            k_result[4 * index + 2] = 0
+            k_result[4 * index + 3] = 255
+        } else {
+            k_result[4 * index] = val
+            k_result[4 * index + 1] = val
+            k_result[4 * index + 2] = val
+            k_result[4 * index + 3] = 255
+        }
     }
 
     kdata.data.set(k_result);
@@ -304,12 +327,28 @@ function inversionRecovery() {
     w.sendQuery("inversionRecovery", ti, tr);
 }
 
-function reco() {
-    var xlines = document.getElementById("k_xline").valueAsNumber;
-    var ylines = document.getElementById("k_yline").valueAsNumber;
-    var fmin = document.getElementById("k_fmin").valueAsNumber;
-    var fmax = document.getElementById("k_fmax").valueAsNumber;
-    w.sendQuery("reco", xlines, ylines, fmin, fmax);
+function reco(update_slider, noIfft = false) {
+    var xlines, ylines, fmin, fmax;
+    if (update_slider) {
+        xlines = document.getElementById("k_xline_number").valueAsNumber;
+        ylines = document.getElementById("k_yline_number").valueAsNumber;
+        fmin = document.getElementById("k_fmin_number").valueAsNumber;
+        fmax = document.getElementById("k_fmax_number").valueAsNumber;
+        document.getElementById("k_xline").value = xlines;
+        document.getElementById("k_yline").value = ylines;
+        document.getElementById("k_fmin").value = fmin;
+        document.getElementById("k_fmax").value = fmax;
+    } else {
+        xlines = document.getElementById("k_xline").valueAsNumber;
+        ylines = document.getElementById("k_yline").valueAsNumber;
+        fmin = document.getElementById("k_fmin").valueAsNumber;
+        fmax = document.getElementById("k_fmax").valueAsNumber;
+        document.getElementById("k_xline_number").value = xlines;
+        document.getElementById("k_yline_number").value = ylines;
+        document.getElementById("k_fmin_number").value = fmin;
+        document.getElementById("k_fmax_number").value = fmax;
+    }
+    w.sendQuery("reco", xlines, ylines, fmin, fmax, noIfft);
 }
 
 function startScan() {
