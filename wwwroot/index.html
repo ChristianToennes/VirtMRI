@@ -99,7 +99,7 @@
                 <div class="flex-fill"></div>
             </div>
 
-            <div class="row pt-3 hidden" id="result">
+            <div class="row pt-3 hidden align-items-end" id="result">
                 <div class="col-3">
                     <figure>
                         <div class="figcaption">K-Space</div>
@@ -131,12 +131,12 @@
                     <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="256"
                         name="k_fmax" id="k_fmax" value="256" onchange="reco(false, true);" />
 
-                    <input class="btn btn-secondary" type="button" name="reco" id="reco" onclick="reco()"
-                        value="Reconstruct image from K-Space" />
+                    <input class="btn btn-secondary w-100" type="button" name="reco" id="reco" onclick="reco()"
+                        value="Reconstruct image" />
                 </div>
                 <div class="col mx-3 mb-2">
-                    <div class="row">
-                    <canvas class="border img-fluid img-result w-100" onwheel="scrollResult(event)"
+                    <div class="row w-100 container-fluid justify-content-center">
+                    <canvas class="border img-result w-100" style="max-height: calc(100vh - 8.5rem); max-width: calc(100vh - 8.5rem);" onwheel="scrollResult(event)"
                         onmousedown="startWindowing()" onmouseup="endWindowing()" onmouseout="endWindowing()"
                         onmousemove="windowResult(event)" id="imgResult"></canvas>
                     </div>
@@ -155,6 +155,9 @@
                             <label for="slice">Slice:</label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
                                 name="slice" id="r_slice" value="100" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col d-flex">
+                            <input type="button" class="btn-secondary form-control align-self-center" value="Auto Window" onclick="autoWindow()" />
                         </div>
                     </div>
                 </div>

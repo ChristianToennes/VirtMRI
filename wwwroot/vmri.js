@@ -1,6 +1,6 @@
 function QueryableWorker(url) {
     var instance = this,
-        worker = new Worker(url//, {type: "module"}
+        worker = new Worker(url //, {type: "module"}
         ),
         listeners = {};
 
@@ -131,6 +131,62 @@ function display3DImage(canvas, data) {
     //element.src = dataUri;
 }
 
+function autoWindow2() {
+    var min = imgResult[0];
+    var max = imgResult[0];
+    for (var i = 0; i < imgResult.length; i++) {
+        if (imgResult[i] > max) max = imgResult[i];
+        if (imgResult[i] < min) min = imgResult[i];
+    }
+    var ww = 4096 * max - 4096 * min;
+    var wc = 4096 * min + ww * 0.5;
+    document.getElementById("wc").value = wc;
+    document.getElementById("ww").value = ww;
+    displayAndWindow3DImage();
+}
+
+function autoWindow() {
+    var histo = new Int32Array(2048);
+    for (var i = 0; i < histo.length; i++) {
+        histo[i] = 0;
+    }
+    for (var i = 0; i < imgResult.length; i++) {
+        histo[Math.floor(imgResult[i] * histo.length)] += 1;
+    }
+    var thresh = 0.9 * histo.reduce((p, c) => p + c, -histo[0]);
+    var wc = 1;
+    var ww = 0;
+    var max = histo[1];
+    for (var i = 1; i < histo.length; i++) {
+        if (histo[i] > max) {
+            max = histo[i]
+            wc = i;
+        }
+    }
+    var sum = histo[wc];
+    for (ww = 1; ww < histo.length; ww++) {
+        if (ww % 2 == 0) {
+            if (wc + Math.ceil(ww * 0.5) < histo.length) {
+                sum += histo[wc + Math.ceil(ww * 0.5)];
+            }
+        } else {
+            if (wc - Math.ceil(ww * 0.5) > 0) {
+                sum += histo[wc - Math.ceil(ww * 0.5)];
+            }
+        }
+        if (sum > thresh) {
+            break;
+        }
+    }
+    var start = Math.max(1, Math.ceil(wc - ww * 0.5));
+    var end = Math.min(histo.length, Math.ceil(wc + ww * 0.5));
+    ww = end - start;
+    wc = start + Math.floor(ww * 0.5);
+    document.getElementById("wc").value = (4096 / histo.length) * wc;
+    document.getElementById("ww").value = (4096 / histo.length) * ww;
+    displayAndWindow3DImage();
+}
+
 function scrollDataset(event) {
     slice = document.getElementById("slice")
     slice.value = slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
@@ -239,7 +295,7 @@ function displayAndWindow3DImage() {
 
         var y = Math.floor(index / xdim);
         var x = index % xdim;
-        var f = Math.sqrt((x-xdim/2) * (x-xdim/2) + (y-ydim/2) * (y-ydim/2));
+        var f = Math.sqrt((x - xdim / 2) * (x - xdim / 2) + (y - ydim / 2) * (y - ydim / 2));
         var res1 = f >= fmin && f <= fmax;
         var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
 
