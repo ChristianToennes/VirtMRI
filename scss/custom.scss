@@ -407,6 +407,16 @@ app {
     text-overflow: ellipsis;
 }
 
+.main .top-row .nav-item {
+    display: inline-flex;
+    flex-flow: column;
+    justify-content: flex-end;
+    >a {
+        padding-right: 1rem;
+        border-right: 1px solid $gb-dm-fg1;
+    }
+}
+
 .sidebar {
     background-color: $gb-dm-bg1;
 }
