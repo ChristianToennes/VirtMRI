@@ -3,24 +3,28 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="shortcut icon" href="./favicon.ico">
     <title>Virtual MRI</title>
-    <base href="./" />
     <script src="./vmri.js"></script>
-    <link rel="stylesheet" href="custom.css" />
+    <link rel="stylesheet" href="./custom.css" />
 </head>
 
-<body class="text-monospace">
+<body class="text-monospace" onload="fillDatasets()">
     <div class="main">
         <div class="top-row px-4">
-            <input type="button" class="btn-primary oi-data-transfer-download" onclick="loadFuzzyDataSet()"
-                value="Load Dataset" id="loadDataset" />
+            <button class="btn-primary" onclick="loadFuzzyDataSet()"
+                value="Load Dataset" id="loadDataset">Load Dataset: </button>
+            <select id="datasetPath" onchange="changedDataset()"></select>
+            <a id="datasetURL" class="nav-item cp1s1"></a>
             <div class="ml-2 spinner-border hidden" role="status" id="datasetLoading">
                 <span class="sr-only">Loading...</span>
             </div>
             <div class="flex-fill"></div>
-            <p class="h-100 mr-3 nav-item"><a class="fg3" href="">Impressum</a></p>
-            <p class="h-100 mr-3 nav-item"><a class="fg0" href="https://github.com/0x1cedd1ce/VMRI">Source Code</a></p>
-            <h1 class="dark-orange">Virtual MRI</h1>
+            <p class="h-100 mr-3 nav-item"><a class="cp1s1"
+                    href="https://cert.ccc.de/wiki/index.php?title=Kontakt">Impressum</a></p>
+            <p class="h-100 mr-3 nav-item"><a class="cp1" href="https://github.com/0x1cedd1ce/VMRI">Source Code</a></p>
+            <h1 class="cp1">Virtual MRI</h1>
         </div>
         <div class="content px-4 pt-2 hidden" id="content">
             <div class="row" onwheel="scrollDataset(event)">

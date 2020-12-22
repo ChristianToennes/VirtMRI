@@ -1,3 +1,14 @@
+const datasets = {
+    0: ["BrainWeb 05 - 3T", "./3T/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    1: ["BrainWeb 05 - 1T", "./1T/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    2: ["BrainWeb 54 - 3T", "./3T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    3: ["BrainWeb 54 - 1T", "./1T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    4: ["BrainWeb colin27 - 3T", "./3T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    5: ["BrainWeb colin27 - 1T", "./1T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    6: ["Phantomag - 1.5T", "./1.5T/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
+    7: ["Phantomag - 1T", "./1T/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
+}
+
 function QueryableWorker(url) {
     var instance = this,
         worker = new Worker(url //, {type: "module"}
@@ -47,22 +58,31 @@ function QueryableWorker(url) {
         }
     }
 }
-const w = new QueryableWorker("intensityCalculations.js");
+const w = new QueryableWorker("./intensityCalculations.js");
 
-const xdim = 256;
-const ydim = 256;
-const zdim = 256;
+var xdim = 256;
+var ydim = 256;
+var zdim = 256;
 var array_pd, array_t1, array_t2, result, k_data_im_re, slice_data;
 
 const loadDataMessageHandler = function (data) {
     array_pd = data[0];
     array_t1 = data[1];
     array_t2 = data[2];
+    zdim = data[3];
+    ydim = data[4];
+    xdim = data[5];
+
+    slice = document.getElementById("slice");
+    slice.max = zdim;
+    slice.value = Math.round(zdim/2);
+
     r = document.getElementById("content");
     r.classList.remove("hidden");
     spin = document.getElementById("datasetLoading");
     spin.classList.add("hidden");
     displayDataSet();
+    setInversionRecovery();
 };
 w.addListener('loadData', loadDataMessageHandler);
 
@@ -80,6 +100,7 @@ const resultMessageHandler = function (data) {
     spin = document.getElementById("scanningSpinner");
     r.classList.remove("hidden");
     spin.classList.add("hidden");
+    document.getElementById("kspace").removeAttribute("disabled");
     displayAndWindow3DImage();
 };
 w.addListener('result', resultMessageHandler);
@@ -316,19 +337,37 @@ function displayAndWindow3DImage() {
     k_ctx.putImageData(kdata, 0, 0);
 }
 
+function fillDatasets() {
+    sel = document.getElementById("datasetPath");
+    for(var p in datasets) {
+        op = document.createElement("option");
+        op.value = p;
+        op.innerText = datasets[p][0];
+        sel.appendChild(op);
+    }
+    changedDataset();
+}
+
+function changedDataset() {
+    url = datasets[document.getElementById("datasetPath").value][2];
+    a = document.getElementById("datasetURL")
+    a.setAttribute("href", url);
+    a.innerText = "Dataset source";
+}
+
 function loadFuzzyDataSet() {
     content = document.getElementById("content");
     content.classList.add("hidden");
-    return new Promise(async (resolve, reject) => {
+    r = document.getElementById("result");
+    r.classList.add("hidden");
 
-        slice = document.getElementById("slice");
-        slice.max = zdim;
-        slice.value = 100;
+    path = datasets[document.getElementById("datasetPath").value][1];
+    return new Promise(async (resolve, reject) => {
 
         spin = document.getElementById("datasetLoading");
         spin.classList.remove("hidden");
 
-        w.sendQuery("loadData");
+        w.sendQuery("loadData", path);
         resolve();
     });
 }
@@ -384,6 +423,7 @@ function inversionRecovery() {
 }
 
 function reco(update_slider, noIfft = false) {
+    document.getElementById("kspace").setAttribute("disabled","disabled");
     var xlines, ylines, fmin, fmax;
     if (update_slider) {
         xlines = document.getElementById("k_xline_number").valueAsNumber;
@@ -422,4 +462,16 @@ function displayDataSet() {
     display3DImage(document.getElementById("imgPD"), array_pd);
     display3DImage(document.getElementById("imgT1"), array_t1);
     display3DImage(document.getElementById("imgT2"), array_t2);
+
+function formatTime(time) {
+    d = new Date(time);
+    timeString = "";
+    if(d.getFullYear() > 1970) {
+        timeString += (d.getFullYear()-1970) + " years ";
+    }
+    if(d.getDate() > 1) {
+        timeString += (d.getDate()-1) + " days ";
+    }
+    timeString += (d.getHours()<11?"0":"") + (d.getHours()-1) + ":" + (d.getMinutes()<10?"0":"") + d.getMinutes() + ":" + (d.getSeconds()<10?"0":"") + d.getSeconds();
+    return timeString;
 }
