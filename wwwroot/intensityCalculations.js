@@ -224,40 +224,145 @@ function calcSpinEcho(te, tr) {
         if (t2 == 0) {
             t2 = 1;
         }
-        var val = ((pd) * (Math.exp((-te) / (t2))) * (1 - Math.exp((-tr) / (t1))));
+        var val = pd * Math.exp(-te / t2) * (1 - Math.exp(-tr / t1));
 
-        result[x] = val
+        result[x] = Math.abs(val);
     }
 
     var k_result = calcKSpace(result);
     return [result, k_result];
 }
 
-function calcInversionRecovery(ti, tr) {
+function calcInversionRecovery(te, tr, ti) {
     var result = new Float32Array(array_t1.length);
     for (var x = 0; x < result.length; x++) {
-        // Berechnen der Intensitaetsmatrix
         var t1 = array_t1[x]
         var t2 = array_t2[x]
         var pd = array_pd[x]
-        // Divison durch 0 abfangen
         if (t1 == 0) {
             t1 = 1.0;
         }
-        var val = Math.abs(pd * (1.0 - 2.0 * Math.exp(-ti / t1) + Math.exp(-tr / ti)));
+        var val = pd * (1.0 - 2.0 * Math.exp(-ti / t1) + Math.exp(-tr / ti)) * Math.exp(-te / t2);
 
-        result[x] = val
+        result[x] = Math.abs(val);
     }
     var k_result = calcKSpace(result);
     return [result, k_result];
 }
+
+const DELTAB = 19.5E-9;
+const GYRO = 42.58;
+
+function calcFlash(te, tr, fa) {
+    var result = new Float32Array(array_t1.length);
+    fa = fa * Math.PI / 180;
+    var sfa = Math.sin(fa);
+    var cfa = Math.cos(fa);
+    for (var x = 0; x < result.length; x++) {
+        var t1 = array_t1[x]
+        var t2 = array_t2[x]
+        var pd = array_pd[x]
+        if (t1 == 0) {
+            t1 = 1.0;
+        }
+        var E1 = Math.exp(-tr/t1);
+        var t2s = 1 / (1/t2 + GYRO*DELTAB);
+        var val = pd * (1-E1)*sfa/((1-E1)*cfa) * Math.exp(-te/t2s)
+
+        result[x] = Math.abs(val);
+    }
+    var k_result = calcKSpace(result);
+    return [result, k_result];
+}
+
+function calcPSIF(te, tr, fa) {
+    var result = new Float32Array(array_t1.length);
+    fa = fa * Math.PI / 180;
+    var sfa = Math.sin(fa);
+    var cfa = Math.cos(fa);
+    var tfa = Math.tan(fa / 2);
+    for (var x = 0; x < result.length; x++) {
+        var t1 = array_t1[x]
+        var t2 = array_t2[x]
+        var pd = array_pd[x]
+        if (t1 == 0) {
+            t1 = 1.0;
+        }
+        var e1 = Math.exp(-tr/t1)
+        var e2 = Math.exp(-tr/t2)
+        var val = pd * sfa/(1+cfa)*(1-(1-e1*cfa)*Math.sqrt((1-e2*e2) /( (1-e1*cfa)*(1-e1*cfa)-e2*e2*(e1-cfa)*(e1-cfa) )));
+
+        result[x] = Math.abs(val);
+    }
+    var k_result = calcKSpace(result);
+    return [result, k_result];
+}
+
+function calcFISP(te, tr, fa) {
+    var result = new Float32Array(array_t1.length);
+    fa = fa * Math.PI / 180;
+    var sfa = Math.sin(fa);
+    var cfa = Math.cos(fa);
+    for (var x = 0; x < result.length; x++) {
+        var t1 = array_t1[x]
+        var t2 = array_t2[x]
+        var pd = array_pd[x]
+        if (t1 == 0) {
+            t1 = 1.0;
+        }
+
+        var e1 = Math.exp(-tr/t1)
+        var e2 = Math.exp(-tr/t2)
+        var val = pd * sfa/(1+cfa) * (1 - (e1-cfa)*Math.sqrt((1-e2*e2)/( (1-e1*cfa)*(1-e1*cfa)-e2*e2*(e1-cfa)*(e1-cfa) ) ) );
+
+        result[x] = Math.abs(val);
+    }
+    var k_result = calcKSpace(result);
+    return [result, k_result];
+}
+
+
+function calcBalancedSSFP(te, tr, fa) {
+    var result = new Float32Array(array_t1.length);
+    fa = fa * Math.PI / 180;
+    var sfa = Math.sin(fa);
+    var cfa = Math.cos(fa);
+    for (var x = 0; x < result.length; x++) {
+        var t1 = array_t1[x]
+        var t2 = array_t2[x]
+        var pd = array_pd[x]
+        if (t1 == 0) {
+            t1 = 1.0;
+        }
+        var e_tr_t1 = Math.exp(-tr/t1)
+        var e_tr_t2 = Math.exp(-tr/t2)
+        var val = pd * sfa * (1-Math.exp(-tr/t1)) / (1 - (e_tr_t1-e_tr_t2)*cfa - e_tr_t1*e_tr_t2 ) * Math.exp(-te/t2);
+
+        result[x] = Math.abs(val);
+    }
+    var k_result = calcKSpace(result);
+    return [result, k_result];
+}
+
 
 var queryableFunctions = {
     spinEcho: function (te, tr) {
         reply('result', calcSpinEcho(te, tr));
     },
-    inversionRecovery: function (ti, tr) {
-        reply('result', calcInversionRecovery(ti, tr));
+    inversionRecovery: function (te, tr, ti) {
+        reply('result', calcInversionRecovery(te, tr, ti));
+    },
+    flash: function(te, tr, fa) {
+        reply('result', calcFlash(te, tr, fa));
+    },
+    bSSFP: function(te, tr, fa) {
+        reply('result', calcBalancedSSFP(te, tr, fa));
+    },
+    psif: function(te, tr, fa) {
+        reply('result', calcPSIF(te, tr, fa));
+    },
+    fisp: function(te, tr, fa) {
+        reply('result', calcFISP(te, tr, fa));
     },
     reco: function (xlines, ylines, fmin, fmax, noIfft) {
         reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax, noIfft));

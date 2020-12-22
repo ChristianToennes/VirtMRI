@@ -58,6 +58,10 @@
                             <div class="nav-link active" id="params-ir-tab" onclick="setInversionRecovery()">Inversion
                                 Recovery</div>
                             <div class="nav-link" id="params-se-tab" onclick="setSpinEcho()">Spin Echo</div>
+                            <div class="nav-link" id="params-bssfp-tab" onclick="setBalancedSSFP()">Balanced SSFP</div>
+                            <div class="nav-link" id="params-fisp-tab" onclick="setFISP()">FISP</div>
+                            <div class="nav-link" id="params-psif-tab" onclick="setPSIF()">PSIF</div>
+                            <div class="nav-link" id="params-flash-tab" onclick="setFlash()">Flash</div>
                         </div>
                     </div>
                     <div class="row border py-2 tab-content" id="params">
@@ -66,13 +70,25 @@
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TI:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="400" name="ti" id="ir_ti" />
+                                <input class="col-sm form-control" type="number" value="420" name="ti" id="ir_ti" oninput="updateIRTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="23" name="tr" id="ir_te" oninput="updateIRTime()"/>
                             </div>
                             <div class="form-row">
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TR:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="6000" name="tr" id="ir_tr" />
+                                <input class="col-sm form-control" type="number" value="666" name="tr" id="ir_tr" oninput="updateIRTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="ir_time"></p>
                             </div>
                         </div>
                         <div class="col tab-pane" id="params-se">
@@ -80,13 +96,123 @@
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TE:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="400" name="ti" id="se_te" />
+                                <input class="col-sm form-control" type="number" value="420" name="ti" id="se_te" oninput="updateSETime()"/>
                             </div>
                             <div class="form-row">
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TR:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="6000" name="tr" id="se_tr" />
+                                <input class="col-sm form-control" type="number" value="666" name="tr" id="se_tr" oninput="updateSETime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="se_time"></p>
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-bssfp">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="42" name="ti" id="bssfp_te" oninput="updateBalancedSSFPTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="84" name="tr" id="bssfp_tr" disabled/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">FA:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="23" min="-180" max="180" name="fa" id="bssfp_fa" oninput="updateBalancedSSFPTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="bssfp_time"></p>
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-fisp">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="42" name="ti" id="fisp_te" oninput="updateFISPTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="84" name="tr" id="fisp_tr" oninput="updateFISPTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">FA:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="23" min="-180" max="180" name="fa" id="fisp_fa" oninput="updateFISPTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="fisp_time"></p>
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-psif">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="42" name="ti" id="psif_te" oninput="updatePSIFTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="84" name="tr" id="psif_tr" oninput="updatePSIFTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">FA:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="23" min="-180" max="180" name="fa" id="psif_fa" oninput="updatePSIFTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="psif_time"></p>
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-flash">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="42" name="ti" id="flash_te" oninput="updateFlashTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="666" name="tr" id="flash_tr" oninput="updateFlashTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">FA:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="23" min="-180" max="180" name="fa" id="flash_fa" oninput="updateFlashTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="flash_time"></p>
                             </div>
                         </div>
                     </div>
@@ -111,40 +237,43 @@
                         <div class="figcaption">K-Space</div>
                         <canvas class="border img-fluid w-100" onwheel="scrollResult(event)" id="kResult"></canvas>
                     </figure>
-                    <label for="slice">K-Space brighten:</label>
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="100"
-                        name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
+                    <fieldset id="kspace">
+                        <label for="slice">K-Space brighten:</label>
+                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="100"
+                            name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
 
-                    <label for="slice">K-Space y-lines:</label>
-                    <input type="number" id="k_yline_number" class="form-control" min="1" max="256" value="256"
-                        onchange="reco(true, true);" />
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
-                        name="k_yline" id="k_yline" value="256" onchange="reco(false, true);" />
-                    <label for="slice">K-Space x-lines:</label>
-                    <input type="number" id="k_xline_number" class="form-control" min="1" max="256" value="256"
-                        onchange="reco(true, true);" />
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
-                        name="k_xline" id="k_xline" value="256" onchange="reco(false, true);" />
+                        <label for="slice">K-Space y-lines:</label>
+                        <input type="number" id="k_yline_number" class="form-control" min="1" max="256" value="256"
+                            onchange="reco(true, true);" />
+                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
+                            name="k_yline" id="k_yline" value="256" onchange="reco(false, true);" />
+                        <label for="slice">K-Space x-lines:</label>
+                        <input type="number" id="k_xline_number" class="form-control" min="1" max="256" value="256"
+                            onchange="reco(true, true);" />
+                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
+                            name="k_xline" id="k_xline" value="256" onchange="reco(false, true);" />
 
-                    <label for="slice">K-Space f min:</label>
-                    <input type="number" id="k_fmin_number" class="form-control" min="0" max="256" value="0"
-                        onchange="reco(true, true);" />
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="128"
-                        name="k_fmin" id="k_fmin" value="0" onchange="reco(false, true);" />
-                    <label for="slice">K-Space f max:</label>
-                    <input type="number" id="k_fmax_number" class="form-control" min="0" max="256" value="256"
-                        onchange="reco(true, true);" />
-                    <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="256"
-                        name="k_fmax" id="k_fmax" value="256" onchange="reco(false, true);" />
+                        <label for="slice">K-Space f min:</label>
+                        <input type="number" id="k_fmin_number" class="form-control" min="0" max="256" value="0"
+                            onchange="reco(true, true);" />
+                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="128"
+                            name="k_fmin" id="k_fmin" value="0" onchange="reco(false, true);" />
+                        <label for="slice">K-Space f max:</label>
+                        <input type="number" id="k_fmax_number" class="form-control" min="0" max="256" value="256"
+                            onchange="reco(true, true);" />
+                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="256"
+                            name="k_fmax" id="k_fmax" value="256" onchange="reco(false, true);" />
 
-                    <input class="btn btn-secondary w-100" type="button" name="reco" id="reco" onclick="reco()"
-                        value="Reconstruct image" />
+                        <input class="btn btn-secondary w-100" type="button" name="reco" id="reco" onclick="reco()"
+                            value="Reconstruct image" />
+                    </fieldset>
                 </div>
                 <div class="col mx-3 mb-2">
                     <div class="row w-100 container-fluid justify-content-center">
-                    <canvas class="border img-result w-100" style="max-height: calc(100vh - 8.5rem); max-width: calc(100vh - 8.5rem);" onwheel="scrollResult(event)"
-                        onmousedown="startWindowing()" onmouseup="endWindowing()" onmouseout="endWindowing()"
-                        onmousemove="windowResult(event)" id="imgResult"></canvas>
+                        <canvas class="border img-result w-100"
+                            style="max-height: calc(100vh - 8.5rem); max-width: calc(100vh - 8.5rem);"
+                            onwheel="scrollResult(event)" onmousedown="startWindowing()" onmouseup="endWindowing()"
+                            onmouseout="endWindowing()" onmousemove="windowResult(event)" id="imgResult"></canvas>
                     </div>
                     <div class="row">
                         <div class="col">
@@ -163,7 +292,8 @@
                                 name="slice" id="r_slice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                         <div class="col d-flex">
-                            <input type="button" class="btn-secondary form-control align-self-center" value="Auto Window" onclick="autoWindow()" />
+                            <input type="button" class="btn-secondary align-self-center" value="Auto Window"
+                                onclick="autoWindow()" />
                         </div>
                     </div>
                 </div>
