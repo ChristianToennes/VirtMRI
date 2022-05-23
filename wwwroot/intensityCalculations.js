@@ -8,6 +8,7 @@ var zdim = 256;
 var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
 var array_t2 = new Uint16Array(256 * 256);
+var array_t2s = new Uint16Array(256 * 256);
 var k_data_im_re, k_result;
 
 async function loadDataSet(path) {
@@ -77,7 +78,29 @@ async function loadDataSet(path) {
         xhr.responseType = "arraybuffer";
         xhr.send()
     });
-    return [array_pd, array_t1, array_t2, zdim, ydim, xdim];
+    array_t2s = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+            var resp = pako.inflate(xhr.response).buffer;
+            var mm = new Float32Array(resp, 0, 2);
+            var shape = new Uint16Array(resp, 8, 3);
+            zdim = shape[0];
+            ydim = shape[1];
+            xdim = shape[2];
+            var a = new Uint8Array(resp, 14);
+            var b = new Float32Array(a.length);
+            //console.log("t2", mm[0],mm[1], a.reduce((a,b)=>a+b)/a.length)
+            for (var x = 0; x < a.length; x++) {
+                b[x] = (a[x] / 255.0) * (mm[1] - mm[0]) + mm[0];
+            }
+            resolve(b);
+        }
+        xhr.onerror = reject
+        xhr.open("GET", path+"/t2s.bin.gz", true)
+        xhr.responseType = "arraybuffer";
+        xhr.send()
+    });
+    return [array_pd, array_t1, array_t2, array_t2s, zdim, ydim, xdim];
 }
 
 function calcKSpace(result) {
@@ -321,7 +344,6 @@ function calcFISP(te, tr, fa) {
     return [result, k_result];
 }
 
-
 function calcBalancedSSFP(te, tr, fa) {
     var result = new Float32Array(array_t1.length);
     fa = fa * Math.PI / 180;
@@ -344,6 +366,26 @@ function calcBalancedSSFP(te, tr, fa) {
     return [result, k_result];
 }
 
+function calcSGRE(te, tr, fa) {
+    var result = new Float32Array(array_t1.length);
+    fa = fa * Math.PI / 180;
+    var sfa = Math.sin(fa);
+    var cfa = Math.cos(fa);
+    for (var x = 0; x < result.length; x++) {
+        var t1 = array_t1[x]
+        var t2s = array_t2s[x]
+        var pd = array_pd[x]
+        if (t1 == 0) {
+            t1 = 1.0;
+        }
+        var E1 = Math.exp(-tr/t1);
+        var val = pd * (1-E1)*sfa/(1-E1*cfa) * Math.exp(-te/t2s)
+
+        result[x] = Math.abs(val);
+    }
+    var k_result = calcKSpace(result);
+    return [result, k_result];
+}
 
 var queryableFunctions = {
     spinEcho: function (te, tr) {
@@ -363,6 +405,9 @@ var queryableFunctions = {
     },
     fisp: function(te, tr, fa) {
         reply('result', calcFISP(te, tr, fa));
+    },
+    sgre: function(te, tr, fa) {
+        reply('result', calcSGRE(te, tr, fa));
     },
     reco: function (xlines, ylines, fmin, fmax, noIfft) {
         reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax, noIfft));

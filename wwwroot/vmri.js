@@ -63,15 +63,16 @@ const w = new QueryableWorker("./intensityCalculations.js");
 var xdim = 256;
 var ydim = 256;
 var zdim = 256;
-var array_pd, array_t1, array_t2, result, k_data_im_re, slice_data;
+var array_pd, array_t1, array_t2, array_t2s, result, k_data_im_re, slice_data;
 
 const loadDataMessageHandler = function (data) {
     array_pd = data[0];
     array_t1 = data[1];
     array_t2 = data[2];
-    zdim = data[3];
-    ydim = data[4];
-    xdim = data[5];
+    array_t2s = data[3];
+    zdim = data[4];
+    ydim = data[5];
+    xdim = data[6];
 
     slice = document.getElementById("slice");
     slice.max = zdim;
@@ -435,27 +436,6 @@ function inversionRecovery() {
     w.sendQuery("inversionRecovery", te, tr, ti);
 }
 
-function setSpoiledGradientEcho() {
-    setTabs("params-sge", "params-sge-tab");
-    updateSGETime();
-    selectedSequence = spoiledGradientEcho;
-}
-
-function spoiledGradientEcho() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te = parseFloat(document.getElementById("sge_te").value)
-    var tr = parseFloat(document.getElementById("sge_tr").value)
-    var fa = parseFloat(document.getElementById("sge_fa").value)
-
-    w.sendQuery("spoiledGradientEcho", te, tr, fa);
-}
-
 function setFlash() {
     setTabs("params-flash", "params-flash-tab");
     updateFlashTime();
@@ -540,6 +520,27 @@ function PSIF() {
     w.sendQuery("psif", te, tr, fa);
 }
 
+function setSGRE() {
+    setTabs("params-sgre", "params-sgre-tab");
+    updateSGRETime();
+    selectedSequence = SGRE;
+}
+
+function SGRE() {
+    r = document.getElementById("result");
+    spin = document.getElementById("scanningSpinner");
+    slice = document.getElementById("r_slice");
+    slice.max = zdim;
+    r.classList.add("hidden");
+    spin.classList.remove("hidden");
+
+    var te = parseFloat(document.getElementById("sgre_te").value)
+    var fa = parseFloat(document.getElementById("sgre_fa").value)
+    var tr = parseFloat(document.getElementById("sgre_tr").value)
+
+    w.sendQuery("sgre", te, tr, fa);
+}
+
 function reco(update_slider, noIfft = false) {
     document.getElementById("kspace").setAttribute("disabled","disabled");
     var xlines, ylines, fmin, fmax;
@@ -573,6 +574,7 @@ function displayDataSet() {
     display3DImage(document.getElementById("imgPD"), array_pd);
     display3DImage(document.getElementById("imgT1"), array_t1);
     display3DImage(document.getElementById("imgT2"), array_t2);
+    display3DImage(document.getElementById("imgT2s"), array_t2s);
 }
 
 function updateIRTime() {
@@ -645,6 +647,22 @@ function updateFISPTime() {
         time.innerText = "TE has to be smaller than TR";
     } else {
         time.innerText = formatTime(te*2*ydim*zdim);
+    }
+}
+
+function updateSGRETime() {
+    var te = parseFloat(document.getElementById("sgre_te").value)
+    var tr = parseFloat(document.getElementById("sgre_tr").value)
+    var fa = parseFloat(document.getElementById("sgre_fa").value)
+    var time = document.getElementById("sgre_time");
+        
+    if(fa>180) { document.getElementById("sgre_fa").value = 180; }
+    if(fa<-180) { document.getElementById("sgre_fa").value = -180; }
+
+    if(te >= tr) {
+        time.innerText = "TE has to be smaller than TR";
+    } else {
+        time.innerText = formatTime(tr*ydim*zdim);
     }
 }
 

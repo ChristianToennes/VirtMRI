@@ -38,6 +38,10 @@
                     <figcaption class="figure-caption">T2 time</figcaption>
                     <canvas class="figure-img img-fluid rounded" id="imgT2"></canvas>
                 </figure>
+                <figure class="col pl-0 figure text-center">
+                    <figcaption class="figure-caption">T2* time</figcaption>
+                    <canvas class="figure-img img-fluid rounded" id="imgT2s"></canvas>
+                </figure>
             </div>
             <div class="row mx-1">
                 <div class="col-auto">
@@ -60,6 +64,7 @@
                             <div class="nav-link" id="params-fisp-tab" onclick="setFISP()">FISP</div>
                             <div class="nav-link" id="params-psif-tab" onclick="setPSIF()">PSIF</div>
                             <div class="nav-link" id="params-flash-tab" onclick="setFlash()">Flash</div>
+                            <div class="nav-link" id="params-sgre-tab" onclick="setSGRE()">Spoiled GRE</div>
                         </div>
                     </div>
                     <div class="row border py-2 tab-content" id="params">
@@ -211,6 +216,32 @@
                                     <label class="mb-0 align-self-center">Total Measuring Time:</label>
                                 </div>
                                 <p class="col-sm form-control mb-0" id="flash_time"></p>
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-sgre">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="42" name="ti" id="sgre_te" oninput="updateSGRETime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="666" name="tr" id="sgre_tr" oninput="updateSGRETime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">FA:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="23" min="-180" max="180" name="fa" id="sgre_fa" oninput="updateSGRETime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="sgre_time"></p>
                             </div>
                         </div>
                     </div>
