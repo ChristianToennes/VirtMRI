@@ -52,6 +52,7 @@ def read_minc(params, names, in_dir, sub=(), trans=None, nib=False):
 
     t1 = np.zeros(shape, dtype=np.float32)
     t2 = np.zeros(shape, dtype=np.float32)
+    t2s = np.zeros(shape, dtype=np.float32)
     pd = np.zeros(shape, dtype=np.float32)
     s = np.zeros(shape, dtype=np.float32)
 
@@ -72,6 +73,7 @@ def read_minc(params, names, in_dir, sub=(), trans=None, nib=False):
             #print(np.min(a), np.max(a), np.mean(a), np.median(a))
         t1 = t1 + a*params[p][2]
         t2 = t2 + a*params[p][3]
+        t2s = t2s + a*params[p][4]
         pd = pd + a*params[p][-2]
         s = s + a
 
@@ -79,6 +81,7 @@ def read_minc(params, names, in_dir, sub=(), trans=None, nib=False):
     s[s==0] = 1
     t1 = t1/s
     t2 = t2/s
+    t2s = t2s/s
     pd = pd/s
     
     #print(np.min(t1), np.max(t1), np.quantile(t1, 0.9999), np.count_nonzero(t1>np.quantile(t1, 0.9999)))
@@ -87,8 +90,9 @@ def read_minc(params, names, in_dir, sub=(), trans=None, nib=False):
     t1 = scipy.ndimage.zoom(t1, zoom, order=0)
     pd = scipy.ndimage.zoom(pd, zoom, order=0)
     t2 = scipy.ndimage.zoom(t2, zoom, order=0)
+    t2s = scipy.ndimage.zoom(t2s, zoom, order=0)
 
-    return t1, t2, pd
+    return t1, t2, t2s, pd
 
 def read_phantomag(in_dir, trans=None):
     img = None
@@ -111,9 +115,9 @@ def read_phantomag(in_dir, trans=None):
     #t1 = 1/img[...,0]
     #t2 = 1/img[...,1]
     #pd = img[...,2]
-    t1s = 265.824140
-    t2s = 320.593736
-    pds = 796.450777
+    #t1s = 265.824140
+    #t2s = 320.593736
+    #pds = 796.450777
     t1s = 1433.2
     t2s = 92.6
     pds = 0.86
@@ -131,12 +135,13 @@ def read_phantomag(in_dir, trans=None):
     zoom = (1, 2**8/t1.shape[1], 2**8/t1.shape[2])
     t1 = scipy.ndimage.zoom(t1, zoom, order=0)
     t2 = scipy.ndimage.zoom(t2, zoom, order=0)
+    t2s = np.zeros_like(t2)
     pd = scipy.ndimage.zoom(pd, zoom, order=0)
 
-    return t1, t2, pd
+    return t1, t2, t2s, pd
 
 import matplotlib.pyplot as plt
-def write_files(t1, t2, pd, sub, out_dir):
+def write_files(t1, t2, t2s, pd, sub, out_dir):
     print(t1.shape, t2.shape, pd.shape)
     if not os.path.exists(os.path.join(out_dir, sub[0])):
         os.makedirs(os.path.join(out_dir, sub[0]))
@@ -163,6 +168,19 @@ def write_files(t1, t2, pd, sub, out_dir):
         f.write(np.array([mi,ma], dtype=np.float32).tobytes())
         f.write(np.array(t2.shape,dtype=np.uint16).tobytes())
         f.write(ex.tobytes())
+    
+    if t2s is not None:
+        with gzip.open(os.path.join(out_dir, sub[0], "t2s.bin.gz"), "wb") as f:
+            mi = np.min(t2s)
+            ma = np.max(t2s)
+            print(np.min(t2s), np.max(t2s), np.mean(t2s), np.median(t2s))
+            ex = np.array(255 * (t2s-mi) / (ma-mi), dtype=np.uint8)
+            print("t2s", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (t2s-mi) / (ma-mi)))
+            er = (255 * (t2s-mi) / (ma-mi)) - ex
+            #print("er", np.min(er), np.max(er), np.mean(er), np.median(er))
+            f.write(np.array([mi,ma], dtype=np.float32).tobytes())
+            f.write(np.array(t2s.shape,dtype=np.uint16).tobytes())
+            f.write(ex.tobytes())
 
     with gzip.open(os.path.join(out_dir, sub[0], "pd.bin.gz"), "wb") as f:
         mi = np.min(pd)
@@ -176,29 +194,29 @@ def write_files(t1, t2, pd, sub, out_dir):
         f.write(np.array(pd.shape,dtype=np.uint16).tobytes())
         f.write(ex.tobytes())
 
-#t1,t2,pd = read_minc(params_15, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
-#write_files(t1, t2, pd, ("bw",), "1t")
-#t1,t2,pd = read_minc(params_3, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
-#write_files(t1, t2, pd, ("bw",), "3t")
+t1,t2,t2s,pd = read_minc(params_15, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
+write_files(t1, t2, t2s, pd, ("bw",), "1.5T")
+t1,t2,t2s,pd = read_minc(params_3, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
+write_files(t1, t2, t2s, pd, ("bw",), "3t")
 
-#t1,t2,pd = read_minc(params_15, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
-#write_files(t1, t2, pd, ("05",), "1t")
-#t1,t2,pd = read_minc(params_3, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
-#write_files(t1, t2, pd, ("05",), "3t")
+t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
+write_files(t1, t2, t2s, pd, ("05",), "1.5T")
+t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
+write_files(t1, t2, t2s, pd, ("05",), "3t")
 
-#t1,t2,pd = read_minc(params_15, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
+t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
 #x1 = t1
 #x2 = t2
 #xp = pd
-#write_files(t1, t2, pd, ("54",), "1t")
-#t1,t2,pd = read_minc(params_3, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
-#write_files(t1, t2, pd, ("54",), "3t")
+write_files(t1, t2, t2s, pd, ("54",), "1.5T")
+t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
+write_files(t1, t2, t2s, pd, ("54",), "3t")
 
-t1,t2,pd = read_phantomag("NV_1_NV_1T/QMCI")
-write_files(t1,t2,pd, ("phantomag",), "1T")
+t1,t2,t2s,pd = read_phantomag("NV_1_NV_1T/QMCI")
+write_files(t1,t2,t2s, pd, ("phantomag",), "1T")
 
-t1,t2,pd = read_phantomag("NV_1_NV_1_5T/QMCI")
-write_files(t1,t2,pd, ("phantomag",), "1.5T")
+t1,t2,t2s,pd = read_phantomag("NV_1_NV_1_5T/QMCI")
+write_files(t1,t2,t2s, pd, ("phantomag",), "1.5T")
 
 #fig, axs = plt.subplots(1, 2, sharey=False, tight_layout=True)
 #axs[0].hist(x1.flatten(), bins=256)
