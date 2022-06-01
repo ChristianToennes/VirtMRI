@@ -415,7 +415,7 @@ function calcSQ(te) {
     var result = new Float32Array(array_t1.length);
     for (var x = 0; x < result.length; x++) {
         var t1 = array_t1[x];
-        var t2f = array_t2[x];
+        var t2f = array_t2f[x];
         var t2s = array_t2s[x];
         var pd = array_pd[x];
         if (t1 == 0) {
@@ -438,7 +438,8 @@ function calcTQ(te) {
     var result = new Float32Array(array_t1.length);
     for (var x = 0; x < result.length; x++) {
         var t1 = array_t1[x];
-        var t2f = array_t2[x];
+        var t2 = array_t2[x];
+        var t2f = array_t2f[x];
         var t2s = array_t2s[x];
         var pd = array_pd[x];
         if (t1 == 0) {

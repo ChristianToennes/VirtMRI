@@ -87,6 +87,13 @@ const loadDataMessageHandler = function (data) {
     spin.classList.add("hidden");
     displayDataSet();
     setInversionRecovery();
+    if (array_t2f == null) {
+        document.getElementById("params-sq-tab").ClassList.add("hidden");
+        document.getElementById("params-tq-tab").ClassList.add("hidden");
+    } else {
+        document.getElementById("params-sq-tab").ClassList.remove("hidden");
+        document.getElementById("params-tq-tab").ClassList.remove("hidden");
+    }
 };
 w.addListener('loadData', loadDataMessageHandler);
 
@@ -559,7 +566,7 @@ function SQ() {
     var te = parseFloat(document.getElementById("sq_te").value)
     //var tr = parseFloat(document.getElementById("sq_tr").value)
 
-    w.sendQuery("SQ", te);
+    w.sendQuery("sq", te);
 }
 
 function setTQ() {
@@ -579,7 +586,7 @@ function TQ() {
     var te = parseFloat(document.getElementById("tq_te").value)
     //var tr = parseFloat(document.getElementById("tq_tr").value)
 
-    w.sendQuery("TQ", te);
+    w.sendQuery("tq", te);
 }
 
 function reco(update_slider, noIfft = false) {
