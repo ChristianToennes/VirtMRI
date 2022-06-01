@@ -7,6 +7,8 @@ const datasets = {
     5: ["BrainWeb colin27 - 1.5T", "./1.5T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
     6: ["Phantomag - 1.5T", "./1.5T/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
     7: ["Phantomag - 1T", "./1t/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
+    8: ["BrainWeb 54 - Na", "./na/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    9: ["BrainWeb colin27 - Na", "./na/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
 }
 
 function QueryableWorker(url) {
