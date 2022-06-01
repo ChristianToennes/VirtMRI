@@ -9,7 +9,7 @@ var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
 var array_t2 = new Uint16Array(256 * 256);
 var array_t2s = new Uint16Array(256 * 256);
-var array_t2f = new Uint16Array(256 * 256);
+var array_t2f = new Uint16Array(256 * 256);
 var k_data_im_re, k_result;
 
 async function loadDataSet(path) {
@@ -103,7 +103,10 @@ async function loadDataSet(path) {
     });
     array_t2f = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.onload = function () {
+        xhr.onload = function (e) {
+            if (e.target.status != 200) {
+                resolve(null);
+            }
             var resp = pako.inflate(xhr.response).buffer;
             var mm = new Float32Array(resp, 0, 2);
             var shape = new Uint16Array(resp, 8, 3);
@@ -118,7 +121,7 @@ async function loadDataSet(path) {
             }
             resolve(b);
         }
-        xhr.onerror = resolve(null);
+        xhr.onerror = reject;
         xhr.open("GET", path+"/t2f.bin.gz", true)
         xhr.responseType = "arraybuffer";
         xhr.send()

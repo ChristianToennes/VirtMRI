@@ -88,11 +88,15 @@ const loadDataMessageHandler = function (data) {
     displayDataSet();
     setInversionRecovery();
     if (array_t2f == null) {
-        document.getElementById("params-sq-tab").classList.add("hidden");
-        document.getElementById("params-tq-tab").classList.add("hidden");
+        sq = document.getElementById("params-sq-tab");
+        sq.classList.add("hidden");
+        tq = document.getElementById("params-tq-tab");
+        tq.classList.add("hidden");
     } else {
-        document.getElementById("params-sq-tab").classList.remove("hidden");
-        document.getElementById("params-tq-tab").classList.remove("hidden");
+        sq = document.getElementById("params-sq-tab");
+        sq.classList.remove("hidden");
+        tq = document.getElementById("params-tq-tab");
+        tq.classList.remove("hidden");
     }
 };
 w.addListener('loadData', loadDataMessageHandler);
