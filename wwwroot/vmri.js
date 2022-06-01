@@ -63,16 +63,17 @@ const w = new QueryableWorker("./intensityCalculations.js");
 var xdim = 256;
 var ydim = 256;
 var zdim = 256;
-var array_pd, array_t1, array_t2, array_t2s, result, k_data_im_re, slice_data;
+var array_pd, array_t1, array_t2, array_t2s, array_t2f, result, k_data_im_re, slice_data;
 
 const loadDataMessageHandler = function (data) {
     array_pd = data[0];
     array_t1 = data[1];
     array_t2 = data[2];
     array_t2s = data[3];
-    zdim = data[4];
-    ydim = data[5];
-    xdim = data[6];
+    array_t2f = data[4];
+    zdim = data[5];
+    ydim = data[6];
+    xdim = data[7];
 
     slice = document.getElementById("slice");
     slice.max = zdim;
@@ -213,8 +214,7 @@ function scrollDataset(event) {
     slice = document.getElementById("slice")
     slice.value = slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
     if ("createEvent" in document) {
-        var evt = document.createEvent("HTMLEvents");
-        evt.initEvent("change", false, true);
+        evt = new Event("change", {"bubbles": false, "canceable": true});
         slice.dispatchEvent(evt);
     } else
         slice.fireEvent("onchange");
@@ -225,8 +225,7 @@ function scrollResult(event) {
     r_slice = document.getElementById("r_slice")
     r_slice.value = r_slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
     if ("createEvent" in document) {
-        var evt = document.createEvent("HTMLEvents");
-        evt.initEvent("change", false, true);
+        evt = new Event("change", {"bubbles": false, "cancelable": true});
         r_slice.dispatchEvent(evt);
     } else
         r_slice.fireEvent("onchange");
@@ -541,6 +540,46 @@ function SGRE() {
     w.sendQuery("sgre", te, tr, fa);
 }
 
+function setSQ() {
+    setTabs("params-sq", "params-sq-tab");
+    updateSQTime();
+    selectedSequence = SQ;
+}
+
+function SQ() {
+    r = document.getElementById("result");
+    spin = document.getElementById("scanningSpinner");
+    slice = document.getElementById("r_slice");
+    slice.max = zdim;
+    r.classList.add("hidden");
+    spin.classList.remove("hidden");
+
+    var te = parseFloat(document.getElementById("sq_te").value)
+    //var tr = parseFloat(document.getElementById("sq_tr").value)
+
+    w.sendQuery("SQ", te);
+}
+
+function setTQ() {
+    setTabs("params-tq", "params-tq-tab");
+    updateTQTime();
+    selectedSequence = TQ;
+}
+
+function TQ() {
+    r = document.getElementById("result");
+    spin = document.getElementById("scanningSpinner");
+    slice = document.getElementById("r_slice");
+    slice.max = zdim;
+    r.classList.add("hidden");
+    spin.classList.remove("hidden");
+
+    var te = parseFloat(document.getElementById("tq_te").value)
+    //var tr = parseFloat(document.getElementById("tq_tr").value)
+
+    w.sendQuery("TQ", te);
+}
+
 function reco(update_slider, noIfft = false) {
     document.getElementById("kspace").setAttribute("disabled","disabled");
     var xlines, ylines, fmin, fmax;
@@ -677,6 +716,14 @@ function updateBalancedSSFPTime() {
     document.getElementById("bssfp_tr").value = te*2;
 
     time.innerText = formatTime(te*2*ydim*zdim);
+}
+
+function updateSQTime() {
+    //var te = parseFloat(document.getElementById("sq_te").value);
+}
+
+function updateTQTime() {
+    //var te = parseFloat(document.getElementById("tq_te").value);
 }
 
 function formatTime(time) {

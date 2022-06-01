@@ -65,6 +65,8 @@
                             <div class="nav-link" id="params-psif-tab" onclick="setPSIF()">PSIF</div>
                             <div class="nav-link" id="params-flash-tab" onclick="setFlash()">Flash</div>
                             <div class="nav-link" id="params-sgre-tab" onclick="setSGRE()">Spoiled GRE</div>
+                            <div class="nav-link" id="params-sq-tab" onclick="setSQ()">SQ</div>
+                            <div class="nav-link" id="params-tq-tab" onclick="setTQ()">TQ</div>
                         </div>
                     </div>
                     <div class="row border py-2 tab-content" id="params">
@@ -242,6 +244,46 @@
                                     <label class="mb-0 align-self-center">Total Measuring Time:</label>
                                 </div>
                                 <p class="col-sm form-control mb-0" id="sgre_time"></p>
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-sq">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="420" name="te" id="sq_te" oninput="updateSQTime()"/>
+                            </div>
+                            <!--<div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="666" name="tr" id="sq_tr" oninput="updateSQTime()"/>
+                            </div>-->
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="sq_time"></p>
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-tq">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="420" name="te" id="tq_te" oninput="updateTQTime()"/>
+                            </div>
+                            <!--<div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="666" name="tr" id="tq_tr" oninput="updateTQTime()"/>
+                            </div>-->
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="tq_time"></p>
                             </div>
                         </div>
                     </div>

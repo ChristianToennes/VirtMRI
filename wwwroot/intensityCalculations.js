@@ -9,6 +9,7 @@ var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
 var array_t2 = new Uint16Array(256 * 256);
 var array_t2s = new Uint16Array(256 * 256);
+var array_t2f = new Uint16Array(256 * 256);
 var k_data_im_re, k_result;
 
 async function loadDataSet(path) {
@@ -100,7 +101,29 @@ async function loadDataSet(path) {
         xhr.responseType = "arraybuffer";
         xhr.send()
     });
-    return [array_pd, array_t1, array_t2, array_t2s, zdim, ydim, xdim];
+    array_t2f = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+            var resp = pako.inflate(xhr.response).buffer;
+            var mm = new Float32Array(resp, 0, 2);
+            var shape = new Uint16Array(resp, 8, 3);
+            zdim = shape[0];
+            ydim = shape[1];
+            xdim = shape[2];
+            var a = new Uint8Array(resp, 14);
+            var b = new Float32Array(a.length);
+            //console.log("t2", mm[0],mm[1], a.reduce((a,b)=>a+b)/a.length)
+            for (var x = 0; x < a.length; x++) {
+                b[x] = (a[x] / 255.0) * (mm[1] - mm[0]) + mm[0];
+            }
+            resolve(b);
+        }
+        xhr.onerror = resolve(null);
+        xhr.open("GET", path+"/t2f.bin.gz", true)
+        xhr.responseType = "arraybuffer";
+        xhr.send()
+    });
+    return [array_pd, array_t1, array_t2, array_t2s, array_t2f, zdim, ydim, xdim];
 }
 
 function calcKSpace(result) {
@@ -387,6 +410,52 @@ function calcSGRE(te, tr, fa) {
     return [result, k_result];
 }
 
+function calcSQ(te) {
+    //SQ: [mM].*(exp(-(TE_vec(kk)+t1)/T2s)+exp(-(TE_vec(kk)+t1)/T2f)) Simulation  von einer multi-echo Akquisition mit TE_vec=TE=[1,2,3,…]. 
+    var result = new Float32Array(array_t1.length);
+    for (var x = 0; x < result.length; x++) {
+        var t1 = array_t1[x];
+        var t2f = array_t2[x];
+        var t2s = array_t2s[x];
+        var pd = array_pd[x];
+        if (t1 == 0) {
+            t1 = 1;
+        }
+        if (t2f == 0) {
+            t2f = 1;
+        }
+        var val = pd * ( Math.exp(-(te+t1)/t2s) + Math.exp(-(te+t1)/t2f) );
+
+        result[x] = Math.abs(val);
+    }
+
+    var k_result = calcKSpace(result);
+    return [result, k_result];
+}
+
+function calcTQ(te) {
+    //TQ:  [mM].*((exp(-TE_vec(kk)/T2s)-exp(-TE_vec(kk)/T2f))*(exp(-t1/T2s)-exp(-t1/T2f))*exp(t2/T2s));
+    var result = new Float32Array(array_t1.length);
+    for (var x = 0; x < result.length; x++) {
+        var t1 = array_t1[x];
+        var t2f = array_t2[x];
+        var t2s = array_t2s[x];
+        var pd = array_pd[x];
+        if (t1 == 0) {
+            t1 = 1;
+        }
+        if (t2f == 0) {
+            t2f = 1;
+        }
+        var val = pd * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-t1/t2s)-Math.exp(-t1/t2f)) * Math.exp(t2/t2s) );
+
+        result[x] = Math.abs(val);
+    }
+
+    var k_result = calcKSpace(result);
+    return [result, k_result];
+}
+
 var queryableFunctions = {
     spinEcho: function (te, tr) {
         reply('result', calcSpinEcho(te, tr));
@@ -408,6 +477,12 @@ var queryableFunctions = {
     },
     sgre: function(te, tr, fa) {
         reply('result', calcSGRE(te, tr, fa));
+    },
+    sq: function(te) {
+        reply('result', calcSQ(te));
+    },
+    tq: function(te) {
+        reply('result', calcTQ(te));
     },
     reco: function (xlines, ylines, fmin, fmax, noIfft) {
         reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax, noIfft));
