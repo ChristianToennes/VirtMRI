@@ -5,6 +5,11 @@ var xdim = 256;
 var ydim = 256;
 var zdim = 256;
 
+const na_t1 = 10;
+const na_t2 = 0.1;
+const na_t2s = 50;
+const na_t2f = 4;
+
 var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
 var array_t2 = new Uint16Array(256 * 256);

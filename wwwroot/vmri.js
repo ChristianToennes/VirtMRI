@@ -90,7 +90,7 @@ const loadDataMessageHandler = function (data) {
     spin.classList.add("hidden");
     displayDataSet();
     setInversionRecovery();
-    if (array_na_nm == null) {
+    if (array_na_mm == null) {
         for (var tab in na_tabs) {
             t = document.getElementById(tab);
             t.classList.add("hidden");
