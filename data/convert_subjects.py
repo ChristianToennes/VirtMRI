@@ -41,14 +41,14 @@ params_3 = { # 3T params
 #Name label t1 t2 t2s t2f nm filename
 params_na = {
     0: ["Background", 0, 10, 0.1, 50, 4, 0, "subject{}_bck_v{}"],
-    1: ["CSF", 1, 10, 0.1, 50, 4, 140, "subject{}_csf_v{}"],
-    2: ["Grey Matter", 2.0, 10, 0.1, 50, 4, 55, "subject{}_gm_v{}"],
-    3: ["White Matter", 3.0, 10, 0.1, 50, 4, 45, "subject{}_wm_v{}"],
+    1: ["CSF", 1, 50, 0.1, 60, 60, 140, "subject{}_csf_v{}"],
+    2: ["Grey Matter", 2, 30, 0.1, 60, 3, 55, "subject{}_gm_v{}"],
+    3: ["White Matter", 3, 30, 0.1, 60, 3, 45, "subject{}_wm_v{}"],
     4: ["Fat", 4, 10, 0.1, 50, 4, 0, "subject{}_fat_v{}"],
-    5: ["Muscle", 5, 10, 0.1, 50, 4, 0, "subject{}_muscles_v{}"],
-    6: ["Muscle / Skin", 6, 10, 0.1, 50, 4, 0, "subject{}_muscles_skin_v{}"],
+    5: ["Muscle", 5, 20, 0.1, 30, 2, 20, "subject{}_muscles_v{}"],
+    6: ["Muscle / Skin", 6, 20, 0.1, 30, 2, 20, "subject{}_muscles_skin_v{}"],
     7: ["Skull", 7, 10, 0.1, 50, 4, 0, "subject{}_skull_v{}"],
-    8: ["Vessels", 8, 10, 0.1, 50, 4, 0, "subject{}_vessels_v{}"],
+    8: ["Vessels", 8, 30, 0.1, 20, 3, 150, "subject{}_vessels_v{}"],
     9: ["Around fat", 9, 10, 0.1, 50, 4, 0, "subject{}_fat2_v{}"],
     10: ["Dura Matter", 10, 10, 0.1, 50, 4, 0, "subject{}_dura_v{}"],
     11: ["Bone Marrow", 11, 10, 0.1, 50, 4, 0, "subject{}_marrow_v{}"]
@@ -165,9 +165,14 @@ def read_phantomag(in_dir, trans=None):
 import matplotlib.pyplot as plt
 def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None):
     print(t1.shape, t2.shape, pd.shape)
+    na = t2f is not None
     if not os.path.exists(os.path.join(out_dir, sub[0])):
         os.makedirs(os.path.join(out_dir, sub[0]))
-    with gzip.open(os.path.join(out_dir, sub[0], "t1.bin.gz"), "wb") as f:
+    if na:
+        filename = os.path.join(out_dir, sub[0], "na_t1.bin.gz")
+    else:
+        filename = os.path.join(out_dir, sub[0], "t1.bin.gz")
+    with gzip.open(filename, "wb") as f:
         mi = np.min(t1)
         ma = np.max(t1)
         print(np.min(t1), np.max(t1), np.mean(t1), np.median(t1))
@@ -179,7 +184,11 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None):
         f.write(np.array(t1.shape,dtype=np.uint16).tobytes())
         f.write(ex.tobytes())
 
-    with gzip.open(os.path.join(out_dir, sub[0], "t2.bin.gz"), "wb") as f:
+    if na:
+        filename = os.path.join(out_dir, sub[0], "na_t2.bin.gz")
+    else:
+        filename = os.path.join(out_dir, sub[0], "t2.bin.gz")
+    with gzip.open(filename, "wb") as f:
         mi = np.min(t2)
         ma = np.max(t2)
         print(np.min(t2), np.max(t2), np.mean(t2), np.median(t2))
@@ -191,7 +200,11 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None):
         f.write(np.array(t2.shape,dtype=np.uint16).tobytes())
         f.write(ex.tobytes())
 
-    with gzip.open(os.path.join(out_dir, sub[0], "t2s.bin.gz"), "wb") as f:
+    if na:
+        filename = os.path.join(out_dir, sub[0], "na_t2s.bin.gz")
+    else:
+        filename = os.path.join(out_dir, sub[0], "t2s.bin.gz")
+    with gzip.open(filename, "wb") as f:
         mi = np.min(t2s)
         ma = np.max(t2s)
         print(np.min(t2s), np.max(t2s), np.mean(t2s), np.median(t2s))
@@ -203,7 +216,11 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None):
         f.write(np.array(t2s.shape,dtype=np.uint16).tobytes())
         f.write(ex.tobytes())
 
-    with gzip.open(os.path.join(out_dir, sub[0], "pd.bin.gz"), "wb") as f:
+    if na:
+        filename = os.path.join(out_dir, sub[0], "na_mm.bin.gz")
+    else:
+        filename = os.path.join(out_dir, sub[0], "pd.bin.gz")
+    with gzip.open(filename, "wb") as f:
         mi = np.min(pd)
         ma = np.max(pd)
         print(np.min(pd), np.max(pd), np.mean(pd), np.median(pd))
@@ -215,8 +232,8 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None):
         f.write(np.array(pd.shape,dtype=np.uint16).tobytes())
         f.write(ex.tobytes())
     
-    if t2f is not None:
-        with gzip.open(os.path.join(out_dir, sub[0], "t2f.bin.gz"), "wb") as f:
+    if na:
+        with gzip.open(os.path.join(out_dir, sub[0], "na_t2f.bin.gz"), "wb") as f:
             mi = np.min(t2f)
             ma = np.max(t2f)
             print(np.min(t2f), np.max(t2f), np.mean(t2f), np.median(t2f))
@@ -229,35 +246,35 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None):
             f.write(ex.tobytes())
 
 
-t1,t2,t2s,pd = read_minc(params_15, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
-write_files(t1, t2, t2s, pd, ("bw",), "1.5T")
-t1,t2,t2s,pd = read_minc(params_3, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
-write_files(t1, t2, t2s, pd, ("bw",), "3t")
+#t1,t2,t2s,pd = read_minc(params_15, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
+#write_files(t1, t2, t2s, pd, ("bw",), "1.5T")
+#t1,t2,t2s,pd = read_minc(params_3, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
+#write_files(t1, t2, t2s, pd, ("bw",), "3t")
 t1,t2,t2s,t2f,pd = read_minc(params_na, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True, na=True)
-write_files(t1, t2, t2s, pd, ("bw",), "na", t2f=t2f)
+write_files(t1, t2, t2s, pd, ("bw",), "3t", t2f=t2f)
 
-t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
-write_files(t1, t2, t2s, pd, ("05",), "1.5T")
-t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
-write_files(t1, t2, t2s, pd, ("05",), "3t")
+#t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
+#write_files(t1, t2, t2s, pd, ("05",), "1.5T")
+#t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
+#write_files(t1, t2, t2s, pd, ("05",), "3t")
 t1,t2,t2s,t2f,pd = read_minc(params_na, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255, na=True)
-write_files(t1, t2, t2s, pd, ("05",), "na", t2f=t2f)
+write_files(t1, t2, t2s, pd, ("05",), "3t", t2f=t2f)
 
-t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
+#t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
 #x1 = t1
 #x2 = t2
 #xp = pd
-write_files(t1, t2, t2s, pd, ("54",), "1.5T")
-t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
-write_files(t1, t2, t2s, pd, ("54",), "3t")
+#write_files(t1, t2, t2s, pd, ("54",), "1.5T")
+#t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
+#write_files(t1, t2, t2s, pd, ("54",), "3t")
 t1,t2,t2s,t2f,pd = read_minc(params_na, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255, na=True)
-write_files(t1, t2, t2s, pd, ("54",), "na", t2f=t2f)
+write_files(t1, t2, t2s, pd, ("54",), "3t", t2f=t2f)
 
-t1,t2,t2s,pd = read_phantomag("NV_1_NV_1T/QMCI")
-write_files(t1,t2,t2s, pd, ("phantomag",), "1T")
+#t1,t2,t2s,pd = read_phantomag("NV_1_NV_1T/QMCI")
+#write_files(t1,t2,t2s, pd, ("phantomag",), "1T")
 
-t1,t2,t2s,pd = read_phantomag("NV_1_NV_1_5T/QMCI")
-write_files(t1,t2,t2s, pd, ("phantomag",), "1.5T")
+#t1,t2,t2s,pd = read_phantomag("NV_1_NV_1_5T/QMCI")
+#write_files(t1,t2,t2s, pd, ("phantomag",), "1.5T")
 
 #fig, axs = plt.subplots(1, 2, sharey=False, tight_layout=True)
 #axs[0].hist(x1.flatten(), bins=256)
