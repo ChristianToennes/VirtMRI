@@ -318,12 +318,21 @@ function genFilterKSpace(xlines, ylines, fmin, fmax) {
 function inverseKSpace(kSpace, xlines, ylines, fmin, fmax, noIfft = false) {
     //var filterKSpace = genFilterKSpace(xlines, ylines, 0, xdim * xdim)
     //console.log(xlines, ylines, fmin, fmax);
-    var mapKSpace = genMapKSpace(xlines, ylines, fmin, fmax)
+    //var mapKSpace = genMapKSpace(xlines, ylines, fmin, fmax)
     var result = new Float32Array(xdim * ydim * zdim);
     var k_result = new Float32Array(xdim * ydim * zdim);
+    var zend = 10;
     for (var z = 0; z < zdim; z++) {
         var slice_data = kSpace.subarray(z * xdim * ydim * 2, (z + 1) * xdim * ydim * 2);
 
+        var _fmax = fmax;
+        if (z<zend) {
+            _fmax = z/zend*z/zend * fmax;
+        }
+        if (z > zdim-zend) {
+            _fmax = (zdim-z)/zend*(zdim-z)/zend * fmax;
+        }
+        var mapKSpace = genMapKSpace(xlines, ylines, fmin, _fmax)
         var input_data = slice_data.map(mapKSpace);
         k_result.set(transformKSpace(input_data), z * xdim * ydim);
 

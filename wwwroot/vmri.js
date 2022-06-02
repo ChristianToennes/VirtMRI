@@ -65,7 +65,7 @@ var ydim = 256;
 var zdim = 256;
 var array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2s, array_na_t2f, result, k_data_im_re, slice_data;
 
-const na_tabs = ["params-sq-tab", "params-tq-tab"];
+const na_tabs = ["params-na-tab", "params-sq-tab", "params-tq-tab"];
 const h_tabs = ["params-ir-tab", "params-se-tab", "params-bssfp-tab", "params-fisp-tab", "params-psif-tab", "params-flash-tab", "params-sgre-tab", "params-sq-tab", "params-tq-tab"];
 
 const loadDataMessageHandler = function (data) {
@@ -122,6 +122,8 @@ const resultMessageHandler = function (data) {
     if (data[2] != undefined) {
         var kSpace_filt = data[2];
         setKSpaceFilt(...kSpace_filt);
+    } else {
+        setKSpaceFilt(256,256,0,256);
     }
     r = document.getElementById("result");
     spin = document.getElementById("scanningSpinner");
@@ -336,13 +338,20 @@ function displayAndWindow3DImage() {
     var dx = xdim / xlines;
     var dy = ydim / ylines;
     k_result = new Uint8ClampedArray(xdim * ydim * 4);
+    var zend = 10;
     for (var index = 0; index < xdim * ydim; index++) {
         val = kResult[index + slice * xdim * ydim] * mult
-
+        var _fmax = fmax;
+        if (slice<zend) {
+            _fmax = (slice/zend)*(slice/zend) * fmax;
+        }
+        if (slice > zdim-zend) {
+            _fmax = (zdim-slice)/zend*(zdim-slice)/zend * fmax;
+        }
         var y = Math.floor(index / xdim);
         var x = index % xdim;
         var f = Math.sqrt((x - xdim / 2) * (x - xdim / 2) + (y - ydim / 2) * (y - ydim / 2));
-        var res1 = f >= fmin && f <= fmax;
+        var res1 = f >= fmin && f <= _fmax;
         var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
 
         if (!res) {
