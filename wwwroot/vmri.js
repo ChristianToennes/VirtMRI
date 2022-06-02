@@ -2,9 +2,9 @@ const datasets = {
     //0: ["BrainWeb 05 - 3T", "./3t/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
     //1: ["BrainWeb 05 - 1.5T", "./1.5T/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
     2: ["BrainWeb 54 - 3T + Na", "./3t/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    3: ["BrainWeb 54 - 1.5T + Na", "./1.5T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    3: ["BrainWeb 54 - 1.5T", "./1.5T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
     4: ["BrainWeb colin27 - 3T + Na", "./3t/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
-    5: ["BrainWeb colin27 - 1.5T + Na", "./1.5T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    5: ["BrainWeb colin27 - 1.5T", "./1.5T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
     6: ["Phantomag - 1.5T", "./1.5T/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
     7: ["Phantomag - 1T", "./1t/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
 }
@@ -63,7 +63,7 @@ const w = new QueryableWorker("./intensityCalculations.js");
 var xdim = 256;
 var ydim = 256;
 var zdim = 256;
-var array_pd, array_t1, array_t2, array_t2s, array_na_mm, result, k_data_im_re, slice_data;
+var array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2s, array_na_t2f, result, k_data_im_re, slice_data;
 
 const na_tabs = ["params-sq-tab", "params-tq-tab"];
 const h_tabs = ["params-ir-tab", "params-se-tab", "params-bssfp-tab", "params-fisp-tab", "params-psif-tab", "params-flash-tab", "params-sgre-tab", "params-sq-tab", "params-tq-tab"];
@@ -73,12 +73,13 @@ const loadDataMessageHandler = function (data) {
     array_t1 = data[1];
     array_t2 = data[2];
     array_t2s = data[3];
-    //array_na_t2s = data[4];
-    //array_na_t2f = data[5];
     array_na_mm = data[4];
-    zdim = data[5];
-    ydim = data[6];
-    xdim = data[7];
+    array_na_t1 = data[5];
+    array_na_t2s = data[6];
+    array_na_t2f = data[7];
+    zdim = data[8];
+    ydim = data[9];
+    xdim = data[10];
 
     slice = document.getElementById("slice");
     slice.max = zdim;
@@ -117,6 +118,10 @@ const resultMessageHandler = function (data) {
     }
     if (data[1] != undefined) {
         kResult = data[1];
+    }
+    if (data[2] != undefined) {
+        var kSpace_filt = data[2];
+        setKSpaceFilt(...kSpace_filt);
     }
     r = document.getElementById("result");
     spin = document.getElementById("scanningSpinner");
@@ -560,6 +565,27 @@ function SGRE() {
     w.sendQuery("sgre", te, tr, fa);
 }
 
+function setNa() {
+    setTabs("params-na", "params-na-tab");
+    updateNaTime();
+    selectedSequence = Na;
+}
+
+function Na() {
+    r = document.getElementById("result");
+    spin = document.getElementById("scanningSpinner");
+    slice = document.getElementById("r_slice");
+    slice.max = zdim;
+    r.classList.add("hidden");
+    spin.classList.remove("hidden");
+
+    var te = parseFloat(document.getElementById("na_te").value)
+    var tr = parseFloat(document.getElementById("na_tr").value)
+
+    w.sendQuery("na", te, tr);
+}
+
+
 function setSQ() {
     setTabs("params-sq", "params-sq-tab");
     updateSQTime();
@@ -600,6 +626,17 @@ function TQ() {
     var te_step = parseFloat(document.getElementById("tq_te_step").value)
 
     w.sendQuery("tq", te_start, te_end, te_step);
+}
+
+function setKSpaceFilt(xlines, ylines, fmin, fmax) {
+    document.getElementById("k_xline").value = xlines;
+    document.getElementById("k_yline").value = ylines;
+    document.getElementById("k_fmin").value = fmin;
+    document.getElementById("k_fmax").value = fmax;
+    document.getElementById("k_xline_number").value = xlines;
+    document.getElementById("k_yline_number").value = ylines;
+    document.getElementById("k_fmin_number").value = fmin;
+    document.getElementById("k_fmax_number").value = fmax;
 }
 
 function reco(update_slider, noIfft = false) {
@@ -738,6 +775,18 @@ function updateBalancedSSFPTime() {
     document.getElementById("bssfp_tr").value = te*2;
 
     time.innerText = formatTime(te*2*ydim*zdim);
+}
+
+function updateNaTime() {
+    var te = parseFloat(document.getElementById("na_te").value)
+    var tr = parseFloat(document.getElementById("na_tr").value)
+    var time = document.getElementById("na_time");
+    
+    if(te >= tr) {
+        time.innerText = "TE has to be smaller than TR";
+    } else {
+        time.innerText = formatTime(tr*ydim*zdim);
+    }
 }
 
 function updateSQTime() {

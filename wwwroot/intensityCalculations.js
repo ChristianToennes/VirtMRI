@@ -5,16 +5,21 @@ var xdim = 256;
 var ydim = 256;
 var zdim = 256;
 
-const na_t1 = 10;
+const na_t1 = 50;
 const na_t2 = 0.1;
 const na_t2s = 50;
 const na_t2f = 4;
+const na_t2fr = 60;
+const na_mm = 140;
 
 var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
 var array_t2 = new Uint16Array(256 * 256);
 var array_t2s = new Uint16Array(256 * 256);
 var array_na_mm = new Uint16Array(256 * 256);
+var array_na_t1 = new Uint16Array(256 * 256);
+var array_na_t2s = new Uint16Array(256 * 256);
+var array_na_t2f = new Uint16Array(256 * 256);
 var k_data_im_re, k_result;
 
 async function loadDataSet(path) {
@@ -131,7 +136,82 @@ async function loadDataSet(path) {
         xhr.responseType = "arraybuffer";
         xhr.send()
     });
-    return [array_pd, array_t1, array_t2, array_t2s, array_na_mm, zdim, ydim, xdim];
+    array_na_t1 = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function (e) {
+            if (e.target.status != 200) {
+                resolve(null);
+            }
+            var resp = pako.inflate(xhr.response).buffer;
+            var mm = new Float32Array(resp, 0, 2);
+            var shape = new Uint16Array(resp, 8, 3);
+            zdim = shape[0];
+            ydim = shape[1];
+            xdim = shape[2];
+            var a = new Uint8Array(resp, 14);
+            var b = new Float32Array(a.length);
+            //console.log("t2", mm[0],mm[1], a.reduce((a,b)=>a+b)/a.length)
+            for (var x = 0; x < a.length; x++) {
+                b[x] = (a[x] / 255.0) * (mm[1] - mm[0]) + mm[0];
+            }
+            resolve(b);
+        }
+        xhr.onerror = reject;
+        xhr.open("GET", path+"/na_t1.bin.gz", true)
+        xhr.responseType = "arraybuffer";
+        xhr.send()
+    });
+    array_na_t2f = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function (e) {
+            if (e.target.status != 200) {
+                resolve(null);
+            }
+            var resp = pako.inflate(xhr.response).buffer;
+            var mm = new Float32Array(resp, 0, 2);
+            var shape = new Uint16Array(resp, 8, 3);
+            zdim = shape[0];
+            ydim = shape[1];
+            xdim = shape[2];
+            var a = new Uint8Array(resp, 14);
+            var b = new Float32Array(a.length);
+            //console.log("t2", mm[0],mm[1], a.reduce((a,b)=>a+b)/a.length)
+            for (var x = 0; x < a.length; x++) {
+                b[x] = (a[x] / 255.0) * (mm[1] - mm[0]) + mm[0];
+            }
+            resolve(b);
+        }
+        xhr.onerror = reject;
+        xhr.open("GET", path+"/na_t2f.bin.gz", true)
+        xhr.responseType = "arraybuffer";
+        xhr.send()
+    });
+    array_na_t2s = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function (e) {
+            if (e.target.status != 200) {
+                resolve(null);
+            }
+            var resp = pako.inflate(xhr.response).buffer;
+            var mm = new Float32Array(resp, 0, 2);
+            var shape = new Uint16Array(resp, 8, 3);
+            zdim = shape[0];
+            ydim = shape[1];
+            xdim = shape[2];
+            var a = new Uint8Array(resp, 14);
+            var b = new Float32Array(a.length);
+            //console.log("t2", mm[0],mm[1], a.reduce((a,b)=>a+b)/a.length)
+            for (var x = 0; x < a.length; x++) {
+                b[x] = (a[x] / 255.0) * (mm[1] - mm[0]) + mm[0];
+            }
+            resolve(b);
+        }
+        xhr.onerror = reject;
+        xhr.open("GET", path+"/na_t2s.bin.gz", true)
+        xhr.responseType = "arraybuffer";
+        xhr.send()
+    });
+    return [array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2f, array_na_t2s, zdim, ydim, xdim];
 }
 
 function calcKSpace(result) {
@@ -236,7 +316,8 @@ function genFilterKSpace(xlines, ylines, fmin, fmax) {
 }
 
 function inverseKSpace(kSpace, xlines, ylines, fmin, fmax, noIfft = false) {
-    var filterKSpace = genFilterKSpace(xlines, ylines, 0, xdim * xdim)
+    //var filterKSpace = genFilterKSpace(xlines, ylines, 0, xdim * xdim)
+    //console.log(xlines, ylines, fmin, fmax);
     var mapKSpace = genMapKSpace(xlines, ylines, fmin, fmax)
     var result = new Float32Array(xdim * ydim * zdim);
     var k_result = new Float32Array(xdim * ydim * zdim);
@@ -438,7 +519,7 @@ function downscale(arr, factor=2) {
     return r;
 }
 
-function upscale(arr, factor=4) {
+function upscale(arr, factor=2) {
     var r = new Float32Array(arr.length * (factor*factor));
     for(var z = 0; z<zdim; z++) {
         for(var y = 0;y<ydim; y+=factor) {
@@ -456,9 +537,35 @@ function upscale(arr, factor=4) {
     return r;
 }
 
+function calcNa(te, tr) {
+    //Na: s(t) = VbCb (1-exp(-tr/t1))[0.6*exp(-t/T2s) + 0.4*exp(-t/T2L)] + VfrCfrafr(1-exp(-tr/t1))exp(-t/T2fr) + n(t). 
+    var result = new Float32Array(array_t1.length);
+    for (var x = 0; x < result.length; x++) {
+        var t1 = array_na_t1[x];
+        var t2f = array_na_t2f[x];
+        var t2s = array_na_t2s[x];
+        var mm = array_na_mm[x];
+        if (t2s == 0) {
+            t2s = 1;
+        }
+        if (t2f == 0) {
+            t2f = 1;
+        }
+        var val = mm * (1-Math.exp(-tr/t1)) * (0.6*Math.exp(-te/t2f) + 0.4*Math.exp(-te/t2s))// + na_mm * (1-Math.exp(-tr/na_t1))*Math.exp(-te/na_t2fr)
+
+        result[x] = Math.abs(val) / 140;
+    }
+        
+    var k_result = calcKSpace(result);
+
+    var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
+    return [r[0], k_result, [256, 256, 0, 64]];
+}
+
 function calcSQ(te_start, te_end, te_step) {
     //SQ: [mM].*(exp(-(TE_vec(kk)+t1)/T2s)+exp(-(TE_vec(kk)+t1)/T2f)) Simulation  von einer multi-echo Akquisition mit TE_vec=TE=[1,2,3,…]. 
     var result = new Float32Array(array_t1.length);
+    var fa = 0.5*Math.PI;
     for (var x = 0; x < result.length; x++) {
         result[x] = 0;
     }
@@ -466,10 +573,9 @@ function calcSQ(te_start, te_end, te_step) {
     for (var te=te_start; te<=te_end; te+=te_step) {
         te_count += 1;
         for (var x = 0; x < result.length; x++) {
-            var t1 = na_t1;
-            var t2 = na_t2;
-            var t2f = na_t2f;
-            var t2s = na_t2s;
+            var t1 = array_na_t1[x];
+            var t2f = array_na_t2f[x];
+            var t2s = array_na_t2s[x];
             var mm = array_na_mm[x];
             if (t2s == 0) {
                 t2s = 1;
@@ -477,7 +583,7 @@ function calcSQ(te_start, te_end, te_step) {
             if (t2f == 0) {
                 t2f = 1;
             }
-            var val = mm * ( Math.exp(-(te+t1)/t2s) + Math.exp(-(te+t1)/t2f) );
+            var val = mm * ( Math.exp(-(te+t1)/t2s) + Math.exp(-(te+t1)/t2f) ) * Math.sin(fa);
 
             result[x] += Math.abs(val);
         }
@@ -485,15 +591,16 @@ function calcSQ(te_start, te_end, te_step) {
     for (var x = 0; x < result.length; x++) {
         result[x] /= (te_count*140);
     }
-
-    result = upscale(downscale(result, 4), 4);
     
     var k_result = calcKSpace(result);
-    return [result, k_result];
+
+    var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
+    return [r[0], k_result, [256, 256, 0, 64]];
 }
 
 function calcTQ(te_start, te_end, te_step) {
     //TQ:  [mM].*((exp(-TE_vec(kk)/T2s)-exp(-TE_vec(kk)/T2f))*(exp(-t1/T2s)-exp(-t1/T2f))*exp(t2/T2s));
+    // s = (e(-t/ts)-e(-t/tf))*(e(-τ1/ts)-e(-τ1/tf))*e(-τ2/ts)  
     var result = new Float32Array(array_t1.length);
     for (var x = 0; x < result.length; x++) {
         result[x] = 0;
@@ -502,10 +609,9 @@ function calcTQ(te_start, te_end, te_step) {
     for (var te=te_start; te<=te_end; te+=te_step) {
         te_count += 1;
         for (var x = 0; x < result.length; x++) {
-            var t1 = na_t1;
-            var t2 = na_t2;
-            var t2f = na_t2f;
-            var t2s = na_t2s;
+            var t1 = array_na_t1[x];
+            var t2f = array_na_t2f[x];
+            var t2s = array_na_t2s[x];
             var mm = array_na_mm[x];
             if (t2s == 0) {
                 t2s = 1;
@@ -513,7 +619,7 @@ function calcTQ(te_start, te_end, te_step) {
             if (t2f == 0) {
                 t2f = 1;
             }
-            var val = mm * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-t1/t2s)-Math.exp(-t1/t2f)) * Math.exp(t2/t2s) );
+            var val = mm * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-t1/t2s)-Math.exp(-t1/t2f)) * Math.exp(-t2/t2s) );
 
             result[x] += Math.abs(val);
         }
@@ -522,10 +628,58 @@ function calcTQ(te_start, te_end, te_step) {
         result[x] /= (te_count*140);
     }
 
-    result = upscale(downscale(result, 4), 4);
-
     var k_result = calcKSpace(result);
-    return [result, k_result];
+
+    var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
+    return [r[0], k_result, [256, 256, 0, 64]];
+}
+
+function calcMQ(phi1,xsi1,omega,Q,TE) {
+    //% parameters
+    //%omega=2*pi*0;%rad/s imperfect B0
+    //%phi1=30/180*pi;%rad
+    //%phi2=phi1+pi/2;%rad
+    //%TE=10e-3;%s
+    var phi2=phi1+xsi1;
+    var tau1=10e-3;
+    var tau2=0.1e-3;
+    
+    //% amplitudes A of coherence pathways depend on (tau1, tau2, theta, t)
+    //% dim 1 is p1=-1,+1
+    //% dim 2 is p2=-3,-2,-1,+1,+2,+3
+    SQ=Q[0];
+    DQ=Q[1];      
+    TQ=Q[2];  
+    //A=zeros(2,6);    
+    A=[[0,0,0,0,0,0], [0,0,0,0,0,0]]
+    //% SQ pathways are set to 1/4
+    A[0][2]=-SQ/4; //%-1,-1
+    A[0][3]=-SQ/4; //%-1,+1
+    A[1][2]=+SQ/4; //%+1,-1
+    A[1][3]=+SQ/4; //%+1,+1
+    //% DQ pathawys are set to 1/4
+    A[0][1]=-DQ/4; //%-1,-2
+    A[0][4]=-DQ/4; //%-1,+2
+    A[1][1]=+DQ/4; //%+1,-2
+    A[1][4]=+DQ/4; //%+1,+2
+    //% TQ pathawys are set to 1/4
+    A[0][0]=-TQ/4; //%-1,-3
+    A[0][5]=-TQ/4; //%-1,+3
+    A[1][0]=+TQ/4; //%+1,-3
+    A[1][5]=+TQ/4; //%+1,+3
+
+    var s = new Float32Array(array_t1.length);
+    for(var x=0;x<s.length;x++) {
+        p1=[-1 ,+1];
+        p2=[-3 ,-2 ,-1 ,+1 ,+2 ,+3];
+        for (var m=0;m<2;m++) {
+            for (var n=0;n<6;n++) {
+                //s=s+Math.exp(-1*i*(p1[m]*phi1+(p2[n]-p1[m])*phi2)) .* Math.exp(-1*i*(p1[m]*tau1+p2[n]*tau2)*omega) .* Math.exp(1*i*omega*TE) .* A[m][n]);
+                s[x] += Math.cos((p1[m]*phi1+(p2[n]-p1[m])*phi2)) * Math.cos((p1[m]*array_na_t1[x]+p2[n]*tau2)*omega) * Math.cos(omega*TE) * A[m][n];
+            }
+        }
+    }
+    return s;
 }
 
 var queryableFunctions = {
@@ -549,6 +703,9 @@ var queryableFunctions = {
     },
     sgre: function(te, tr, fa) {
         reply('result', calcSGRE(te, tr, fa));
+    },
+    na: function(te, tr) {
+        reply('result', calcNa(te, tr));
     },
     sq: function(te_start, te_end, te_step) {
         reply('result', calcSQ(te_start, te_end, te_step));

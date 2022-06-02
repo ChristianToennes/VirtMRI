@@ -1,4 +1,5 @@
-﻿<html>
+﻿<!DOCTYPE html>
+<html>
 
 <head>
     <meta charset="utf-8" />
@@ -65,8 +66,9 @@
                             <div class="nav-link" id="params-psif-tab" onclick="setPSIF()">PSIF</div>
                             <div class="nav-link" id="params-flash-tab" onclick="setFlash()">Flash</div>
                             <div class="nav-link" id="params-sgre-tab" onclick="setSGRE()">Spoiled GRE</div>
-                            <div class="nav-link" id="params-sq-tab" onclick="setSQ()">SQ</div>
-                            <div class="nav-link" id="params-tq-tab" onclick="setTQ()">TQ</div>
+                            <div class="nav-link" id="params-na-tab" onclick="setNa()">Natrium</div>
+                            <div class="nav-link" id="params-sq-tab" onclick="setSQ()">Na Single Quanten</div>
+                            <div class="nav-link" id="params-tq-tab" onclick="setTQ()">Na Triple Quanten</div>
                         </div>
                     </div>
                     <div class="row border py-2 tab-content" id="params">
@@ -244,6 +246,26 @@
                                     <label class="mb-0 align-self-center">Total Measuring Time:</label>
                                 </div>
                                 <p class="col-sm form-control mb-0" id="sgre_time"></p>
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-na">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="1" name="te" id="na_te" oninput="updateNaTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TR:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="666" name="tr" id="na_tr" oninput="updateNaTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="na_time"></p>
                             </div>
                         </div>
                         <div class="col tab-pane" id="params-sq">
