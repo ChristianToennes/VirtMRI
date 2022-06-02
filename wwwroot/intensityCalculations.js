@@ -471,8 +471,8 @@ function calcSQ(te_start, te_end, te_step) {
             var t2f = na_t2f;
             var t2s = na_t2s;
             var mm = array_na_mm[x];
-            if (t1s == 0) {
-                t1s = 1;
+            if (t2s == 0) {
+                t2s = 1;
             }
             if (t2f == 0) {
                 t2f = 1;
@@ -507,8 +507,8 @@ function calcTQ(te_start, te_end, te_step) {
             var t2f = na_t2f;
             var t2s = na_t2s;
             var mm = array_na_mm[x];
-            if (t1 == 0) {
-                t1 = 1;
+            if (t2s == 0) {
+                t2s = 1;
             }
             if (t2f == 0) {
                 t2f = 1;
