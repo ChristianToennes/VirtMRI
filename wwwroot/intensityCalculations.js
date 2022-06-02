@@ -418,6 +418,44 @@ function calcSGRE(te, tr, fa) {
     return [result, k_result];
 }
 
+function downscale(arr, factor=2) {
+    var r = new Float32Array(arr.length / (factor*factor));
+    for(var z = 0; z<zdim; z++) {
+        for(var y = 0;y<ydim; y+=factor) {
+            for(var x=0;x<xdim;x+=factor) {
+                opos = z*xdim*ydim + y*xdim + x;
+                npos = z*xdim*ydim/(factor*factor) + y*xdim/(factor*factor) + x / factor;
+                var sum = 0
+                for(var i=0;i<factor;i++) {
+                    for(var j=0;j<factor;j++) {
+                        sum += arr[z*xdim*ydim + (y+i)*xdim + x + j];
+                    }
+                }
+                r[npos] = sum / (factor*factor);
+            }
+        }
+    }
+    return r;
+}
+
+function upscale(arr, factor=4) {
+    var r = new Float32Array(arr.length * (factor*factor));
+    for(var z = 0; z<zdim; z++) {
+        for(var y = 0;y<ydim; y+=factor) {
+            for(var x=0;x<xdim;x+=factor) {
+                opos = z*xdim*ydim + y*xdim + x;
+                npos = z*xdim*ydim/(factor*factor) + y*xdim/(factor*factor) + x / factor;
+                for(var i=0;i<factor;i++) {
+                    for(var j=0;j<factor;j++) {
+                        r[z*xdim*ydim + (y+i)*xdim + x + j] = arr[npos];
+                    }
+                }
+            }
+        }
+    }
+    return r;
+}
+
 function calcSQ(te_start, te_end, te_step) {
     //SQ: [mM].*(exp(-(TE_vec(kk)+t1)/T2s)+exp(-(TE_vec(kk)+t1)/T2f)) Simulation  von einer multi-echo Akquisition mit TE_vec=TE=[1,2,3,…]. 
     var result = new Float32Array(array_t1.length);
@@ -433,8 +471,8 @@ function calcSQ(te_start, te_end, te_step) {
             var t2f = na_t2f;
             var t2s = na_t2s;
             var mm = array_na_mm[x];
-            if (t1 == 0) {
-                t1 = 1;
+            if (t1s == 0) {
+                t1s = 1;
             }
             if (t2f == 0) {
                 t2f = 1;
@@ -445,9 +483,11 @@ function calcSQ(te_start, te_end, te_step) {
         }
     }
     for (var x = 0; x < result.length; x++) {
-        result[x] /= te_count;
+        result[x] /= (te_count*140);
     }
 
+    result = upscale(downscale(result, 4), 4);
+    
     var k_result = calcKSpace(result);
     return [result, k_result];
 }
@@ -479,8 +519,10 @@ function calcTQ(te_start, te_end, te_step) {
         }
     }
     for (var x = 0; x < result.length; x++) {
-        result[x] /= te_count;
+        result[x] /= (te_count*140);
     }
+
+    result = upscale(downscale(result, 4), 4);
 
     var k_result = calcKSpace(result);
     return [result, k_result];

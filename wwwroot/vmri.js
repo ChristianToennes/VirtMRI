@@ -93,12 +93,16 @@ const loadDataMessageHandler = function (data) {
     if (array_na_mm == null) {
         for (var tab in na_tabs) {
             t = document.getElementById(tab);
-            t.classList.add("hidden");
+            if (t != null) {
+                t.classList.add("hidden");
+            }
         }
     } else {
         for (var tab in na_tabs) {
             t = document.getElementById(tab);
-            t.classList.remove("hidden");
+            if (t!=null) {
+                t.classList.remove("hidden");
+            }
         }
     }
 };
