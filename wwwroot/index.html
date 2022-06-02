@@ -251,19 +251,25 @@
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TE:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="420" name="te" id="sq_te" oninput="updateSQTime()"/>
+                                <input class="col-sm form-control" type="number" value="3" name="te_start" id="sq_te_start" oninput="updateSQTime()"/>
                             </div>
-                            <!--<div class="form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TR:</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="666" name="tr" id="sq_tr" oninput="updateSQTime()"/>
-                            </div>-->
                             <div class="form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                    <label class="mb-0 align-self-center">TE:</label>
                                 </div>
-                                <p class="col-sm form-control mb-0" id="sq_time"></p>
+                                <input class="col-sm form-control" type="number" value="9" name="te_end" id="sq_te_end" oninput="updateSQTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="3" name="te_step" id="sq_te_step" oninput="updateSQTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TEs:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="sq_te"></p>
                             </div>
                         </div>
                         <div class="col tab-pane" id="params-tq">
@@ -271,19 +277,25 @@
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TE:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="420" name="te" id="tq_te" oninput="updateTQTime()"/>
+                                <input class="col-sm form-control" type="number" value="3" name="te_start" id="tq_te_start" oninput="updateTQTime()"/>
                             </div>
-                            <!--<div class="form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TR:</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="666" name="tr" id="tq_tr" oninput="updateTQTime()"/>
-                            </div>-->
                             <div class="form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">Total Measuring Time:</label>
+                                    <label class="mb-0 align-self-center">TE:</label>
                                 </div>
-                                <p class="col-sm form-control mb-0" id="tq_time"></p>
+                                <input class="col-sm form-control" type="number" value="9" name="te_end" id="tq_te_end" oninput="updateTQTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="3" name="te_step" id="tq_te_step" oninput="updateTQTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TEs:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="tq_te"></p>
                             </div>
                         </div>
                     </div>

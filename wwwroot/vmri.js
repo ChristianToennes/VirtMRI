@@ -1,14 +1,12 @@
 const datasets = {
     //0: ["BrainWeb 05 - 3T", "./3t/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
     //1: ["BrainWeb 05 - 1.5T", "./1.5T/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    2: ["BrainWeb 54 - 3T", "./3t/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    3: ["BrainWeb 54 - 1.5T", "./1.5T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    4: ["BrainWeb colin27 - 3T", "./3t/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
-    5: ["BrainWeb colin27 - 1.5T", "./1.5T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    2: ["BrainWeb 54 - 3T + Na", "./3t/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    3: ["BrainWeb 54 - 1.5T + Na", "./1.5T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    4: ["BrainWeb colin27 - 3T + Na", "./3t/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    5: ["BrainWeb colin27 - 1.5T + Na", "./1.5T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
     6: ["Phantomag - 1.5T", "./1.5T/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
     7: ["Phantomag - 1T", "./1t/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
-    8: ["BrainWeb 54 - Na", "./na/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    9: ["BrainWeb colin27 - Na", "./na/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
 }
 
 function QueryableWorker(url) {
@@ -65,14 +63,19 @@ const w = new QueryableWorker("./intensityCalculations.js");
 var xdim = 256;
 var ydim = 256;
 var zdim = 256;
-var array_pd, array_t1, array_t2, array_t2s, array_t2f, result, k_data_im_re, slice_data;
+var array_pd, array_t1, array_t2, array_t2s, array_na_mm, result, k_data_im_re, slice_data;
+
+const na_tabs = ["params-sq-tab", "params-tq-tab"];
+const h_tabs = ["params-ir-tab", "params-se-tab", "params-bssfp-tab", "params-fisp-tab", "params-psif-tab", "params-flash-tab", "params-sgre-tab", "params-sq-tab", "params-tq-tab"];
 
 const loadDataMessageHandler = function (data) {
     array_pd = data[0];
     array_t1 = data[1];
     array_t2 = data[2];
     array_t2s = data[3];
-    array_t2f = data[4];
+    //array_na_t2s = data[4];
+    //array_na_t2f = data[5];
+    array_na_mm = data[4];
     zdim = data[5];
     ydim = data[6];
     xdim = data[7];
@@ -87,16 +90,16 @@ const loadDataMessageHandler = function (data) {
     spin.classList.add("hidden");
     displayDataSet();
     setInversionRecovery();
-    if (array_t2f == null) {
-        sq = document.getElementById("params-sq-tab");
-        sq.classList.add("hidden");
-        tq = document.getElementById("params-tq-tab");
-        tq.classList.add("hidden");
+    if (array_na_nm == null) {
+        for (var tab in na_tabs) {
+            t = document.getElementById(tab);
+            t.classList.add("hidden");
+        }
     } else {
-        sq = document.getElementById("params-sq-tab");
-        sq.classList.remove("hidden");
-        tq = document.getElementById("params-tq-tab");
-        tq.classList.remove("hidden");
+        for (var tab in na_tabs) {
+            t = document.getElementById(tab);
+            t.classList.remove("hidden");
+        }
     }
 };
 w.addListener('loadData', loadDataMessageHandler);
@@ -567,10 +570,11 @@ function SQ() {
     r.classList.add("hidden");
     spin.classList.remove("hidden");
 
-    var te = parseFloat(document.getElementById("sq_te").value)
-    //var tr = parseFloat(document.getElementById("sq_tr").value)
+    var te_start = parseFloat(document.getElementById("sq_te_start").value)
+    var te_end = parseFloat(document.getElementById("sq_te_end").value)
+    var te_step = parseFloat(document.getElementById("sq_te_step").value)
 
-    w.sendQuery("sq", te);
+    w.sendQuery("sq", te_start, te_end, te_step);
 }
 
 function setTQ() {
@@ -587,10 +591,11 @@ function TQ() {
     r.classList.add("hidden");
     spin.classList.remove("hidden");
 
-    var te = parseFloat(document.getElementById("tq_te").value)
-    //var tr = parseFloat(document.getElementById("tq_tr").value)
+    var te_start = parseFloat(document.getElementById("tq_te_start").value)
+    var te_end = parseFloat(document.getElementById("tq_te_end").value)
+    var te_step = parseFloat(document.getElementById("tq_te_step").value)
 
-    w.sendQuery("tq", te);
+    w.sendQuery("tq", te_start, te_end, te_step);
 }
 
 function reco(update_slider, noIfft = false) {
@@ -732,11 +737,29 @@ function updateBalancedSSFPTime() {
 }
 
 function updateSQTime() {
-    //var te = parseFloat(document.getElementById("sq_te").value);
+    var te_start = parseFloat(document.getElementById("sq_te_start").value)
+    var te_end = parseFloat(document.getElementById("sq_te_end").value)
+    var te_step = parseFloat(document.getElementById("sq_te_step").value)
+    var te = document.getElementById("sq_te");
+
+    var tes = ""+te_start;
+    for (var t=te_start+te_step;t<=te_end;t+=te_step) {
+        tes += ", " + t;
+    }
+    te.innerText = tes;
 }
 
 function updateTQTime() {
-    //var te = parseFloat(document.getElementById("tq_te").value);
+    var te_start = parseFloat(document.getElementById("tq_te_start").value)
+    var te_end = parseFloat(document.getElementById("tq_te_end").value)
+    var te_step = parseFloat(document.getElementById("tq_te_step").value)
+    var te = document.getElementById("tq_te");
+
+    var tes = ""+te_start;
+    for (var t=te_start+te_step;t<=te_end;t+=te_step) {
+        tes += ", " + t;
+    }
+    te.innerText = tes;
 }
 
 function formatTime(time) {

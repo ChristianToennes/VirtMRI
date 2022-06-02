@@ -9,7 +9,7 @@ var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
 var array_t2 = new Uint16Array(256 * 256);
 var array_t2s = new Uint16Array(256 * 256);
-var array_t2f = new Uint16Array(256 * 256);
+var array_na_mm = new Uint16Array(256 * 256);
 var k_data_im_re, k_result;
 
 async function loadDataSet(path) {
@@ -101,7 +101,7 @@ async function loadDataSet(path) {
         xhr.responseType = "arraybuffer";
         xhr.send()
     });
-    array_t2f = await new Promise((resolve, reject) => {
+    array_na_mm = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.onload = function (e) {
             if (e.target.status != 200) {
@@ -122,11 +122,11 @@ async function loadDataSet(path) {
             resolve(b);
         }
         xhr.onerror = reject;
-        xhr.open("GET", path+"/t2f.bin.gz", true)
+        xhr.open("GET", path+"/na_mm.bin.gz", true)
         xhr.responseType = "arraybuffer";
         xhr.send()
     });
-    return [array_pd, array_t1, array_t2, array_t2s, array_t2f, zdim, ydim, xdim];
+    return [array_pd, array_t1, array_t2, array_t2s, array_na_mm, zdim, ydim, xdim];
 }
 
 function calcKSpace(result) {
@@ -413,47 +413,68 @@ function calcSGRE(te, tr, fa) {
     return [result, k_result];
 }
 
-function calcSQ(te) {
+function calcSQ(te_start, te_end, te_step) {
     //SQ: [mM].*(exp(-(TE_vec(kk)+t1)/T2s)+exp(-(TE_vec(kk)+t1)/T2f)) Simulation  von einer multi-echo Akquisition mit TE_vec=TE=[1,2,3,…]. 
     var result = new Float32Array(array_t1.length);
     for (var x = 0; x < result.length; x++) {
-        var t1 = array_t1[x];
-        var t2f = array_t2f[x];
-        var t2s = array_t2s[x];
-        var pd = array_pd[x];
-        if (t1 == 0) {
-            t1 = 1;
-        }
-        if (t2f == 0) {
-            t2f = 1;
-        }
-        var val = pd * ( Math.exp(-(te+t1)/t2s) + Math.exp(-(te+t1)/t2f) );
+        result[x] = 0;
+    }
+    var te_count = 0;
+    for (var te=te_start; te<=te_end; te+=te_step) {
+        te_count += 1;
+        for (var x = 0; x < result.length; x++) {
+            var t1 = na_t1;
+            var t2 = na_t2;
+            var t2f = na_t2f;
+            var t2s = na_t2s;
+            var mm = array_na_mm[x];
+            if (t1 == 0) {
+                t1 = 1;
+            }
+            if (t2f == 0) {
+                t2f = 1;
+            }
+            var val = mm * ( Math.exp(-(te+t1)/t2s) + Math.exp(-(te+t1)/t2f) );
 
-        result[x] = Math.abs(val);
+            result[x] += Math.abs(val);
+        }
+    }
+    for (var x = 0; x < result.length; x++) {
+        result[x] /= te_count;
     }
 
     var k_result = calcKSpace(result);
     return [result, k_result];
 }
 
-function calcTQ(te) {
+function calcTQ(te_start, te_end, te_step) {
     //TQ:  [mM].*((exp(-TE_vec(kk)/T2s)-exp(-TE_vec(kk)/T2f))*(exp(-t1/T2s)-exp(-t1/T2f))*exp(t2/T2s));
     var result = new Float32Array(array_t1.length);
     for (var x = 0; x < result.length; x++) {
-        var t1 = array_t1[x];
-        var t2 = array_t2[x];
-        var t2f = array_t2f[x];
-        var t2s = array_t2s[x];
-        var pd = array_pd[x];
-        if (t1 == 0) {
-            t1 = 1;
-        }
-        if (t2f == 0) {
-            t2f = 1;
-        }
-        var val = pd * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-t1/t2s)-Math.exp(-t1/t2f)) * Math.exp(t2/t2s) );
+        result[x] = 0;
+    }
+    var te_count = 0;
+    for (var te=te_start; te<=te_end; te+=te_step) {
+        te_count += 1;
+        for (var x = 0; x < result.length; x++) {
+            var t1 = na_t1;
+            var t2 = na_t2;
+            var t2f = na_t2f;
+            var t2s = na_t2s;
+            var mm = array_na_mm[x];
+            if (t1 == 0) {
+                t1 = 1;
+            }
+            if (t2f == 0) {
+                t2f = 1;
+            }
+            var val = mm * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-t1/t2s)-Math.exp(-t1/t2f)) * Math.exp(t2/t2s) );
 
-        result[x] = Math.abs(val);
+            result[x] += Math.abs(val);
+        }
+    }
+    for (var x = 0; x < result.length; x++) {
+        result[x] /= te_count;
     }
 
     var k_result = calcKSpace(result);
@@ -482,11 +503,11 @@ var queryableFunctions = {
     sgre: function(te, tr, fa) {
         reply('result', calcSGRE(te, tr, fa));
     },
-    sq: function(te) {
-        reply('result', calcSQ(te));
+    sq: function(te_start, te_end, te_step) {
+        reply('result', calcSQ(te_start, te_end, te_step));
     },
-    tq: function(te) {
-        reply('result', calcTQ(te));
+    tq: function(te_start, te_end, te_step) {
+        reply('result', calcTQ(te_start, te_end, te_step));
     },
     reco: function (xlines, ylines, fmin, fmax, noIfft) {
         reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax, noIfft));
