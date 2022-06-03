@@ -571,7 +571,7 @@ function calcNa(te, tr) {
     return [r[0], k_result, [256, 256, 0, 64]];
 }
 
-function calcSQ(te_start, te_end, te_step) {
+function calcSQ(te_start, te_end, te_step, tau1=10) {
     //SQ: [mM].*(exp(-(TE_vec(kk)+t1)/T2s)+exp(-(TE_vec(kk)+t1)/T2f)) Simulation  von einer multi-echo Akquisition mit TE_vec=TE=[1,2,3,…]. 
     var result = new Float32Array(array_t1.length);
     var fa = 0.5*Math.PI;
@@ -582,7 +582,6 @@ function calcSQ(te_start, te_end, te_step) {
     for (var te=te_start; te<=te_end; te+=te_step) {
         te_count += 1;
         for (var x = 0; x < result.length; x++) {
-            var t1 = array_na_t1[x];
             var t2f = array_na_t2f[x];
             var t2s = array_na_t2s[x];
             var mm = array_na_mm[x];
@@ -592,7 +591,7 @@ function calcSQ(te_start, te_end, te_step) {
             if (t2f == 0) {
                 t2f = 1;
             }
-            var val = mm * ( Math.exp(-(te+t1)/t2s) + Math.exp(-(te+t1)/t2f) ) * Math.sin(fa);
+            var val = mm * ( Math.exp(-(te+tau1)/t2s) + Math.exp(-(te+tau1)/t2f) ) * Math.sin(fa);
 
             result[x] += Math.abs(val);
         }
@@ -607,7 +606,7 @@ function calcSQ(te_start, te_end, te_step) {
     return [r[0], k_result, [256, 256, 0, 64]];
 }
 
-function calcTQ(te_start, te_end, te_step) {
+function calcTQ(te_start, te_end, te_step, tau1=10, tau2=0.1) {
     //TQ:  [mM].*((exp(-TE_vec(kk)/T2s)-exp(-TE_vec(kk)/T2f))*(exp(-t1/T2s)-exp(-t1/T2f))*exp(t2/T2s));
     // s = (e(-t/ts)-e(-t/tf))*(e(-τ1/ts)-e(-τ1/tf))*e(-τ2/ts)  
     var result = new Float32Array(array_t1.length);
@@ -618,7 +617,6 @@ function calcTQ(te_start, te_end, te_step) {
     for (var te=te_start; te<=te_end; te+=te_step) {
         te_count += 1;
         for (var x = 0; x < result.length; x++) {
-            var t1 = array_na_t1[x];
             var t2f = array_na_t2f[x];
             var t2s = array_na_t2s[x];
             var mm = array_na_mm[x];
@@ -628,7 +626,7 @@ function calcTQ(te_start, te_end, te_step) {
             if (t2f == 0) {
                 t2f = 1;
             }
-            var val = mm * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-t1/t2s)-Math.exp(-t1/t2f)) * Math.exp(-t2/t2s) );
+            var val = mm * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) );
 
             result[x] += Math.abs(val);
         }
@@ -643,52 +641,133 @@ function calcTQ(te_start, te_end, te_step) {
     return [r[0], k_result, [256, 256, 0, 64]];
 }
 
-function calcMQ(phi1,xsi1,omega,Q,TE) {
-    //% parameters
-    //%omega=2*pi*0;%rad/s imperfect B0
-    //%phi1=30/180*pi;%rad
-    //%phi2=phi1+pi/2;%rad
-    //%TE=10e-3;%s
-    var phi2=phi1+xsi1;
-    var tau1=10e-3;
-    var tau2=0.1e-3;
-    
-    //% amplitudes A of coherence pathways depend on (tau1, tau2, theta, t)
-    //% dim 1 is p1=-1,+1
-    //% dim 2 is p2=-3,-2,-1,+1,+2,+3
-    SQ=Q[0];
-    DQ=Q[1];      
-    TQ=Q[2];  
-    //A=zeros(2,6);    
-    A=[[0,0,0,0,0,0], [0,0,0,0,0,0]]
-    //% SQ pathways are set to 1/4
-    A[0][2]=-SQ/4; //%-1,-1
-    A[0][3]=-SQ/4; //%-1,+1
-    A[1][2]=+SQ/4; //%+1,-1
-    A[1][3]=+SQ/4; //%+1,+1
-    //% DQ pathawys are set to 1/4
-    A[0][1]=-DQ/4; //%-1,-2
-    A[0][4]=-DQ/4; //%-1,+2
-    A[1][1]=+DQ/4; //%+1,-2
-    A[1][4]=+DQ/4; //%+1,+2
-    //% TQ pathawys are set to 1/4
-    A[0][0]=-TQ/4; //%-1,-3
-    A[0][5]=-TQ/4; //%-1,+3
-    A[1][0]=+TQ/4; //%+1,-3
-    A[1][5]=+TQ/4; //%+1,+3
-
+function calcTQF(te,tau1=10e-3,tau2=0.1e-3,fa=90) { // https://doi.org/10.1002%2Fnbm.1548
     var s = new Float32Array(array_t1.length);
+    fa = fa * Math.PI / 180;
     for(var x=0;x<s.length;x++) {
-        p1=[-1 ,+1];
-        p2=[-3 ,-2 ,-1 ,+1 ,+2 ,+3];
-        for (var m=0;m<2;m++) {
-            for (var n=0;n<6;n++) {
-                //s=s+Math.exp(-1*i*(p1[m]*phi1+(p2[n]-p1[m])*phi2)) .* Math.exp(-1*i*(p1[m]*tau1+p2[n]*tau2)*omega) .* Math.exp(1*i*omega*TE) .* A[m][n]);
-                s[x] += Math.cos((p1[m]*phi1+(p2[n]-p1[m])*phi2)) * Math.cos((p1[m]*array_na_t1[x]+p2[n]*tau2)*omega) * Math.cos(omega*TE) * A[m][n];
-            }
+        var mm = array_na_mm[x] / 140.0;
+        var t2s = array_na_t2s[x];
+        var t2f = array_na_t2f[x];
+        s[x] = mm * (Math.exp(-te/t2s)-Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) * (Math.sin(fa)**5);
+    }
+    
+    var k_result = calcKSpace(s);
+
+    var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
+    return [r[0], k_result, [256, 256, 0, 64]];
+}
+
+function Coherence_NasignalRelaxation(phi1,xsi1,omega,Q,TE,tau1) {
+//% parameters
+//%turn ON/OFF stimulated echo
+var SQ_stim = 0;
+var phi2=phi1+xsi1;
+var tau2=0.1e-3;//%s
+//%tau2=5e-3;//%s
+var T2slow=30e-3;T2fast=4e-3;//%s
+var exc_FA = pi/2;
+var T1=70e-3;//%s
+
+//%Transverse Relaxation
+var SQ = Q[1] *(3/5*Math.exp(-(TE+tau1)/T2slow) + 2/5*Math.exp(-(TE+tau1)/T2fast))*sin(pi/2);
+var DQ = Q[2] *(Math.exp(-TE/T2slow) - Math.exp(-TE/T2fast))*(Math.exp(-tau1/T2slow) - Math.exp(-tau1/T2fast))*Math.exp(-tau2/T2slow)*sin(exc_FA)**5; 
+var TQ = Q[3] *(Math.exp(-TE/T2slow) - Math.exp(-TE/T2fast))*(Math.exp(-tau1/T2slow) - Math.exp(-tau1/T2fast))*Math.exp(-tau2/T2slow)*sin(exc_FA)**5;  
+
+//%Longitudinal Relaxation
+var SQ_l=1.0;
+var SQ_longitudinal = ((SQ_l*(1-Math.exp(-tau1/T1)))*(1-Math.exp(-tau2/T1)))*(1-Math.exp(-TE/T1));
+
+//% amplitudes A of coherence pathways depend on [tau1, tau2, theta, t]
+//% dim 1 is p1=-1,+1
+//% dim 2 is p2=-3,-2,-1,+1,+2,+3
+A=[[0,0,0,0,0,0],[0,0,0,0,0,0]];
+//% SQ pathways are set to 1/4    
+A[1,3]=-SQ/4; //%-1,-1
+A[1,4]=-SQ/4; //%-1,+1
+A[2,3]=+SQ/4; //%+1,-1
+A[2,4]=+SQ/4; //%+1,+1
+//% DQ pathawys are set to 1/4    
+A[1,2]=-DQ/4; //%-1,-2
+A[1,5]=-DQ/4; //%-1,+3
+A[2,2]=+DQ/4; //%+1,-3
+A[2,5]=+DQ/4; //%+1,+3
+//% TQ pathawys are set to 1/4      
+A[1,1]=-TQ/4; //%-1,-3
+A[1,6]=-TQ/4; //%-1,+3
+A[2,1]=+TQ/4; //%+1,-3
+A[2,6]=+TQ/4; //%+1,+3
+
+var S, S_stim = myNasignal[phi1,phi2,omega,A,tau1,tau2,TE,SQ_stim,xsi1,T1,T2slow,T2fast];
+
+}
+
+//% Fleysher 2010 eq.[1] / eq.[11]
+function myNasignal(phi1,phi2,omega,A,tau1,tau2,TE,SQ_stim,xsi1,T1,T2slow,T2fast) {
+    var s=0;
+    var s_stim=0;
+    var p1=[-1 ,+1];
+    var p2=[-3 ,-2 ,-1 ,+1 ,+2 ,+3];
+    for(var m=0;m<2;m++) {
+        for(n=0;n<6;n++) {
+            if (Math.abs(p2[n]) == 1) {
+                s_stim = s_stim + B_stim(tau1,tau2,omega,TE,A[m,n],phi2,xsi1,T1,T2slow,T2fast)*SQ_stim;
+            }   
+            s=s+ Math.exp(-i*(p1[m]*phi1+(p2[n]-p1[m])*phi2)) * B_na(p1[m],p2[n],tau1,tau2,omega,TE,A[m,n]);
         }
     }
-    return s;
+    s=s+s_stim;
+    return s, s_stim;
+}
+
+//% Fleysher 2010 eq.[2], A is the amplitude of the specified coherence pathway 
+function B_na(p1,p2,tau1,tau2,omega,TE,A) {
+B = Math.exp(-i*(p1*tau1+p2*tau2)*omega) * Math.exp(i*omega*TE) * A;
+return B;
+}
+
+//% signal of stimulated echo at tau1 after the third pulse:
+//% add it to the transversal magnetization which is p2 = ±1
+function B_stim(tau1,tau2,omega,TE,A,phi2,xsi1,T1,T2slow,T2fast) {
+//% approximation
+var T2starslow = T2slow; 
+var T2starfast = T2fast;
+B_stim = (Math.abs(A))/2 * Math.exp(-(tau2/T1)) * Math.cos(xsi1-omega*tau1)* Math.exp(i*omega*TE)*(3/5*Math.exp(-1*(TE-tau1)**2/(2*T2starslow**2)) + 2/5*Math.exp(-1*(TE-tau1)**2/(2*T2starfast**2)));
+return B_stim;
+}
+
+function TQTPPI() {
+    var s = new Float32Array(array_t1.length);
+    var fa = 90;
+    fa = fa * Math.PI / 180;
+    var TE_s = 10e-3;
+    var tau1_s = 10e-3;
+    var Xiplus = Math.PI/2;
+    var Ximinus = -Math.PI/2;
+    var NCycles = 1; 
+    var Amplitude_TQ = 0.0;
+    var Amplitude_DQ = 0.5;
+    var Amplitude_SQ = 0.0;
+    var Q = [Amplitude_SQ, Amplitude_DQ, Amplitude_TQ];
+    var ph0 = Math.PI/2;
+    var srate_cycle = 8;
+    var phase_inc = (2*Math.PI)/srate_cycle; 
+    var phi1_cycle = [];
+    for(var i=ph0;i<=((2*pi)*NCycles+ph0-phase_inc);i+=phase_inc) {
+        phi1_cycle.concat(i);
+    }
+    for(var x=0;x<s.length;x++) {
+        var mm = array_na_mm[x] / 140.0;
+        var t2s = array_na_t2s[x];
+        var t2f = array_na_t2f[x];
+
+        s[x] = mm * (Math.exp(-te/t2s)-Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) * (Math.sin(fa)**5);
+        s[x] = mm * (Math.exp(-te/t2s)-Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) * (Math.sin(fa)**5);
+    }
+    
+    var k_result = calcKSpace(s);
+
+    var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
+    return [r[0], k_result, [256, 256, 0, 64]];
 }
 
 var queryableFunctions = {
@@ -716,11 +795,14 @@ var queryableFunctions = {
     na: function(te, tr) {
         reply('result', calcNa(te, tr));
     },
-    sq: function(te_start, te_end, te_step) {
-        reply('result', calcSQ(te_start, te_end, te_step));
+    sq: function(te_start, te_end, te_step, tau1) {
+        reply('result', calcSQ(te_start, te_end, te_step, tau1));
     },
-    tq: function(te_start, te_end, te_step) {
-        reply('result', calcTQ(te_start, te_end, te_step));
+    tq: function(te_start, te_end, te_step, tau1, tau2) {
+        reply('result', calcTQ(te_start, te_end, te_step, tau1, tau2));
+    },
+    tqf: function(te, tau1, tau2, fa) {
+        reply('result', calcTQF(te, tau1, tau2, fa));
     },
     reco: function (xlines, ylines, fmin, fmax, noIfft) {
         reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax, noIfft));

@@ -65,7 +65,7 @@ var ydim = 256;
 var zdim = 256;
 var array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2s, array_na_t2f, result, k_data_im_re, slice_data;
 
-const na_tabs = ["params-na-tab", "params-sq-tab", "params-tq-tab"];
+const na_tabs = ["params-na-tab", "params-sq-tab", "params-tq-tab", "params-tqf-tab"];
 const h_tabs = ["params-ir-tab", "params-se-tab", "params-bssfp-tab", "params-fisp-tab", "params-psif-tab", "params-flash-tab", "params-sgre-tab", "params-sq-tab", "params-tq-tab"];
 
 const loadDataMessageHandler = function (data) {
@@ -612,8 +612,9 @@ function SQ() {
     var te_start = parseFloat(document.getElementById("sq_te_start").value)
     var te_end = parseFloat(document.getElementById("sq_te_end").value)
     var te_step = parseFloat(document.getElementById("sq_te_step").value)
+    var tau1 = parseFloat(document.getElementById("sq_tau1").value)
 
-    w.sendQuery("sq", te_start, te_end, te_step);
+    w.sendQuery("sq", te_start, te_end, te_step, tau1);
 }
 
 function setTQ() {
@@ -633,8 +634,32 @@ function TQ() {
     var te_start = parseFloat(document.getElementById("tq_te_start").value)
     var te_end = parseFloat(document.getElementById("tq_te_end").value)
     var te_step = parseFloat(document.getElementById("tq_te_step").value)
+    var tau1 = parseFloat(document.getElementById("tq_tau1").value)
+    var tau2 = parseFloat(document.getElementById("tq_tau2").value)
 
-    w.sendQuery("tq", te_start, te_end, te_step);
+    w.sendQuery("tq", te_start, te_end, te_step, tau1, tau2);
+}
+
+function setTQF() {
+    setTabs("params-tqf", "params-tqf-tab");
+    updateTQFTime();
+    selectedSequence = TQF;
+}
+
+function TQF() {
+    r = document.getElementById("result");
+    spin = document.getElementById("scanningSpinner");
+    slice = document.getElementById("r_slice");
+    slice.max = zdim;
+    r.classList.add("hidden");
+    spin.classList.remove("hidden");
+
+    var te = parseFloat(document.getElementById("tqf_te").value)
+    var tau1 = parseFloat(document.getElementById("tqf_tau1").value)
+    var tau2 = parseFloat(document.getElementById("tqf_tau2").value)
+    var fa = parseFloat(document.getElementById("tqf_fa").value)
+
+    w.sendQuery("tqf", te, tau1, tau2, fa);
 }
 
 function setKSpaceFilt(xlines, ylines, fmin, fmax) {
@@ -822,6 +847,9 @@ function updateTQTime() {
         tes += ", " + t;
     }
     te.innerText = tes;
+}
+
+function updateTQFTime() {
 }
 
 function formatTime(time) {

@@ -66,9 +66,11 @@
                             <div class="nav-link" id="params-psif-tab" onclick="setPSIF()">PSIF</div>
                             <div class="nav-link" id="params-flash-tab" onclick="setFlash()">Flash</div>
                             <div class="nav-link" id="params-sgre-tab" onclick="setSGRE()">Spoiled GRE</div>
+                            <div class="" style="flex-grow: 4"></div>
                             <div class="nav-link" id="params-na-tab" onclick="setNa()">Natrium</div>
-                            <div class="nav-link" id="params-sq-tab" onclick="setSQ()">Na Single Quanten</div>
-                            <div class="nav-link" id="params-tq-tab" onclick="setTQ()">Na Triple Quanten</div>
+                            <div class="nav-link" id="params-sq-tab" onclick="setSQ()">Na SQ</div>
+                            <div class="nav-link" id="params-tq-tab" onclick="setTQ()">Na TQ</div>
+                            <div class="nav-link" id="params-tqf-tab" onclick="setTQF()">Na TQF</div>
                         </div>
                     </div>
                     <div class="row border py-2 tab-content" id="params">
@@ -271,6 +273,12 @@
                         <div class="col tab-pane" id="params-sq">
                             <div class="form-row">
                                 <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">τ1 (Default: 10):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="10" name="tau1" id="sq_tau1" oninput="updateSQTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TE Start:</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="1" name="te_start" id="sq_te_start" oninput="updateSQTime()"/>
@@ -297,6 +305,18 @@
                         <div class="col tab-pane" id="params-tq">
                             <div class="form-row">
                                 <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">τ1 (Default: 10):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="10" name="tau1" id="tq_tau1" oninput="updateTQTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">τ2 (Default: 0.1):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="0.1" name="tau2" id="tq_tau2" oninput="updateTQTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TE Start:</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="2" name="te_start" id="tq_te_start" oninput="updateTQTime()"/>
@@ -318,6 +338,32 @@
                                     <label class="mb-0 align-self-center">TEs:</label>
                                 </div>
                                 <p class="col-sm form-control mb-0" id="tq_te"></p>
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-tqf">
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="2" name="te" id="tqf_te" oninput="updateTQFTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">τ1 (Default: 0.01):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="0.01" name="tau1" id="tqf_tau1" oninput="updateTQFTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">τ2 (Default: 0.0001):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="0.0001" name="tau2" id="tqf_tau2" oninput="updateTQFTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">FA (Default 90):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="90" name="fa" id="tqf_fa" oninput="updateTQFTime()"/>
                             </div>
                         </div>
                     </div>
