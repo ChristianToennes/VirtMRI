@@ -608,7 +608,7 @@ function calcSQ(te_start, te_end, te_step, tau1=10) {
 
 function calcTQ(te_start, te_end, te_step, tau1=10, tau2=0.1) {
     //TQ:  [mM].*((exp(-TE_vec(kk)/T2s)-exp(-TE_vec(kk)/T2f))*(exp(-t1/T2s)-exp(-t1/T2f))*exp(t2/T2s));
-    // s = (e(-t/ts)-e(-t/tf))*(e(-τ1/ts)-e(-τ1/tf))*e(-τ2/ts)  
+    // s = (e(-te/t2s)-e(-te/t2f))*(e(-τ1/t2s)-e(-τ1/t2f))*e(-τ2/t2s)  
     var result = new Float32Array(array_t1.length);
     for (var x = 0; x < result.length; x++) {
         result[x] = 0;
