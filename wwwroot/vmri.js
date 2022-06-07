@@ -67,7 +67,7 @@ var ydim = 256;
 var zdim = 256;
 var array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2s, array_na_t2f, result, k_data_im_re, slice_data;
 
-const na_tabs = ["params-na-tab", "params-sq-tab", "params-tq-tab", "params-tqf-tab"];
+const na_tabs = ["params-na-tab", "params-sq-tab", "params-tq-tab", "params-tqf-tab", "params-tqsqr-tab"];
 const h_tabs = ["params-ir-tab", "params-se-tab", "params-bssfp-tab", "params-fisp-tab", "params-psif-tab", "params-flash-tab", "params-sgre-tab", "params-sq-tab", "params-tq-tab"];
 var current_tab = "params-ir-tab";
 
@@ -118,7 +118,7 @@ const resultMessageHandler = function (data) {
     //console.log("image result");
     if (data[0] != undefined) {
         imgResult = data[0];
-        console.log(imgResult.reduce((a,b)=>Math.max(a,b), 0));
+        //console.log(imgResult.reduce((a,b)=>Math.max(a,b), 0));
         if (data[1] != undefined) {
             kResult = data[1];
             if (data[2] != undefined) {
@@ -302,7 +302,9 @@ function displayAndWindow3DImage() {
     
     if (na_tabs.includes(current_tab)) {
         for (var x = 0; x < xdim * ydim; x++) {
-            var val = Math.round(imgResult[x + slice * xdim * ydim]);
+            var val = Math.round(imgResult[x + slice * xdim * ydim] * 255);
+            if (val > 255) { val = 255; }
+            if (val < 0) {val = 0;}
             var c = jetmap[val];
             image_result[4 * x] = c[0]*255
             image_result[4 * x + 1] = c[1]*255
@@ -601,8 +603,9 @@ function Na() {
 
     var te = parseFloat(document.getElementById("na_te").value)
     var tr = parseFloat(document.getElementById("na_tr").value)
+    var spacing = parseFloat(document.getElementById("na_spacing").value)
 
-    w.sendQuery("na", te, tr);
+    w.sendQuery("na", te, tr, spacing);
 }
 
 
@@ -624,8 +627,9 @@ function SQ() {
     var te_end = parseFloat(document.getElementById("sq_te_end").value)
     var te_step = parseFloat(document.getElementById("sq_te_step").value)
     var tau1 = parseFloat(document.getElementById("sq_tau1").value)
+    var spacing = parseFloat(document.getElementById("sq_spacing").value)
 
-    w.sendQuery("sq", te_start, te_end, te_step, tau1);
+    w.sendQuery("sq", te_start, te_end, te_step, tau1, spacing);
 }
 
 function setTQ() {
@@ -647,8 +651,9 @@ function TQ() {
     var te_step = parseFloat(document.getElementById("tq_te_step").value)
     var tau1 = parseFloat(document.getElementById("tq_tau1").value)
     var tau2 = parseFloat(document.getElementById("tq_tau2").value)
+    var spacing = parseFloat(document.getElementById("tq_spacing").value)
 
-    w.sendQuery("tq", te_start, te_end, te_step, tau1, tau2);
+    w.sendQuery("tq", te_start, te_end, te_step, tau1, tau2, spacing);
 }
 
 function setTQF() {
@@ -669,8 +674,49 @@ function TQF() {
     var tau1 = parseFloat(document.getElementById("tqf_tau1").value)
     var tau2 = parseFloat(document.getElementById("tqf_tau2").value)
     var fa = parseFloat(document.getElementById("tqf_fa").value)
+    var spacing = parseFloat(document.getElementById("tqf_spacing").value)
 
-    w.sendQuery("tqf", te, tau1, tau2, fa);
+    w.sendQuery("tqf", te, tau1, tau2, fa, spacing);
+}
+
+function setTQSQR() {
+    setTabs("params-tqsqr", "params-tqsqr-tab");
+    updateTQSQRTime();
+    selectedSequence = TQSQR;
+}
+
+function TQSQR() {
+    r = document.getElementById("result");
+    spin = document.getElementById("scanningSpinner");
+    slice = document.getElementById("r_slice");
+    slice.max = zdim;
+    r.classList.add("hidden");
+    spin.classList.remove("hidden");
+
+    /*var te_start = parseFloat(document.getElementById("tqsqr_te_start").value)
+    var te_end = parseFloat(document.getElementById("tqsqr_te_end").value)
+    var te_step = parseFloat(document.getElementById("tqsqr_te_step").value)
+    var tau1 = parseFloat(document.getElementById("tqsqr_tau1").value)
+    var tau2 = parseFloat(document.getElementById("tqsqr_tau2").value)
+    var spacing_tq = parseFloat(document.getElementById("tq_spacing").value)
+    var spacing_sq = parseFloat(document.getElementById("sq_spacing").value)*/
+
+    var te_start = parseFloat(document.getElementById("tq_te_start").value)
+    var te_end = parseFloat(document.getElementById("tq_te_end").value)
+    var te_step = parseFloat(document.getElementById("tq_te_step").value)
+    var tau1 = parseFloat(document.getElementById("tq_tau1").value)
+    var tau2 = parseFloat(document.getElementById("tq_tau2").value)
+    var spacing = parseFloat(document.getElementById("tq_spacing").value)
+    var tq_params = [te_start, te_end, te_step, tau1, tau2, spacing];
+
+    var te_start = parseFloat(document.getElementById("sq_te_start").value)
+    var te_end = parseFloat(document.getElementById("sq_te_end").value)
+    var te_step = parseFloat(document.getElementById("sq_te_step").value)
+    var tau1 = parseFloat(document.getElementById("sq_tau1").value)
+    var spacing = parseFloat(document.getElementById("sq_spacing").value)
+    var sq_params = [te_start, te_end, te_step, tau1, spacing];
+
+    w.sendQuery("tqsqr", tq_params, sq_params);
 }
 
 function setKSpaceFilt(xlines, ylines, fmin, fmax) {
@@ -706,7 +752,12 @@ function reco(update_slider, noIfft = false) {
         document.getElementById("k_fmin_number").value = fmin;
         document.getElementById("k_fmax_number").value = fmax;
     }
-    w.sendQuery("reco", xlines, ylines, fmin, fmax, noIfft);
+    if (!noIfft) {
+        w.sendQuery("reco", xlines, ylines, fmin, fmax, noIfft);
+    } else {
+        document.getElementById("kspace").removeAttribute("disabled");
+        displayAndWindow3DImage();
+    }
 }
 
 function startScan() {
@@ -852,6 +903,19 @@ function updateTQTime() {
     var te_end = parseFloat(document.getElementById("tq_te_end").value)
     var te_step = parseFloat(document.getElementById("tq_te_step").value)
     var te = document.getElementById("tq_te");
+
+    var tes = ""+te_start;
+    for (var t=te_start+te_step;t<=te_end;t+=te_step) {
+        tes += ", " + t;
+    }
+    te.innerText = tes;
+}
+
+function updateTQSQRTime() {
+    var te_start = parseFloat(document.getElementById("tqsqr_te_start").value)
+    var te_end = parseFloat(document.getElementById("tqsqr_te_end").value)
+    var te_step = parseFloat(document.getElementById("tqsqr_te_step").value)
+    var te = document.getElementById("tqsqr_te");
 
     var tes = ""+te_start;
     for (var t=te_start+te_step;t<=te_end;t+=te_step) {

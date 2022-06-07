@@ -70,6 +70,7 @@
                             <div class="nav-link" id="params-na-tab" onclick="setNa()">Natrium</div>
                             <div class="nav-link" id="params-sq-tab" onclick="setSQ()">Na SQ</div>
                             <div class="nav-link" id="params-tq-tab" onclick="setTQ()">Na TQ</div>
+                            <div class="nav-link" id="params-tqsqr-tab" onclick="setTQSQR()">Na TQ/SQ</div>
                             <div class="nav-link" id="params-tqf-tab" onclick="setTQF()">Na TQF</div>
                         </div>
                     </div>
@@ -269,6 +270,12 @@
                                 </div>
                                 <p class="col-sm form-control mb-0" id="na_time"></p>
                             </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Spacing</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="4" name="spacing" id="na_spacing" oninput="updateNaTime()" />
+                            </div>
                         </div>
                         <div class="col tab-pane" id="params-sq">
                             <div class="form-row">
@@ -300,6 +307,12 @@
                                     <label class="mb-0 align-self-center">TEs:</label>
                                 </div>
                                 <p class="col-sm form-control mb-0" id="sq_te"></p>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Spacing (mm):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="4" name="spacing" id="sq_spacing" oninput="updateSQTime()" />
                             </div>
                         </div>
                         <div class="col tab-pane" id="params-tq">
@@ -339,6 +352,50 @@
                                 </div>
                                 <p class="col-sm form-control mb-0" id="tq_te"></p>
                             </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Spacing (mm):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="10" name="spacing" id="tq_spacing" oninput="updateTQTime()" />
+                            </div>
+                        </div>
+                        <div class="col tab-pane" id="params-tqsqr">
+                            <!--<div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">τ1 (Default: 10):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="10" name="tau1" id="tqsqr_tau1" oninput="updateTQSQRTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">τ2 (Default: 0.1):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="0.1" name="tau2" id="tqsqr_tau2" oninput="updateTQSQRTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE Start:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="2" name="te_start" id="tqsqr_te_start" oninput="updateTQSQRTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE End:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="3" name="te_end" id="tqsqr_te_end" oninput="updateTQSQRTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TE Step:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="1" name="te_step" id="tqsqr_te_step" oninput="updateTQSQRTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">TEs:</label>
+                                </div>
+                                <p class="col-sm form-control mb-0" id="tqsqr_te"></p>
+                            </div>-->
                         </div>
                         <div class="col tab-pane" id="params-tqf">
                             <div class="form-row">
@@ -364,6 +421,12 @@
                                     <label class="mb-0 align-self-center">FA (Default 90):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="90" name="fa" id="tqf_fa" oninput="updateTQFTime()"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">Spacing (mm):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="4" name="spacing" id="tqf_spacing" oninput="updateTQFTime()" />
                             </div>
                         </div>
                     </div>

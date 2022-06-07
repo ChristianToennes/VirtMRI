@@ -5,12 +5,14 @@ var xdim = 256;
 var ydim = 256;
 var zdim = 256;
 
-const na_t1 = 50;
-const na_t2 = 0.1;
+const na_tau1 = 50;
+const na_tau2 = 0.1;
+const na_t1 = 39.2;
 const na_t2s = 50;
 const na_t2f = 4;
 const na_t2fr = 60;
 const na_mm = 140;
+const na_vol = 0.7;
 
 var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
@@ -18,6 +20,7 @@ var array_t2 = new Uint16Array(256 * 256);
 var array_t2s = new Uint16Array(256 * 256);
 var array_na_mm = new Uint16Array(256 * 256);
 var array_na_t1 = new Uint16Array(256 * 256);
+var array_na_ex_frac = new Uint16Array(256 * 256);
 var array_na_t2s = new Uint16Array(256 * 256);
 var array_na_t2f = new Uint16Array(256 * 256);
 var k_data_im_re, k_result;
@@ -133,6 +136,31 @@ async function loadDataSet(path) {
         }
         xhr.onerror = reject;
         xhr.open("GET", path+"/na_mm.bin.gz", true)
+        xhr.responseType = "arraybuffer";
+        xhr.send()
+    });
+    array_na_ex_frac = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function (e) {
+            if (e.target.status != 200) {
+                resolve(null);
+            }
+            var resp = pako.inflate(xhr.response).buffer;
+            var mm = new Float32Array(resp, 0, 2);
+            var shape = new Uint16Array(resp, 8, 3);
+            zdim = shape[0];
+            ydim = shape[1];
+            xdim = shape[2];
+            var a = new Uint8Array(resp, 14);
+            var b = new Float32Array(a.length);
+            //console.log("t2", mm[0],mm[1], a.reduce((a,b)=>a+b)/a.length)
+            for (var x = 0; x < a.length; x++) {
+                b[x] = (a[x] / 255.0) * (mm[1] - mm[0]) + mm[0];
+            }
+            resolve(b);
+        }
+        xhr.onerror = reject;
+        xhr.open("GET", path+"/na_ex_frac.bin.gz", true)
         xhr.responseType = "arraybuffer";
         xhr.send()
     });
@@ -345,15 +373,17 @@ function inverseKSpace(kSpace, xlines, ylines, fmin, fmax, noIfft = false) {
                 minval = Math.min(minval, img_result[i]);
             }
             for (var i = 0; i < img_result.length; i++) {
-                result[i + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
-                result[i + 1 + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
+                //result[i + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
+                //result[i + 1 + z * xdim * ydim] = (img_result[i] - minval) / (maxval - minval)
+                result[i + z * xdim * ydim] = img_result[i]
+                result[i + 1 + z * xdim * ydim] = img_result[i]
             }
         }
     }
     if (noIfft) {
-        return [undefined, k_result];
+        return [undefined, k_result, [xlines, ylines, fmin, fmax]];
     }
-    return [result, k_result];
+    return [result, k_result, [xlines, ylines, fmin, fmax]];
 }
 
 function calcSpinEcho(te, tr) {
@@ -546,23 +576,38 @@ function upscale(arr, factor=2) {
     return r;
 }
 
-function calcNa(te, tr) {
+function calcNa(te, tr, downscale=4) {
     //Na: s(t) = VbCb (1-exp(-tr/t1))[0.6*exp(-t/T2s) + 0.4*exp(-t/T2L)] + VfrCfrafr(1-exp(-tr/t1))exp(-t/T2fr) + n(t). 
     var result = new Float32Array(array_t1.length);
-    for (var x = 0; x < result.length; x++) {
-        var t1 = array_na_t1[x];
-        var t2f = array_na_t2f[x];
-        var t2s = array_na_t2s[x];
-        var mm = array_na_mm[x];
-        if (t2s == 0) {
-            t2s = 1;
-        }
-        if (t2f == 0) {
-            t2f = 1;
-        }
-        var val = mm * (1-Math.exp(-tr/t1)) * (0.6*Math.exp(-te/t2f) + 0.4*Math.exp(-te/t2s))// + na_mm * (1-Math.exp(-tr/na_t1))*Math.exp(-te/na_t2fr)
+    //for (var x = 0; x < result.length; x++) {
+    for(var z = 0; z<zdim; z++) {
+        for(var y = Math.floor(downscale/2);y<ydim; y+=downscale) {
+            for(var x = Math.floor(downscale/2);x<xdim;x+=downscale) {
+                pos = z*xdim*ydim + y*xdim + x;
+                var t2f = array_na_t2f[pos];
+                var t2s = array_na_t2s[pos];
+                var mm = array_na_mm[pos];
+                var vol = array_na_ex_frac[pos];
+                if (t2s == 0) {
+                    t2s = 1;
+                }
+                if (t2f == 0) {
+                    t2f = 1;
+                }
+                var val = (na_vol-vol)*mm * (1-Math.exp(-tr/na_t1)) * (0.6*Math.exp(-te/t2f) + 0.4*Math.exp(-te/t2s)) + vol*na_mm * (1-Math.exp(-tr/na_t1))*Math.exp(-te/na_t2fr)
 
-        result[x] = Math.abs(val) / 140;
+                val = Math.abs(val) / 140;
+                result[pos] = val;
+                for(var yi =-Math.floor(downscale/2);yi<Math.floor(downscale/2); yi++) {
+                    for(var xi =-Math.floor(downscale/2);xi<Math.floor(downscale/2);xi++) {
+                        if (yi!=0 || xi!=0) {
+                            pos = z*xdim*ydim + (y+yi)*xdim + x+xi;
+                            result[pos] = val;
+                        }
+                    }
+                }
+            }
+        }
     }
         
     var k_result = calcKSpace(result);
@@ -571,8 +616,9 @@ function calcNa(te, tr) {
     return [r[0], k_result, [256, 256, 0, 64]];
 }
 
-function calcSQ(te_start, te_end, te_step, tau1=10) {
+function calcSQ(te_start, te_end, te_step, tau1=10, downscale=4) {
     //SQ: [mM].*(exp(-(TE_vec(kk)+t1)/T2s)+exp(-(TE_vec(kk)+t1)/T2f)) Simulation  von einer multi-echo Akquisition mit TE_vec=TE=[1,2,3,…]. 
+    if (downscale < 1) { downscale = 1;}
     var result = new Float32Array(array_t1.length);
     var fa = 0.5*Math.PI;
     for (var x = 0; x < result.length; x++) {
@@ -581,19 +627,34 @@ function calcSQ(te_start, te_end, te_step, tau1=10) {
     var te_count = 0;
     for (var te=te_start; te<=te_end; te+=te_step) {
         te_count += 1;
-        for (var x = 0; x < result.length; x++) {
-            var t2f = array_na_t2f[x];
-            var t2s = array_na_t2s[x];
-            var mm = array_na_mm[x];
-            if (t2s == 0) {
-                t2s = 1;
-            }
-            if (t2f == 0) {
-                t2f = 1;
-            }
-            var val = mm * ( Math.exp(-(te+tau1)/t2s) + Math.exp(-(te+tau1)/t2f) ) * Math.sin(fa);
+        for(var z = 0; z<zdim; z++) {
+            for(var y = Math.floor(downscale/2);y<ydim; y+=downscale) {
+                for(var x = Math.floor(downscale/2);x<xdim;x+=downscale) {
+                    pos = z*xdim*ydim + y*xdim + x;
+                    if (pos > array_na_t2f.length) { continue; }
+                    var t2f = array_na_t2f[pos];
+                    var t2s = array_na_t2s[pos];
+                    var mm = array_na_mm[pos];
+                    if (t2s == 0) {
+                        t2s = 1;
+                    }
+                    if (t2f == 0) {
+                        t2f = 1;
+                    }
+                    var val = mm * ( Math.exp(-(te+tau1)/t2s) + Math.exp(-(te+tau1)/t2f) ) * Math.sin(fa);
 
-            result[x] += Math.abs(val);
+                    //result[i] += Math.abs(val);
+                    result[pos] += Math.abs(val);
+                    for(var yi =-Math.floor(downscale/2);yi<Math.floor(downscale/2); yi++) {
+                        for(var xi =-Math.floor(downscale/2);xi<Math.floor(downscale/2);xi++) {
+                            if (yi!=0 || xi!=0) {
+                                pos = z*xdim*ydim + (y+yi)*xdim + x+xi;
+                                result[pos] += Math.abs(val);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     for (var x = 0; x < result.length; x++) {
@@ -602,13 +663,14 @@ function calcSQ(te_start, te_end, te_step, tau1=10) {
     
     var k_result = calcKSpace(result);
 
-    var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
-    return [r[0], k_result, [256, 256, 0, 64]];
+    //var r = inverseKSpace(k_data_im_re, 256, 256, 0, 128);
+    return [result, k_result, [256, 256, 0, 256]];
 }
 
-function calcTQ(te_start, te_end, te_step, tau1=10, tau2=0.1) {
+function calcTQ(te_start, te_end, te_step, tau1=10, tau2=0.1, downscale=10) {
     //TQ:  [mM].*((exp(-TE_vec(kk)/T2s)-exp(-TE_vec(kk)/T2f))*(exp(-t1/T2s)-exp(-t1/T2f))*exp(t2/T2s));
     // s = (e(-t/ts)-e(-t/tf))*(e(-τ1/ts)-e(-τ1/tf))*e(-τ2/ts)  
+    if (downscale < 1) { downscale = 1;}
     var result = new Float32Array(array_t1.length);
     for (var x = 0; x < result.length; x++) {
         result[x] = 0;
@@ -616,19 +678,34 @@ function calcTQ(te_start, te_end, te_step, tau1=10, tau2=0.1) {
     var te_count = 0;
     for (var te=te_start; te<=te_end; te+=te_step) {
         te_count += 1;
-        for (var x = 0; x < result.length; x++) {
-            var t2f = array_na_t2f[x];
-            var t2s = array_na_t2s[x];
-            var mm = array_na_mm[x];
-            if (t2s == 0) {
-                t2s = 1;
-            }
-            if (t2f == 0) {
-                t2f = 1;
-            }
-            var val = mm * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) );
+        for(var z = 0; z<zdim; z++) {
+            for(var y = Math.floor(downscale/2);y<ydim; y+=downscale) {
+                for(var x = Math.floor(downscale/2);x<xdim;x+=downscale) {
+                    pos = z*xdim*ydim + y*xdim + x;
+                    if (pos > array_na_t2f.length) { continue; }
+                    var t2f = array_na_t2f[pos];
+                    var t2s = array_na_t2s[pos];
+                    var mm = array_na_mm[pos];
+                    if (t2s == 0) {
+                        t2s = 1;
+                    }
+                    if (t2f == 0) {
+                        t2f = 1;
+                    }
+                    var val = mm * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) );
 
-            result[x] += Math.abs(val);
+                    //result[i] += Math.abs(val);
+                    result[pos] += Math.abs(val);
+                    for(var yi =-Math.floor(downscale/2);yi<Math.floor(downscale/2); yi++) {
+                        for(var xi =-Math.floor(downscale/2);xi<Math.floor(downscale/2);xi++) {
+                            if (yi!=0 || xi!=0) {
+                                pos = z*xdim*ydim + (y+yi)*xdim + x+xi;
+                                result[pos] += Math.abs(val);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     for (var x = 0; x < result.length; x++) {
@@ -637,24 +714,51 @@ function calcTQ(te_start, te_end, te_step, tau1=10, tau2=0.1) {
 
     var k_result = calcKSpace(result);
 
-    var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
-    return [r[0], k_result, [256, 256, 0, 64]];
+    //var r = inverseKSpace(k_data_im_re, 256, 256, 0, 128);
+    return [result, k_result, [256, 256, 0, 256]];
 }
 
-function calcTQF(te,tau1=10e-3,tau2=0.1e-3,fa=90) { // https://doi.org/10.1002%2Fnbm.1548
+function calcTQF(te,tau1=10e-3,tau2=0.1e-3,fa=90,downscale=4) { // https://doi.org/10.1002/nbm.1548
     var s = new Float32Array(array_t1.length);
     fa = fa * Math.PI / 180;
-    for(var x=0;x<s.length;x++) {
-        var mm = array_na_mm[x];
-        var t2s = array_na_t2s[x];
-        var t2f = array_na_t2f[x];
-        s[x] = mm * (Math.exp(-te/t2s)-Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) * (Math.sin(fa)**5);
+    //for(var x=0;x<s.length;x++) {
+    for(var z = 0; z<zdim; z++) {
+        for(var y = Math.floor(downscale/2);y<ydim; y+=downscale) {
+            for(var x = Math.floor(downscale/2);x<xdim;x+=downscale) {
+                pos = z*xdim*ydim + y*xdim + x;
+                var mm = array_na_mm[pos];
+                var t2s = array_na_t2s[pos];
+                var t2f = array_na_t2f[pos];
+                val = Math.abs(mm * (Math.exp(-te/t2s)-Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) * (Math.sin(fa)**5));
+                result[pos] = val;
+                for(var yi =-Math.floor(downscale/2);yi<Math.floor(downscale/2); yi++) {
+                    for(var xi =-Math.floor(downscale/2);xi<Math.floor(downscale/2);xi++) {
+                        if (yi!=0 || xi!=0) {
+                            pos = z*xdim*ydim + (y+yi)*xdim + x+xi;
+                            result[pos] = val;
+                        }
+                    }
+                }
+            }
+        }
     }
     
     var k_result = calcKSpace(s);
 
     var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
     return [r[0], k_result, [256, 256, 0, 64]];
+}
+
+function calcTQ_SQ_Ratio(tq_params, sq_params) {
+    var tq = calcTQ(...tq_params)[0];
+    var sq = calcSQ(...sq_params)[0];
+    var result = new Float32Array(array_t1.length);
+    for (var x = 0; x < result.length; x++) {
+        result[x] = tq[x]/sq[x];
+    }
+    var k_result = calcKSpace(result);
+
+    return [result, k_result, [256, 256, 0, 256]];
 }
 
 var queryableFunctions = {
@@ -679,17 +783,20 @@ var queryableFunctions = {
     sgre: function(te, tr, fa) {
         reply('result', calcSGRE(te, tr, fa));
     },
-    na: function(te, tr) {
-        reply('result', calcNa(te, tr));
+    na: function(te, tr, spacing) {
+        reply('result', calcNa(te, tr, spacing));
     },
-    sq: function(te_start, te_end, te_step, tau1) {
-        reply('result', calcSQ(te_start, te_end, te_step, tau1));
+    sq: function(te_start, te_end, te_step, tau1, spacing) {
+        reply('result', calcSQ(te_start, te_end, te_step, tau1, spacing));
     },
-    tq: function(te_start, te_end, te_step, tau1, tau2) {
-        reply('result', calcTQ(te_start, te_end, te_step, tau1, tau2));
+    tq: function(te_start, te_end, te_step, tau1, tau2, spacing) {
+        reply('result', calcTQ(te_start, te_end, te_step, tau1, tau2, spacing));
     },
-    tqf: function(te, tau1, tau2, fa) {
-        reply('result', calcTQF(te, tau1, tau2, fa));
+    tqf: function(te, tau1, tau2, fa, spacing) {
+        reply('result', calcTQF(te, tau1, tau2, fa, spacing));
+    },
+    tqsqr: function(tq_params, sq_params) {
+        reply('result', calcTQ_SQ_Ratio(tq_params, sq_params));
     },
     reco: function (xlines, ylines, fmin, fmax, noIfft) {
         reply('result', inverseKSpace(k_data_im_re, xlines, ylines, fmin, fmax, noIfft));
