@@ -581,7 +581,7 @@ function FISP() {
 
     var te = parseFloat(document.getElementById("fisp_te").value)
     var fa = parseFloat(document.getElementById("fisp_fa").value)
-    var tr = te*2;
+    var tr = parseFloat(document.getElementById("fisp_tr").value);
 
     w.sendQuery("fisp", te, tr, fa);
 }
@@ -602,7 +602,7 @@ function PSIF() {
 
     var te = parseFloat(document.getElementById("psif_te").value)
     var fa = parseFloat(document.getElementById("psif_fa").value)
-    var tr = te*2;
+    var tr = parseFloat(document.getElementById("psif_tr").value)
 
     w.sendQuery("psif", te, tr, fa);
 }
@@ -847,11 +847,7 @@ function updatePSIFTime() {
     if(fa>180) { document.getElementById("psif_fa").value = 180; }
     if(fa<-180) { document.getElementById("psif_fa").value = -180; }
 
-    if(te >= tr) {
-        time.innerText = "TE has to be smaller than TR";
-    } else {
-        time.innerText = formatTime(tr*ydim*zdim);
-    }
+    time.innerText = formatTime(tr*ydim*zdim);
 }
 
 function updateFlashTime() {
@@ -879,11 +875,7 @@ function updateFISPTime() {
     if(fa>180) { document.getElementById("fisp_fa").value = 180; }
     if(fa<-180) { document.getElementById("fisp_fa").value = -180; }
 
-    if(te >= tr) {
-        time.innerText = "TE has to be smaller than TR";
-    } else {
-        time.innerText = formatTime(te*2*ydim*zdim);
-    }
+    time.innerText = formatTime(te*2*ydim*zdim);
 }
 
 function updateSGRETime() {

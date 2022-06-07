@@ -155,7 +155,7 @@ async function loadDataSet(path) {
             var b = new Float32Array(a.length);
             //console.log("t2", mm[0],mm[1], a.reduce((a,b)=>a+b)/a.length)
             for (var x = 0; x < a.length; x++) {
-                b[x] = (a[x] / 255.0) * (mm[1] - mm[0]) + mm[0];
+                b[x] = (a[x] / 255.0)// * (mm[1] - mm[0]) + mm[0];
             }
             resolve(b);
         }
@@ -464,7 +464,7 @@ function calcPSIF(te, tr, fa) {
         }
         var e1 = Math.exp(-tr/t1)
         var e2 = Math.exp(-tr/t2)
-        var val = pd * sfa/(1+cfa)*(1-(1-e1*cfa)*Math.sqrt((1-e2*e2) /( (1-e1*cfa)*(1-e1*cfa)-e2*e2*(e1-cfa)*(e1-cfa) )));
+        var val = pd * sfa/(1+cfa)*(1-(1-e1*cfa)*Math.sqrt((1-e2*e2) /( (1-e1*cfa)*(1-e1*cfa)-e2*e2*(e1-cfa)*(e1-cfa) ))) * Math.exp(-te/t2);
 
         result[x] = Math.abs(val);
     }
@@ -480,6 +480,7 @@ function calcFISP(te, tr, fa) {
     for (var x = 0; x < result.length; x++) {
         var t1 = array_t1[x]
         var t2 = array_t2[x]
+        var t2s = array_t2s[x]
         var pd = array_pd[x]
         if (t1 == 0) {
             t1 = 1.0;
@@ -487,7 +488,7 @@ function calcFISP(te, tr, fa) {
 
         var e1 = Math.exp(-tr/t1)
         var e2 = Math.exp(-tr/t2)
-        var val = pd * sfa/(1+cfa) * (1 - (e1-cfa)*Math.sqrt((1-e2*e2)/( (1-e1*cfa)*(1-e1*cfa)-e2*e2*(e1-cfa)*(e1-cfa) ) ) );
+        var val = pd * sfa/(1+cfa) * (1 - (e1-cfa)*Math.sqrt((1-e2*e2)/( (1-e1*cfa)*(1-e1*cfa)-e2*e2*(e1-cfa)*(e1-cfa) ) ) ) * Math.exp(-te/t2s);
 
         result[x] = Math.abs(val);
     }
@@ -509,7 +510,7 @@ function calcBalancedSSFP(te, tr, fa) {
         }
         var e_tr_t1 = Math.exp(-tr/t1)
         var e_tr_t2 = Math.exp(-tr/t2)
-        var val = pd * sfa * (1-Math.exp(-tr/t1)) / (1 - (e_tr_t1-e_tr_t2)*cfa - e_tr_t1*e_tr_t2 ) * Math.exp(-te/t2);
+        var val = pd * sfa * (1-Math.exp(-tr/t1)) / (1 - (e_tr_t1+e_tr_t2)*cfa - e_tr_t1*e_tr_t2 ) * Math.exp(-te/t2);
 
         result[x] = Math.abs(val);
     }
@@ -595,6 +596,9 @@ function calcNa(te, tr, downscale=4) {
                     t2f = 1;
                 }
                 var val = (na_vol-vol)*mm * (1-Math.exp(-tr/na_t1)) * (0.6*Math.exp(-te/t2f) + 0.4*Math.exp(-te/t2s)) + vol*na_mm * (1-Math.exp(-tr/na_t1))*Math.exp(-te/na_t2fr)
+                if (z == 10 && x == Math.floor(downscale/2) && y == Math.floor(downscale/2) ) {
+                    console.log(vol, mm, val, x, y, z);
+                }
 
                 val = Math.abs(val) / 140;
                 result[pos] = val;
@@ -612,8 +616,8 @@ function calcNa(te, tr, downscale=4) {
         
     var k_result = calcKSpace(result);
 
-    var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
-    return [r[0], k_result, [256, 256, 0, 64]];
+    //var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
+    return [result, k_result, [256, 256, 0, 256]];
 }
 
 function calcSQ(te_start, te_end, te_step, tau1=10, downscale=4) {
