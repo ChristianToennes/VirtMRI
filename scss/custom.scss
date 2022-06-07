@@ -457,6 +457,10 @@ app {
     display: none;
 }
 
+.invisible {
+    visibility: hidden;
+}
+
 .sidebar .nav-item a {
     color: $gb-dm-fg1;
     border-radius: 4px;
@@ -521,6 +525,18 @@ app {
 
 .figure-caption {
     font-size: unset;
+}
+
+.colorBarContainer {
+    justify-content: center;
+    align-items: center;
+}
+
+.colorBar {
+    height: 2rem;
+    width: 50%;
+    align-self: center;
+    border: 1px solid;
 }
 
 @media (max-width: 767.98px) {

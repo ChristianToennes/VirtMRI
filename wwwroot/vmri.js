@@ -70,6 +70,7 @@ var array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_
 const na_tabs = ["params-na-tab", "params-sq-tab", "params-tq-tab", "params-tqf-tab", "params-tqsqr-tab"];
 const h_tabs = ["params-ir-tab", "params-se-tab", "params-bssfp-tab", "params-fisp-tab", "params-psif-tab", "params-flash-tab", "params-sgre-tab", "params-sq-tab", "params-tq-tab"];
 var current_tab = "params-ir-tab";
+var selected_tab = "params-ir-tab";
 
 const loadDataMessageHandler = function (data) {
     array_pd = data[0];
@@ -85,6 +86,10 @@ const loadDataMessageHandler = function (data) {
     xdim = data[10];
 
     slice = document.getElementById("slice");
+    slice.max = zdim;
+    slice.value = Math.round(zdim/2);
+
+    slice = document.getElementById("or_slice");
     slice.max = zdim;
     slice.value = Math.round(zdim/2);
 
@@ -135,6 +140,16 @@ const resultMessageHandler = function (data) {
     spin.classList.add("hidden");
     document.getElementById("kspace").removeAttribute("disabled");
     displayAndWindow3DImage();
+    var windowing = document.getElementById("windowing");
+    var colorBar = document.getElementById("colorBarContainer");
+    if(isCurrentTabNa()) {
+        windowing.classList.add("hidden");
+        plot_colormap("colorBar");
+        colorBar.classList.remove("hidden");
+    } else {
+        windowing.classList.remove("hidden");
+        colorBar.classList.add("hidden");
+    }
 };
 w.addListener('result', resultMessageHandler);
 
@@ -253,7 +268,11 @@ function scrollDataset(event) {
 }
 
 function scrollResult(event) {
-    r_slice = document.getElementById("r_slice")
+    if (isCurrentTabNa()) {
+        r_slice = document.getElementById("or_slice");
+    } else {
+        r_slice = document.getElementById("r_slice")
+    }
     r_slice.value = r_slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
     if ("createEvent" in document) {
         evt = new Event("change", {"bubbles": false, "cancelable": true});
@@ -286,6 +305,10 @@ function windowResult(event) {
     }
 }
 
+function isCurrentTabNa() {
+    return na_tabs.includes(current_tab);
+}
+
 function displayAndWindow3DImage() {
     //canvas = document.createElement('canvas');
     //res_element = document.getElementById("result");
@@ -297,10 +320,14 @@ function displayAndWindow3DImage() {
     idata = ctx.createImageData(xdim, ydim);
 
     var image_result = new Uint8ClampedArray(xdim * ydim * 4);
-    in_slice = document.getElementById("r_slice");
+    if(isCurrentTabNa()) {
+        in_slice = document.getElementById("or_slice");
+    } else {
+        in_slice = document.getElementById("r_slice");
+    }
     slice = parseInt(in_slice.value);
     
-    if (na_tabs.includes(current_tab)) {
+    if (isCurrentTabNa()) {
         for (var x = 0; x < xdim * ydim; x++) {
             var val = Math.round(imgResult[x + slice * xdim * ydim] * 255);
             if (val > 255) { val = 255; }
@@ -418,8 +445,22 @@ function loadFuzzyDataSet() {
     });
 }
 
+function plot_colormap(canvas_id) {
+    let canvas = document.getElementById(canvas_id);
+    let ctx = canvas.getContext("2d");
+    for (let x = 0; x < 256; x++) {
+      let color = jetmap[x];
+      let r = color[0]*256;
+      let g = color[1]*256;
+      let b = color[2]*256;
+      ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+      //ctx.fillRect(0, x * canvas.height / 256, canvas.width, canvas.height / 256);
+      ctx.fillRect(Math.floor(x*(canvas.width/256)), 0, Math.ceil(canvas.width / 256), canvas.height);
+    }
+}
+
 function setTabs(tabId, tabHeadId) {
-    current_tab = tabHeadId;
+    selected_tab = tabHeadId;
     elems = document.getElementById("sequence").getElementsByClassName("nav-link")
     for(var x=0;x<elems.length;x++) { 
         if(elems[x].id == tabHeadId) {
@@ -761,6 +802,7 @@ function reco(update_slider, noIfft = false) {
 }
 
 function startScan() {
+    current_tab = selected_tab;
     selectedSequence();
 }
 
@@ -912,16 +954,6 @@ function updateTQTime() {
 }
 
 function updateTQSQRTime() {
-    var te_start = parseFloat(document.getElementById("tqsqr_te_start").value)
-    var te_end = parseFloat(document.getElementById("tqsqr_te_end").value)
-    var te_step = parseFloat(document.getElementById("tqsqr_te_step").value)
-    var te = document.getElementById("tqsqr_te");
-
-    var tes = ""+te_start;
-    for (var t=te_start+te_step;t<=te_end;t+=te_step) {
-        tes += ", " + t;
-    }
-    te.innerText = tes;
 }
 
 function updateTQFTime() {

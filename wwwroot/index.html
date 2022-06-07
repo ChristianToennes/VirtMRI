@@ -445,10 +445,10 @@
                 <div class="flex-fill"></div>
             </div>
 
-            <div class="row pt-3 hidden align-items-end" id="result">
+            <div class="row pt-3 hidden align-items-start" id="result">
                 <div class="col-3">
                     <figure>
-                        <div class="figcaption">K-Space</div>
+                        <div class="figcaption mb-1">K-Space</div>
                         <canvas class="border img-fluid w-100" onwheel="scrollResult(event)" id="kResult"></canvas>
                     </figure>
                     <fieldset id="kspace">
@@ -482,32 +482,40 @@
                             value="Reconstruct image" />
                     </fieldset>
                 </div>
-                <div class="col mx-3 mb-2">
+                <div class="col mb-2">
                     <div class="row w-100 container-fluid justify-content-center">
                         <canvas class="border img-result w-100"
                             style="max-height: calc(100vh - 8.5rem); max-width: calc(100vh - 8.5rem);"
                             onwheel="scrollResult(event)" onmousedown="startWindowing()" onmouseup="endWindowing()"
                             onmouseout="endWindowing()" onmousemove="windowResult(event)" id="imgResult"></canvas>
                     </div>
-                    <div class="row">
-                        <div class="col">
+                    <div class="row colorBarContainer" id="windowing">
+                        <div class="col-3">
                             <label for="ti">Window Center: </label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" name="wc" id="wc"
                                 min="0" max="4096" value="2048" onchange="displayAndWindow3DImage();" />
                         </div>
-                        <div class="col">
+                        <div class="col-3">
                             <label for="tr">Window Width:</label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" name="ww" id="ww"
                                 min="0" max="4096" value="4096" onchange="displayAndWindow3DImage();" />
                         </div>
-                        <div class="col">
+                        <div class="col-3">
                             <label for="slice">Slice:</label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
                                 name="slice" id="r_slice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
-                        <div class="col d-flex">
+                        <div class="">
                             <input type="button" class="btn-secondary align-self-center" value="Auto Window"
                                 onclick="autoWindow()" />
+                        </div>
+                    </div>
+                    <div class="row my-2 colorBarContainer" id="colorBarContainer">
+                        <canvas class="colorBar" id="colorBar"></canvas>
+                        <div class="col-3">
+                            <label for="slice">Slice:</label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
+                                name="slice" id="or_slice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                     </div>
                 </div>
