@@ -40,7 +40,7 @@ params_3 = { # 3T params
 
 #Name label t1 t2 t2s t2f ex_frac nm filename
 params_na = {
-    0: ["Background", 0, 10, 0.1, 50, 1, 4, 0, "subject{}_bck_v{}"],
+    0: ["Background", 0, 0, 0, 0, 0, 0, 0, "subject{}_bck_v{}"],
     1: ["CSF", 1, 50, 0.1, 60, 60, 1, 140, "subject{}_csf_v{}"],
     2: ["Grey Matter", 2, 30, 0.1, 60, 3, 0.22, 55, "subject{}_gm_v{}"],
     3: ["White Matter", 3, 30, 0.1, 60, 3, 0.18, 45, "subject{}_wm_v{}"],
@@ -170,7 +170,7 @@ def read_phantomag(in_dir, trans=None):
 import matplotlib.pyplot as plt
 def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None, ex_frac=None):
     print(t1.shape, t2.shape, pd.shape)
-    na = t2f is not None
+    na = t2f is not None and ex_frac is not None
     if not os.path.exists(os.path.join(out_dir, sub[0])):
         os.makedirs(os.path.join(out_dir, sub[0]))
     if na:
@@ -253,8 +253,9 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None, ex_frac=None):
             mi = np.min(ex_frac)
             ma = np.max(ex_frac)
             print(np.min(ex_frac), np.max(ex_frac), np.mean(ex_frac), np.median(ex_frac))
-            ex = np.array(255 * (ex_frac-mi) / (ma-mi), dtype=np.uint8)
-            print("t2f", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (ex_frac-mi) / (ma-mi)))
+            ex = np.array(255 * ex_frac, dtype=np.uint8)
+            print("ex", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (ex_frac-mi) / (ma-mi)), np.min(ex), np.min(255 * (ex_frac-mi) / (ma-mi)))
+            print(ex[2,2,10], ex[10,2,2])
             er = (255 * (ex_frac-mi) / (ma-mi)) - ex
             #print("er", np.min(er), np.max(er), np.mean(er), np.median(er))
             f.write(np.array([mi,ma], dtype=np.float32).tobytes())
