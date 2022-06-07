@@ -89,6 +89,10 @@ const loadDataMessageHandler = function (data) {
     slice.max = zdim;
     slice.value = Math.round(zdim/2);
 
+    slice = document.getElementById("or_slice");
+    slice.max = zdim;
+    slice.value = Math.round(zdim/2);
+
     r = document.getElementById("content");
     r.classList.remove("hidden");
     spin = document.getElementById("datasetLoading");
