@@ -64,7 +64,7 @@
                             <div class="nav-link" id="params-bssfp-tab" onclick="setBalancedSSFP()">Balanced SSFP</div>
                             <div class="nav-link" id="params-fisp-tab" onclick="setFISP()">FISP</div>
                             <div class="nav-link" id="params-psif-tab" onclick="setPSIF()">PSIF</div>
-                            <div class="nav-link" id="params-flash-tab" onclick="setFlash()">Flash</div>
+                            <!--<div class="nav-link" id="params-flash-tab" onclick="setFlash()">Flash</div>-->
                             <div class="nav-link" id="params-sgre-tab" onclick="setSGRE()">Spoiled GRE</div>
                             <div class="" style="flex-grow: 4"></div>
                             <div class="nav-link" id="params-na-tab" onclick="setNa()">Natrium</div>
@@ -152,19 +152,19 @@
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TE:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="42" name="ti" id="fisp_te" oninput="updateFISPTime()"/>
+                                <input class="col-sm form-control" type="number" value="15" name="ti" id="fisp_te" oninput="updateFISPTime()"/>
                             </div>
                             <div class="form-row">
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TR:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="84" name="tr" id="fisp_tr" oninput="updateFISPTime()"/>
+                                <input class="col-sm form-control" type="number" value="50" name="tr" id="fisp_tr" oninput="updateFISPTime()"/>
                             </div>
                             <div class="form-row">
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">FA:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="23" min="-180" max="180" name="fa" id="fisp_fa" oninput="updateFISPTime()"/>
+                                <input class="col-sm form-control" type="number" value="70" min="-180" max="180" name="fa" id="fisp_fa" oninput="updateFISPTime()"/>
                             </div>
                             <div class="form-row">
                                 <div class="col-auto w-25">
@@ -199,7 +199,7 @@
                                 <p class="col-sm form-control mb-0" id="psif_time"></p>
                             </div>
                         </div>
-                        <div class="col tab-pane" id="params-flash">
+                        <!--<div class="col tab-pane" id="params-flash">
                             <div class="form-row">
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TE:</label>
@@ -224,7 +224,7 @@
                                 </div>
                                 <p class="col-sm form-control mb-0" id="flash_time"></p>
                             </div>
-                        </div>
+                        </div>-->
                         <div class="col tab-pane" id="params-sgre">
                             <div class="form-row">
                                 <div class="col-auto w-25">
