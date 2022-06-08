@@ -484,104 +484,10 @@ function setTabs() {
 
 var selectedSequence = "IR";
 
-function setSpinEcho() {
-    selectedSequence = "SE";
+function setSequence(sequence) {
+    selectedSequence = sequence;
     setTabs();
-    updateSETime();
-}
-
-function setInversionRecovery() {
-    selectedSequence = "IR";
-    setTabs();
-    updateIRTime();
-}
-
-function setBalancedSSFP() {
-    selectedSequence = "bSSFP";
-    setTabs();
-    updateBalancedSSFPTime();
-}
-
-function setFISP() {
-    selectedSequence = "FISP";
-    setTabs();
-    updateFISPTime();
-}
-
-function setPSIF() {
-    selectedSequence = "PSIF";
-    setTabs();
-    updatePSIFTime();
-}
-
-function setSGRE() {
-    selectedSequence = "SGRE";
-    setTabs();
-    updateSGRETime();
-}
-
-function setNa() {
-    selectedSequence = "Na";
-    setTabs();
-    updateNaTime();
-}
-
-function setSQ() {
-    selectedSequence = "SQ";
-    setTabs();
-    updateSQTime();
-}
-
-function setTQ() {
-    selectedSequence = "TQ";
-    setTabs();
-    updateTQTime();
-}
-
-function setTQF() {
-    selectedSequence = "TQF";
-    setTabs();
-    updateTQFTime();
-}
-
-function setTQSQR() {
-    selectedSequence = "TQSQR";
-    setTabs();
-    updateTQSQRTime();
-}
-
-function TQSQR() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    /*var te_start = parseFloat(document.getElementById("tqsqr_te_start").value)
-    var te_end = parseFloat(document.getElementById("tqsqr_te_end").value)
-    var te_step = parseFloat(document.getElementById("tqsqr_te_step").value)
-    var tau1 = parseFloat(document.getElementById("tqsqr_tau1").value)
-    var tau2 = parseFloat(document.getElementById("tqsqr_tau2").value)
-    var spacing_tq = parseFloat(document.getElementById("tq_spacing").value)
-    var spacing_sq = parseFloat(document.getElementById("sq_spacing").value)*/
-
-    var te_start = parseFloat(document.getElementById("tq_te_start").value)
-    var te_end = parseFloat(document.getElementById("tq_te_end").value)
-    var te_step = parseFloat(document.getElementById("tq_te_step").value)
-    var tau1 = parseFloat(document.getElementById("tq_tau1").value)
-    var tau2 = parseFloat(document.getElementById("tq_tau2").value)
-    var spacing = parseFloat(document.getElementById("tq_spacing").value)
-    var tq_params = [te_start, te_end, te_step, tau1, tau2, spacing];
-
-    var te_start = parseFloat(document.getElementById("sq_te_start").value)
-    var te_end = parseFloat(document.getElementById("sq_te_end").value)
-    var te_step = parseFloat(document.getElementById("sq_te_step").value)
-    var tau1 = parseFloat(document.getElementById("sq_tau1").value)
-    var spacing = parseFloat(document.getElementById("sq_spacing").value)
-    var sq_params = [te_start, te_end, te_step, tau1, spacing];
-
-    w.sendQuery("tqsqr", tq_params, sq_params);
+    updateTime();
 }
 
 function setKSpaceFilt(xlines, ylines, fmin, fmax) {
@@ -644,9 +550,14 @@ function startScan() {
     r.classList.add("hidden");
     spin.classList.remove("hidden");
 
-    var param_div = document.getElementById("params-" + selectedSequence);
     var params = {sequence: selectedSequence};
+
+    var param_div = document.getElementById("params-general");
     params = read_params(param_div, params);
+
+    param_div = document.getElementById("params-" + selectedSequence);
+    params = read_params(param_div, params);
+    
     if(selectedSequence == "TQSQR") {
         var param_div = document.getElementById("params-SQ");
         var tq_params = {};

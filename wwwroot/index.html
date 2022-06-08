@@ -26,7 +26,7 @@
             <h1 class="cp1">Virtual MRI</h1>
         </div>
         <div class="content px-4 pt-2 hidden" id="content">
-            <div class="row" onwheel="scrollDataset(event)">
+            <div class="row hidden" id="dataset" onwheel="scrollDataset(event)">
                 <figure class="col pr-0 figure text-center">
                     <figcaption class="figure-caption">Proton density</figcaption>
                     <canvas class="figure-img img-fluid rounded" id="imgPD"></canvas>
@@ -44,7 +44,7 @@
                     <canvas class="figure-img img-fluid rounded" id="imgT2s"></canvas>
                 </figure>
             </div>
-            <div class="row mx-1">
+            <div class="row mx-1 hidden" id="dataset_slider">
                 <div class="col-auto">
                     <label class="mb-0 py-1 align-self-center" for="slice">Slice:</label>
                 </div>
@@ -53,25 +53,46 @@
                         max="zdim" name="slice" id="slice" value="100" onchange="displayDataSet();" />
                 </div>
             </div>
-
+            
+            <div class="row mt-2">
+                <div class="col" id="params-general">
+                    <div class="form-row">
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">Downscale Factor:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" value="4" name="downscale" id="downscale" oninput="updateTime()" />
+                    </div>
+                    <div class="form-row">
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">Compressed Sensing:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" value="1" name="cs" id="cs" oninput="updateTime()" />
+                    </div>
+                    <div class="form-row">
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">Parallel Imaging:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" value="1" name="parallel" id="parallel" oninput="updateTime()" />
+                    </div>
+                </div>
+            </div>
             <div class="row mt-2">
                 <div class="col" id="sequence">
                     <div class="row">
                         <div class="col nav nav-tabs">
-                            <div class="nav-link active" id="params-IR-tab" onclick="setInversionRecovery()">Inversion
+                            <div class="nav-link active" id="params-IR-tab" onclick="setSequence('IR')">Inversion
                                 Recovery</div>
-                            <div class="nav-link" id="params-SE-tab" onclick="setSpinEcho()">Spin Echo</div>
-                            <div class="nav-link" id="params-bSSFP-tab" onclick="setBalancedSSFP()">Balanced SSFP</div>
-                            <div class="nav-link" id="params-FISP-tab" onclick="setFISP()">FISP</div>
-                            <div class="nav-link" id="params-PSIF-tab" onclick="setPSIF()">PSIF</div>
-                            <!--<div class="nav-link" id="params-flash-tab" onclick="setFlash()">Flash</div>-->
-                            <div class="nav-link" id="params-SGRE-tab" onclick="setSGRE()">Spoiled GRE</div>
+                            <div class="nav-link" id="params-SE-tab" onclick="setSequence('SE')">Spin Echo</div>
+                            <div class="nav-link" id="params-bSSFP-tab" onclick="setSequence('bSSFP')">Balanced SSFP</div>
+                            <div class="nav-link" id="params-FISP-tab" onclick="setSequence('FISP')">FISP</div>
+                            <div class="nav-link" id="params-PSIF-tab" onclick="setSequence('PSIF')">PSIF</div>
+                            <div class="nav-link" id="params-SGRE-tab" onclick="setSequence('SGRE')">Spoiled GRE</div>
                             <div class="" style="flex-grow: 4"></div>
-                            <div class="nav-link" id="params-Na-tab" onclick="setNa()">Natrium</div>
-                            <div class="nav-link" id="params-SQ-tab" onclick="setSQ()">Na SQ</div>
-                            <div class="nav-link" id="params-TQ-tab" onclick="setTQ()">Na TQ</div>
-                            <div class="nav-link" id="params-TQSQR-tab" onclick="setTQSQR()">Na TQ/SQ</div>
-                            <div class="nav-link" id="params-TQF-tab" onclick="setTQF()">Na TQF</div>
+                            <div class="nav-link" id="params-Na-tab" onclick="setSequence('Na')">Natrium</div>
+                            <div class="nav-link" id="params-SQ-tab" onclick="setSequence('SQ')">Na SQ</div>
+                            <div class="nav-link" id="params-TQ-tab" onclick="setSequence('TQ')">Na TQ</div>
+                            <div class="nav-link" id="params-TQSQR-tab" onclick="setSequence('TQSQR')">Na TQ/SQ</div>
+                            <div class="nav-link" id="params-TQF-tab" onclick="setSequence('TQF')">Na TQF</div>
                         </div>
                     </div>
                     <div class="row border py-2 tab-content" id="params">
@@ -244,12 +265,6 @@
                                 </div>
                                 <p class="col-sm form-control mb-0" id="na_time"></p>
                             </div>
-                            <div class="form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">Spacing</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="4" name="downscale" id="na_downscale" oninput="updateNaTime()" />
-                            </div>
                         </div>
                         <div class="col tab-pane" id="params-SQ">
                             <div class="form-row">
@@ -281,12 +296,6 @@
                                     <label class="mb-0 align-self-center">TEs:</label>
                                 </div>
                                 <p class="col-sm form-control mb-0" id="sq_te"></p>
-                            </div>
-                            <div class="form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">Spacing (mm):</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="4" name="downscale" id="sq_spacing" oninput="updateSQTime()" />
                             </div>
                         </div>
                         <div class="col tab-pane" id="params-TQ">
@@ -326,12 +335,6 @@
                                 </div>
                                 <p class="col-sm form-control mb-0" id="tq_te"></p>
                             </div>
-                            <div class="form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">Spacing (mm):</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="10" name="downscale" id="tq_spacing" oninput="updateTQTime()" />
-                            </div>
                         </div>
                         <div class="col tab-pane" id="params-TQSQR">
                         </div>
@@ -359,12 +362,6 @@
                                     <label class="mb-0 align-self-center">FA (Default 90):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="90" name="fa" id="tqf_fa" oninput="updateTQFTime()"/>
-                            </div>
-                            <div class="form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">Spacing (mm):</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="4" name="downscale" id="tqf_spacing" oninput="updateTQFTime()" />
                             </div>
                         </div>
                     </div>
