@@ -67,10 +67,10 @@ var ydim = 256;
 var zdim = 256;
 var array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2s, array_na_t2f, result, k_data_im_re, slice_data;
 
-const na_tabs = ["params-na-tab", "params-sq-tab", "params-tq-tab", "params-tqf-tab", "params-tqsqr-tab"];
-const h_tabs = ["params-ir-tab", "params-se-tab", "params-bssfp-tab", "params-fisp-tab", "params-psif-tab", "params-flash-tab", "params-sgre-tab", "params-sq-tab", "params-tq-tab"];
-var current_tab = "params-ir-tab";
-var selected_tab = "params-ir-tab";
+const na_tabs = ["params-Na-tab", "params-SQ-tab", "params-TQ-tab", "params-TQF-tab", "params-TQSQR-tab"];
+const h_tabs = ["params-IR-tab", "params-SE-tab", "params-bSSFP-tab", "params-FISP-tab", "params-PSIF-tab", "params-FLASH-tab", "params-SGRE-tab"];
+var current_tab = "params-IR-tab";
+var selected_tab = "params-IR-tab";
 
 const loadDataMessageHandler = function (data) {
     array_pd = data[0];
@@ -459,7 +459,9 @@ function plot_colormap(canvas_id) {
     }
 }
 
-function setTabs(tabId, tabHeadId) {
+function setTabs() {
+    var tabId = "params-" + selectedSequence;
+    var tabHeadId = "params-" + selectedSequence + "-tab";
     selected_tab = tabHeadId;
     elems = document.getElementById("sequence").getElementsByClassName("nav-link")
     for(var x=0;x<elems.length;x++) { 
@@ -480,250 +482,72 @@ function setTabs(tabId, tabHeadId) {
     }
 }
 
-var selectedSequence = inversionRecovery;
+var selectedSequence = "IR";
 
 function setSpinEcho() {
-    setTabs("params-se", "params-se-tab");
+    selectedSequence = "SE";
+    setTabs();
     updateSETime();
-    selectedSequence = spinEcho;
-}
-
-function spinEcho() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te = parseFloat(document.getElementById("se_te").value)
-    var tr = parseFloat(document.getElementById("se_tr").value)
-
-    w.sendQuery("spinEcho", te, tr);
 }
 
 function setInversionRecovery() {
-    setTabs("params-ir", "params-ir-tab");
+    selectedSequence = "IR";
+    setTabs();
     updateIRTime();
-    selectedSequence = inversionRecovery;
-}
-
-function inversionRecovery() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var ti = parseFloat(document.getElementById("ir_ti").value)
-    var tr = parseFloat(document.getElementById("ir_tr").value)
-    var te = parseFloat(document.getElementById("ir_te").value)
-
-    w.sendQuery("inversionRecovery", te, tr, ti);
-}
-
-function setFlash() {
-    setTabs("params-flash", "params-flash-tab");
-    updateFlashTime();
-    selectedSequence = flash;
-}
-
-function flash() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te = parseFloat(document.getElementById("flash_te").value)
-    var tr = parseFloat(document.getElementById("flash_tr").value)
-    var fa = parseFloat(document.getElementById("flash_fa").value)
-
-    w.sendQuery("flash", te, tr, fa);
 }
 
 function setBalancedSSFP() {
-    setTabs("params-bssfp", "params-bssfp-tab");
+    selectedSequence = "bSSFP";
+    setTabs();
     updateBalancedSSFPTime();
-    selectedSequence = balancedSSFP;
-}
-
-function balancedSSFP() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te = parseFloat(document.getElementById("fisp_te").value)
-    var fa = parseFloat(document.getElementById("fisp_fa").value)
-    var tr = te*2;
-
-    w.sendQuery("fisp", te, tr, fa);
 }
 
 function setFISP() {
-    setTabs("params-fisp", "params-fisp-tab");
+    selectedSequence = "FISP";
+    setTabs();
     updateFISPTime();
-    selectedSequence = FISP;
-}
-
-function FISP() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te = parseFloat(document.getElementById("fisp_te").value)
-    var fa = parseFloat(document.getElementById("fisp_fa").value)
-    var tr = parseFloat(document.getElementById("fisp_tr").value);
-
-    w.sendQuery("fisp", te, tr, fa);
 }
 
 function setPSIF() {
-    setTabs("params-psif", "params-psif-tab");
+    selectedSequence = "PSIF";
+    setTabs();
     updatePSIFTime();
-    selectedSequence = PSIF;
-}
-
-function PSIF() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te = parseFloat(document.getElementById("psif_te").value)
-    var fa = parseFloat(document.getElementById("psif_fa").value)
-    var tr = parseFloat(document.getElementById("psif_tr").value)
-
-    w.sendQuery("psif", te, tr, fa);
 }
 
 function setSGRE() {
-    setTabs("params-sgre", "params-sgre-tab");
+    selectedSequence = "SGRE";
+    setTabs();
     updateSGRETime();
-    selectedSequence = SGRE;
-}
-
-function SGRE() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te = parseFloat(document.getElementById("sgre_te").value)
-    var fa = parseFloat(document.getElementById("sgre_fa").value)
-    var tr = parseFloat(document.getElementById("sgre_tr").value)
-
-    w.sendQuery("sgre", te, tr, fa);
 }
 
 function setNa() {
-    setTabs("params-na", "params-na-tab");
+    selectedSequence = "Na";
+    setTabs();
     updateNaTime();
-    selectedSequence = Na;
 }
-
-function Na() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te = parseFloat(document.getElementById("na_te").value)
-    var tr = parseFloat(document.getElementById("na_tr").value)
-    var spacing = parseFloat(document.getElementById("na_spacing").value)
-
-    w.sendQuery("na", te, tr, spacing);
-}
-
 
 function setSQ() {
-    setTabs("params-sq", "params-sq-tab");
+    selectedSequence = "SQ";
+    setTabs();
     updateSQTime();
-    selectedSequence = SQ;
-}
-
-function SQ() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te_start = parseFloat(document.getElementById("sq_te_start").value)
-    var te_end = parseFloat(document.getElementById("sq_te_end").value)
-    var te_step = parseFloat(document.getElementById("sq_te_step").value)
-    var tau1 = parseFloat(document.getElementById("sq_tau1").value)
-    var spacing = parseFloat(document.getElementById("sq_spacing").value)
-
-    w.sendQuery("sq", te_start, te_end, te_step, tau1, spacing);
 }
 
 function setTQ() {
-    setTabs("params-tq", "params-tq-tab");
+    selectedSequence = "TQ";
+    setTabs();
     updateTQTime();
-    selectedSequence = TQ;
-}
-
-function TQ() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te_start = parseFloat(document.getElementById("tq_te_start").value)
-    var te_end = parseFloat(document.getElementById("tq_te_end").value)
-    var te_step = parseFloat(document.getElementById("tq_te_step").value)
-    var tau1 = parseFloat(document.getElementById("tq_tau1").value)
-    var tau2 = parseFloat(document.getElementById("tq_tau2").value)
-    var spacing = parseFloat(document.getElementById("tq_spacing").value)
-
-    w.sendQuery("tq", te_start, te_end, te_step, tau1, tau2, spacing);
 }
 
 function setTQF() {
-    setTabs("params-tqf", "params-tqf-tab");
+    selectedSequence = "TQF";
+    setTabs();
     updateTQFTime();
-    selectedSequence = TQF;
-}
-
-function TQF() {
-    r = document.getElementById("result");
-    spin = document.getElementById("scanningSpinner");
-    slice = document.getElementById("r_slice");
-    slice.max = zdim;
-    r.classList.add("hidden");
-    spin.classList.remove("hidden");
-
-    var te = parseFloat(document.getElementById("tqf_te").value)
-    var tau1 = parseFloat(document.getElementById("tqf_tau1").value)
-    var tau2 = parseFloat(document.getElementById("tqf_tau2").value)
-    var fa = parseFloat(document.getElementById("tqf_fa").value)
-    var spacing = parseFloat(document.getElementById("tqf_spacing").value)
-
-    w.sendQuery("tqf", te, tau1, tau2, fa, spacing);
 }
 
 function setTQSQR() {
-    setTabs("params-tqsqr", "params-tqsqr-tab");
+    selectedSequence = "TQSQR";
+    setTabs();
     updateTQSQRTime();
-    selectedSequence = TQSQR;
 }
 
 function TQSQR() {
@@ -801,9 +625,40 @@ function reco(update_slider, noIfft = false) {
     }
 }
 
+function read_params(param_div, params) {
+    for (var child_id in param_div.children) {
+        var child = param_div.children[child_id];
+        if (child.children == undefined) { continue;}
+        var input = child.children[1];
+        params[input.name] = parseFloat(input.value);
+    }
+    return params;
+}
+
 function startScan() {
     current_tab = selected_tab;
-    selectedSequence();
+    r = document.getElementById("result");
+    spin = document.getElementById("scanningSpinner");
+    slice = document.getElementById("r_slice");
+    slice.max = zdim;
+    r.classList.add("hidden");
+    spin.classList.remove("hidden");
+
+    var param_div = document.getElementById("params-" + selectedSequence);
+    var params = {sequence: selectedSequence};
+    params = read_params(param_div, params);
+    if(selectedSequence == "TQSQR") {
+        var param_div = document.getElementById("params-SQ");
+        var tq_params = {};
+        tq_params = read_params(param_div, tq_params);
+        var param_div = document.getElementById("params-TQ");
+        var sq_params = {};
+        sq_params = read_params(param_div, sq_params);
+        params["tq_params"] = tq_params;
+        params["sq_params"] = sq_params;
+    }
+    //console.log(params);
+    w.sendQuery("simulateImage", params);
 }
 
 function displayDataSet() {
@@ -811,6 +666,13 @@ function displayDataSet() {
     display3DImage(document.getElementById("imgT1"), array_t1);
     display3DImage(document.getElementById("imgT2"), array_t2);
     display3DImage(document.getElementById("imgT2s"), array_t2s);
+}
+
+function updateTime() {
+    var functionName = "update" + selectedSequence + "Time";
+    if (this.hasOwnProperty(functionName)) {
+        this[functionName]();
+    }
 }
 
 function updateIRTime() {
@@ -848,22 +710,6 @@ function updatePSIFTime() {
     if(fa<-180) { document.getElementById("psif_fa").value = -180; }
 
     time.innerText = formatTime(tr*ydim*zdim);
-}
-
-function updateFlashTime() {
-    var te = parseFloat(document.getElementById("flash_te").value)
-    var tr = parseFloat(document.getElementById("flash_tr").value)
-    var fa = parseFloat(document.getElementById("flash_fa").value)
-    var time = document.getElementById("flash_time");
-        
-    if(fa>180) { document.getElementById("flash_fa").value = 180; }
-    if(fa<-180) { document.getElementById("flash_fa").value = -180; }
-
-    if(te >= tr) {
-        time.innerText = "TE has to be smaller than TR";
-    } else {
-        time.innerText = formatTime(tr*ydim*zdim);
-    }
 }
 
 function updateFISPTime() {
