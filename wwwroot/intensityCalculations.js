@@ -719,7 +719,7 @@ function calcTQ(te_start, te_end, te_step, tau1=10, tau2=0.1, downscale=10) {
 }
 
 function calcTQF(te,tau1=10e-3,tau2=0.1e-3,fa=90,downscale=4) { // https://doi.org/10.1002/nbm.1548
-    var s = new Float32Array(array_t1.length);
+    var result = new Float32Array(array_t1.length);
     fa = fa * Math.PI / 180;
     //for(var x=0;x<s.length;x++) {
     for(var z = 0; z<zdim; z++) {
@@ -743,7 +743,7 @@ function calcTQF(te,tau1=10e-3,tau2=0.1e-3,fa=90,downscale=4) { // https://doi.o
         }
     }
     
-    var k_result = calcKSpace(s);
+    var k_result = calcKSpace(result);
 
     var r = inverseKSpace(k_data_im_re, 256, 256, 0, 64);
     return [r[0], k_result, [256, 256, 0, 64]];
