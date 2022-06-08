@@ -98,7 +98,7 @@ const loadDataMessageHandler = function (data) {
     spin = document.getElementById("datasetLoading");
     spin.classList.add("hidden");
     displayDataSet();
-    setInversionRecovery();
+    setSequence("IR");
     if (array_na_mm == null) {
         for (var tab in na_tabs) {
             t = document.getElementById(tab);
