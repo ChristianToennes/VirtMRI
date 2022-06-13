@@ -178,6 +178,13 @@ const resultMessageHandler = function (data) {
     slice.max = zdim-1;
     slice.value = Math.round(zdim/2);
 
+    slice = document.getElementById("xdim");
+    slice.value = xdim;
+    slice = document.getElementById("ydim");
+    slice.value = ydim;
+    slice = document.getElementById("zdim");
+    slice.value = zdim;
+
     displayAndWindow3DImage();
 };
 w.addListener('result', resultMessageHandler);
