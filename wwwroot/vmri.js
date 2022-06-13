@@ -62,9 +62,9 @@ function QueryableWorker(url) {
 }
 const w = new QueryableWorker("./intensityCalculations.js");
 
-var xdim = 256;
-var ydim = 256;
-var zdim = 256;
+//var xdim = 256;
+//var ydim = 256;
+//var zdim = 256;
 var array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2s, array_na_t2f, result, k_data_im_re, slice_data;
 
 const na_tabs = ["params-Na-tab", "params-SQ-tab", "params-TQ-tab", "params-TQF-tab", "params-TQSQR-tab"];
@@ -81,9 +81,9 @@ const loadDataMessageHandler = function (data) {
     array_na_t1 = data[5];
     array_na_t2s = data[6];
     array_na_t2f = data[7];
-    zdim = data[8];
-    ydim = data[9];
-    xdim = data[10];
+    var zdim = data[8];
+    var ydim = data[9];
+    var xdim = data[10];
 
     slice = document.getElementById("slice");
     slice.max = zdim;
@@ -92,6 +92,16 @@ const loadDataMessageHandler = function (data) {
     slice = document.getElementById("or_slice");
     slice.max = zdim;
     slice.value = Math.round(zdim/2);
+
+    slice = document.getElementById("xdim")
+    slice.max = xdim;
+    slice.value = xdim;
+    slice = document.getElementById("ydim")
+    slice.max = ydim;
+    slice.value = ydim;
+    slice = document.getElementById("zdim")
+    slice.max = zdim;
+    slice.value = zdim;
 
     r = document.getElementById("content");
     r.classList.remove("hidden");
@@ -123,7 +133,7 @@ const resultMessageHandler = function (data) {
     //console.log("image result");
     if (data[0] != undefined) {
         imgResult = data[0];
-        //console.log(imgResult.reduce((a,b)=>Math.max(a,b), 0));
+        //console.log(imgResult.data.reduce((a,b)=>Math.max(a,b), 0));
         if (data[1] != undefined) {
             kResult = data[1];
             if (data[2] != undefined) {
@@ -139,7 +149,7 @@ const resultMessageHandler = function (data) {
     r.classList.remove("hidden");
     spin.classList.add("hidden");
     document.getElementById("kspace").removeAttribute("disabled");
-    displayAndWindow3DImage();
+
     var windowing = document.getElementById("windowing");
     var colorBar = document.getElementById("colorBarContainer");
     if(isCurrentTabNa()) {
@@ -150,6 +160,25 @@ const resultMessageHandler = function (data) {
         windowing.classList.remove("hidden");
         colorBar.classList.add("hidden");
     }
+    
+    
+    var xdim = imgResult.xdim;
+    var ydim = imgResult.ydim;
+    var zdim = imgResult.zdim;
+
+    var canvas = document.getElementById("imgResult");
+    canvas.width = xdim;
+    canvas.height = ydim;
+
+    var slice = document.getElementById("r_slice");
+    slice.max = zdim-1;
+    slice.value = Math.round(zdim/2);
+
+    slice = document.getElementById("or_slice");
+    slice.max = zdim-1;
+    slice.value = Math.round(zdim/2);
+
+    displayAndWindow3DImage();
 };
 w.addListener('result', resultMessageHandler);
 
@@ -312,11 +341,15 @@ function isCurrentTabNa() {
 function displayAndWindow3DImage() {
     //canvas = document.createElement('canvas');
     //res_element = document.getElementById("result");
-    canvas = document.getElementById("imgResult");
+    var canvas = document.getElementById("imgResult");
+    
+    var xdim = imgResult.xdim;
+    var ydim = imgResult.ydim;
+    var zdim = imgResult.zdim;
 
     ctx = canvas.getContext('2d');
-    canvas.width = xdim;
-    canvas.height = ydim;
+    //canvas.width = xdim;
+    //canvas.height = ydim;
     idata = ctx.createImageData(xdim, ydim);
 
     var image_result = new Uint8ClampedArray(xdim * ydim * 4);
@@ -329,7 +362,7 @@ function displayAndWindow3DImage() {
     
     if (isCurrentTabNa()) {
         for (var x = 0; x < xdim * ydim; x++) {
-            var val = Math.round(imgResult[x + slice * xdim * ydim] * 255);
+            var val = Math.round(imgResult.data[x + slice * xdim * ydim] * 255);
             if (val > 255) { val = 255; }
             if (val < 0) {val = 0;}
             var c = jetmap[val];
@@ -344,7 +377,7 @@ function displayAndWindow3DImage() {
         var ww = parseFloat(in_ww.value) * 0.5
         var wc = parseFloat(in_wc.value)
         for (var x = 0; x < xdim * ydim; x++) {
-            val = imgResult[x + slice * xdim * ydim] * 4096
+            val = imgResult.data[x + slice * xdim * ydim] * 4096
             if (val <= (wc - ww)) {
                 val = 0
             } else if (val >= (wc + ww)) {
@@ -364,6 +397,8 @@ function displayAndWindow3DImage() {
     ctx.putImageData(idata, 0, 0);
 
     k_canvas = document.getElementById("kResult");
+    var xdim = 256;
+    var ydim = 256;
     k_canvas.width = xdim;
     k_canvas.height = ydim
     k_ctx = k_canvas.getContext('2d');
@@ -524,7 +559,11 @@ function reco(update_slider, noIfft = false) {
         document.getElementById("k_fmax_number").value = fmax;
     }
     if (!noIfft) {
-        w.sendQuery("reco", xlines, ylines, fmin, fmax, noIfft);
+        var param_div = document.getElementById("params-general");
+        var parms = read_params(param_div, {});
+        var params = [parms["xdim"], parms["ydim"], parms["zdim"], xlines, ylines, fmin, fmax, noIfft];
+        //console.log(params);
+        w.sendQuery("reco", params);
     } else {
         document.getElementById("kspace").removeAttribute("disabled");
         displayAndWindow3DImage();
@@ -573,6 +612,7 @@ function startScan() {
 }
 
 function displayDataSet() {
+    return;
     display3DImage(document.getElementById("imgPD"), array_pd);
     display3DImage(document.getElementById("imgT1"), array_t1);
     display3DImage(document.getElementById("imgT2"), array_t2);
