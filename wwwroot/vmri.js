@@ -560,8 +560,17 @@ function reco(update_slider, noIfft = false) {
     }
     if (!noIfft) {
         var param_div = document.getElementById("params-general");
-        var parms = read_params(param_div, {});
-        var params = [parms["xdim"], parms["ydim"], parms["zdim"], xlines, ylines, fmin, fmax, noIfft];
+        var params = read_params(param_div, {});
+        var xdim = Math.round(params["xdim"]);
+        xdim = xdim > 0 ? xdim : k_xdim;
+        xdim = xdim > k_xdim ? k_xdim : xdim;
+        var ydim = Math.round(params["ydim"]);
+        ydim = ydim > 0 ? ydim : k_ydim;
+        ydim = ydim > k_ydim ? k_ydim : ydim;
+        var zdim = Math.round(params["zdim"]);
+        zdim = zdim > 0 ? zdim : k_zdim;
+        zdim = zdim > k_zdim ? k_zdim : zdim;
+        var params = [xdim, ydim, zdim, xlines, ylines, fmin, fmax, noIfft];
         //console.log(params);
         w.sendQuery("reco", params);
     } else {

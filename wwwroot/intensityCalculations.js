@@ -520,9 +520,15 @@ function simulateImage(params) {
     var sequence = "sequence" in params ? params["sequence"] : undefined;
     var S = sequence in imageFunctions ? imageFunctions[sequence] : undefined;
     //console.log(params, sequence, S);
-    var xdim = params["xdim"];
-    var ydim = params["ydim"];
-    var zdim = params["zdim"];
+    var xdim = Math.round(params["xdim"]);
+    xdim = xdim > 0 ? xdim : k_xdim;
+    xdim = xdim > k_xdim ? k_xdim : xdim;
+    var ydim = Math.round(params["ydim"]);
+    ydim = ydim > 0 ? ydim : k_ydim;
+    ydim = ydim > k_ydim ? k_ydim : ydim;
+    var zdim = Math.round(params["zdim"]);
+    zdim = zdim > 0 ? zdim : k_zdim;
+    zdim = zdim > k_zdim ? k_zdim : zdim;
     //console.log(xdim, ydim, zdim);
 
     if (S == undefined) {
