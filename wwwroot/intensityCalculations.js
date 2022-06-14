@@ -489,8 +489,18 @@ function calcTQ_SQ_Ratio(pos, params) {
 }
 
 function dist(z0,y0,x0,z1,y1,x1) {
-    var d = 1-Math.sqrt((x0-x1)*(x0-x1)+(y0-y1)*(y0-y1)+(z0-z1)*(z0-z1))
-    return [z1*k_xdim*k_ydim+y1*k_xdim+x1, d > 0 ? d : 0];
+    var d = Math.sqrt((x0-x1)*(x0-x1)+(y0-y1)*(y0-y1)+(z0-z1)*(z0-z1))
+    return [z1*k_xdim*k_ydim+y1*k_xdim+x1, d];
+}
+
+function getNearest(z,y,x) {
+    var [pos, d] = getNeighbours(z,y,x);
+    var [max,mi] = d.reduce(function(o, v, i) { 
+        if(o[0] < v) {
+            return [v, i];
+        } else { return o; }
+    }, [d[0], 0]);
+    return [[pos[mi]], [max]];
 }
 
 function getNeighbours(z,y,x) {
@@ -505,15 +515,35 @@ function getNeighbours(z,y,x) {
     var pos = [];
     var d = [];
     pos.push(dpos1);
-    d.push(d1);
-    if (d2 > 0 && !pos.includes(dpos2)) { pos.push(dpos2); d.push(d2); }
-    if (d3 > 0 && !pos.includes(dpos3)) { pos.push(dpos3); d.push(d3); }
-    if (d4 > 0 && !pos.includes(dpos4)) { pos.push(dpos4); d.push(d4); }
-    if (d5 > 0 && !pos.includes(dpos5)) { pos.push(dpos5); d.push(d5); }
-    if (d6 > 0 && !pos.includes(dpos6)) { pos.push(dpos6); d.push(d6); }
-    if (d7 > 0 && !pos.includes(dpos7)) { pos.push(dpos7); d.push(d7); }
-    if (d8 > 0 && !pos.includes(dpos8)) { pos.push(dpos8); d.push(d8); }
+    d.push(1-d1);
+    if (d2 > 0 && !pos.includes(dpos2)) { pos.push(dpos2); d.push(1-d2); }
+    if (d3 > 0 && !pos.includes(dpos3)) { pos.push(dpos3); d.push(1-d3); }
+    if (d4 > 0 && !pos.includes(dpos4)) { pos.push(dpos4); d.push(1-d4); }
+    if (d5 > 0 && !pos.includes(dpos5)) { pos.push(dpos5); d.push(1-d5); }
+    if (d6 > 0 && !pos.includes(dpos6)) { pos.push(dpos6); d.push(1-d6); }
+    if (d7 > 0 && !pos.includes(dpos7)) { pos.push(dpos7); d.push(1-d7); }
+    if (d8 > 0 && !pos.includes(dpos8)) { pos.push(dpos8); d.push(1-d8); }
     return [pos, d];
+}
+
+function getVolumeVoxel(z,y,x, zdim, ydim, xdim) {
+    var xs = k_xdim/xdim/2;
+    var ys = k_ydim/ydim/2;
+    var zs = k_zdim/zdim/2;
+
+    var poss = [];
+    var ds = [];
+    for(var xi=Math.round(x-xs);xi<x+xs;xi++) {
+        for(var yi=Math.round(y-ys);yi<y+ys;yi++) {
+            for(var zi=Math.round(z-zs);zi<z+zs;zi++) {
+               var [pos, d] = dist(z,y,x, zi,yi,xi);
+               if(!poss.includes(pos)) {
+                   poss.push(pos); ds.push(d);
+               }
+            }
+        }
+    }
+    return [poss, ds];
 }
 
 function simulateImage(params) {
@@ -530,6 +560,7 @@ function simulateImage(params) {
     zdim = zdim > 0 ? zdim : k_zdim;
     zdim = zdim > k_zdim ? k_zdim : zdim;
     //console.log(xdim, ydim, zdim);
+    var nearest = "nearest" in params ? params["nearest"] : 2;
 
     if (S == undefined) {
         return undefined;
@@ -539,8 +570,19 @@ function simulateImage(params) {
         for(var y = 0;y<ydim; y++) {
             for(var x = 0;x<xdim;x++) {
                 var ipos = z*xdim*ydim + y*xdim + x;
-                var dpos0 = [z*k_zdim/zdim, y*k_ydim/ydim, x*k_xdim/xdim];
-                var [pos, d] = getNeighbours(...dpos0);
+                var pos = [], d = [];
+                switch (nearest) {
+                    case 0:
+                        console.log("nearest");
+                        [pos, d] = getNearest(z*k_zdim/zdim, y*k_ydim/ydim, x*k_xdim/xdim);
+                        break;
+                    case 1:
+                        [pos, d] = getNeighbours(z*k_zdim/zdim, y*k_ydim/ydim, x*k_xdim/xdim);
+                        break;
+                    default:
+                        [pos, d] = getVolumeVoxel(z*k_zdim/zdim, y*k_ydim/ydim, x*k_xdim/xdim, zdim, ydim, xdim);
+                        break;
+                }
                 var ds = d.reduce(function(s, v) { return s+v;});
                 if(ds == 0) { ds = 1/8;}
                 var vals = pos.map(function(v) { return S(v, params) });

@@ -72,6 +72,13 @@ const h_tabs = ["params-IR-tab", "params-SE-tab", "params-bSSFP-tab", "params-FI
 var current_tab = "params-IR-tab";
 var selected_tab = "params-IR-tab";
 
+function sequenceParametersKeyDown(e) {
+    if(e.code == "Enter") {
+        startScan();
+    }
+}
+
+
 const loadDataMessageHandler = function (data) {
     array_pd = data[0];
     array_t1 = data[1];
@@ -591,7 +598,16 @@ function read_params(param_div, params) {
         var child = param_div.children[child_id];
         if (child.children == undefined) { continue;}
         var input = child.children[1];
-        params[input.name] = parseFloat(input.value);
+        switch (input.type) {
+            case "number":
+            case "range":
+                params[input.name] = parseFloat(input.value);
+                break;
+            case "select-one":
+                params[input.name] = input.value;
+                break;
+        }
+
     }
     return params;
 }

@@ -54,28 +54,35 @@
                 </div>
             </div>
             
-            <div class="row mt-2">
+            <div class="row mt-2" onkeydown="sequenceParametersKeyDown(event)">
                 <div class="col" id="params-general">
                     <div class="form-row">
                         <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">X-Dimensions:</label>
                         </div>
                         <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="xdim" id="xdim" oninput="updateTime()" />
-                        <!--<input class="col-1 form-control" type="number" min="1" max="256" value="256" name="xdim_" id="xdim_" oninput="updateTime()"/>-->
                     </div>
                     <div class="form-row">
                         <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">Y-Dimensions:</label>
                         </div>
                         <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="ydim" id="ydim" oninput="updateTime()" />
-                        <!--<input class="col-1 form-control" type="number" min="1" max="256" value="256" name="xdim_" id="xdim_" oninput="updateTime()"/>-->
                     </div>
                     <div class="form-row">
                         <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">Z-Dimensions:</label>
                         </div>
                         <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
-                        <!--<input class="col-1 form-control" type="number" min="1" max="256" value="256" name="xdim_" id="xdim_" oninput="updateTime()"/>-->
+                    </div>
+                    <div class="form-row">
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">Interpolation Mode:</label>
+                        </div>
+                        <select class="col-sm form-control" type="select" id="nearest" name="nearest" oninput="updateTime()">
+                             <option value="0">Nearest Neigbhbour</option>
+                             <option value="1">Linear Interpolation, 8 Nearest Neighbours</option>
+                             <option value="2" selected>Average</option>
+                        </select>
                     </div>
                     <div class="form-row">
                         <div class="col-auto w-25">
@@ -91,7 +98,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row mt-2">
+            <div class="row mt-2" onkeydown="sequenceParametersKeyDown(event)">
                 <div class="col" id="sequence">
                     <div class="row">
                         <div class="col nav nav-tabs">
