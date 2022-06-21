@@ -88,9 +88,13 @@
                         <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">Compressed Sensing:</label>
                         </div>
-                        <input class="col-sm form-control" type="number" value="1" name="cs" id="cs" oninput="updateTime()" />
+                        <select class="col-sm form-control" type="select" id="cs" name="cs" oninput="updateTime()">
+                            <option value="0">Disable</option>
+                            <option value="1">Only K-Space Filter</option>
+                            <option value="2" selected>Full</option>
+                       </select>
                     </div>
-                    <div class="form-row">
+                    <div class="form-row hidden">
                         <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">Parallel Imaging:</label>
                         </div>
