@@ -644,11 +644,10 @@ function startScan() {
 }
 
 function displayDataSet() {
-    return;
-    display3DImage(document.getElementById("imgPD"), array_pd);
-    display3DImage(document.getElementById("imgT1"), array_t1);
-    display3DImage(document.getElementById("imgT2"), array_t2);
-    display3DImage(document.getElementById("imgT2s"), array_t2s);
+    //display3DImage(document.getElementById("imgPD"), array_pd);
+    //display3DImage(document.getElementById("imgT1"), array_t1);
+    //display3DImage(document.getElementById("imgT2"), array_t2);
+    //display3DImage(document.getElementById("imgT2s"), array_t2s);
 }
 
 function updateTime() {
