@@ -1,3 +1,5 @@
+self.importScripts("./a.out.js");
+
 /** Compute the FFT of a real-valued mxn matrix. */
 function rfft2d(data, m, n) {
     /* Allocate input and output arrays on the heap. */
@@ -30,7 +32,7 @@ function irfft2d(spectrum, m, n) {
     data.set(new Float32Array(Module.HEAPU8.buffer,
                               heapData.byteOffset, m*n));
 
-    for (i=0;i<m*n;i++) {
+    for (var i=0;i<m*n;i++) {
         data[i] /= m*n;
     }
 
@@ -71,7 +73,7 @@ function ifft2d(spectrum, m, n) {
     data.set(new Float32Array(Module.HEAPU8.buffer,
                               heapData.byteOffset, m*n*2));
 
-    for (i=0;i<m*n*2;i++) {
+    for (var i=0;i<m*n*2;i++) {
         data[i] /= m*n;
     }
 
@@ -112,7 +114,7 @@ function irfft3d(spectrum, m, n, l) {
     data.set(new Float32Array(Module.HEAPU8.buffer,
                               heapData.byteOffset, m*n*l));
 
-    for (i=0;i<m*n*l;i++) {
+    for (var i=0;i<m*n*l;i++) {
         data[i] /= m*n*l;
     }
 
@@ -154,7 +156,7 @@ function ifft3d(spectrum, m, n, l) {
     data.set(new Float32Array(Module.HEAPU8.buffer,
                               heapData.byteOffset, m*n*l*2));
 
-    for (i=0;i<m*n*l*2;i++) {
+    for (var i=0;i<m*n*l*2;i++) {
         data[i] /= m*n*l;
     }
 
