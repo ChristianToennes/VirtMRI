@@ -143,7 +143,7 @@ function calcKSpace(result) {
     var zdim = result.zdim;
     var xoff = Math.floor((k_xdim-xdim) / 2);
     var yoff = Math.floor((k_ydim-ydim) / 2);
-    k_result = new Uint8ClampedArray(k_xdim * k_ydim * zdim);
+    k_result = new Float32Array(k_xdim * k_ydim * zdim);
     k_data_im_re = new Float32Array(k_xdim * k_ydim * zdim * 2);
     for (var z = 0; z < zdim; z++) {
         var slice_data = new Float32Array(k_xdim * k_ydim);
@@ -530,9 +530,9 @@ function filter_kspace_cs(k_data_im_re, mask_cs) {
     var k_data_im_re_f = new Float32Array(k_data_im_re.length);
     for(var z=0;z<zdim;z++) {
         for(var y=0;y<k_ydim;y++) {
-            for(var x=0;x<k_xdim*2;x++) {
-                var pos = x+y*k_xdim+z*k_xdim*k_ydim*2;
-                if(mask_cs[0][y] == 1) {
+            for(var x=0;x<k_xdim/2+1;x++) {
+                var pos = x*2+y*(k_xdim+2)+z*k_xdim*k_ydim*2;
+                if(mask_cs[y][0] == 1) {
                     k_data_im_re_f[pos] = k_data_im_re[pos]; 
                     k_data_im_re_f[pos+1] = k_data_im_re[pos+1];
                 } else {
@@ -543,6 +543,14 @@ function filter_kspace_cs(k_data_im_re, mask_cs) {
         }
     }
     return k_data_im_re_f;
+}
+
+function print_stats(name, array) {
+    var max = array.reduce((p,c) => Math.max(p,c), Math.max());
+    var min = array.reduce((p,c) => Math.min(p,c), Math.min());
+    var sum = array.reduce((p,c) => p+c, 0);
+    var nans = array.reduce((p,c) => { if(c == NaN){return p+1;}else{return p;}}, 0);
+    console.log(name, array.length, min, max, sum / array.length, nans);
 }
 
 function compressed_sensing(data, params) {
@@ -570,13 +578,16 @@ function compressed_sensing(data, params) {
     
     var data_ndims = 2;
     //mask = data ~= 0.0;   //% not perfect, but good enough
+    //print_stats("data", data);
     var mask = new Uint8Array(data.length);
     for(var i=0;i<data.length;i++) {
         mask[i] = data[i] != 0;
     }
     //% normalize the data so that standard parameter values work
     var norm_factor = get_norm_factor(mask, data);
-    data = norm_factor * data;
+    for(var i=0;i<data.length;i++) {
+        data[i] = norm_factor * data[i];
+    }
     //% Reserve memory for the auxillary variables
     var data0 = new Float32Array(data.length);
     data0.set(data);
@@ -598,79 +609,100 @@ function compressed_sensing(data, params) {
     uker.fill(0);
     if (data_ndims == 2) {
       uker[0] = 4;
-      uker[1] = -1;
-      uker[xdim-1] = -1;
-      uker[xdim] = -1;
-      uker[xdim*(ydim-1)] = -1;
+      uker[1*2] = -1;
+      uker[xdim*2] = -1;
+      uker[(xdim-1)*2] = -1;
+      uker[xdim*(ydim-1)*2] = -1;
     } else {// data_ndims == 3
       uker[0] = 8;
-      uker[1] = -1;
-      uker[xdim] = -1;
-      uker[xdim*ydim] = -1;
-      uker[xdim-1] = -1;
-      uker[xdim*(ydim-1)] = -1;
-      uker[xdim*ydim*(zdim-1)] = -1;
+      uker[1*2] = -1;
+      uker[xdim*2] = -1;
+      uker[xdim*ydim*2] = -1;
+      uker[(xdim-1)*2] = -1;
+      uker[xdim*(ydim-1)*2] = -1;
+      uker[xdim*ydim*(zdim-1)*2] = -1;
     }
-    uker = rfft2d(uker, k_xdim, k_ydim);
+    //print_stats("uker in", uker);
+    uker = fft2d(uker, k_xdim, k_ydim);
+    //print_stats("uker mid", uker);
+    console.log(mu, lambda, gam);
     for(var i=0;i<uker.length;i++) {
         uker[i] = 1 / (mu*mask[i]+lambda*uker[i]+gam);
     }
+    //print_stats("uker out", uker);
     //uker = 1 ./ (mu * mask + lambda * fftn(uker) + gam);
     //%  Do the reconstruction
     for(var outer = 0;outer < nbreg; outer++) {
-      for(var inner = 0;inner<ninner;inner++) {
+      for(var inner = 0;inner < ninner;inner++) {
         //% update u
         //%fprintf('i:%d, o:%d\n', inner, outer);
         for(var i=0;i<data.length;i++) {
             murf[i] = mu*mask[i]*data[i];
         }
-        murf = irfft2d(murf, k_xdim, k_ydim)
+        //print_stats("murf in", murf);
+        murf = ifft2d(murf, k_xdim, k_ydim)
+        //print_stats("murf out", murf);
         for(var x=0;x<xdim;x++) {
             for(var y=0;y<ydim;y++) {
                 for(var z=0;z<zdim;z++) {
-                    var i = x + y*xdim + z*xdim*ydim;
-                    let t = X[3*(x + y*xdim + z*xdim*ydim)]-B[3*(x + y*xdim + z*xdim*ydim)]
-                    var d = x<xdim-1 ? t - X[3*(x+1 + y*xdim + z*xdim*ydim)]+B[3*(x+1 + y*xdim + z*xdim*ydim)] : 0;
-                    d += y<ydim-1 ? t - X[3*(x + (y+1)*xdim + z*xdim*ydim)]+B[3*(x + (y+1)*xdim + z*xdim*ydim)] : 0;
-                    d += z<zdim-1 ? t - X[3*(x + y*xdim + (z+1)*xdim*ydim)]+B[3*(x + y*xdim + (z+1)*xdim*ydim)] : 0;
-                    rhs[i] = murf[i]*scale + lambda*d + gam*img[i];
+                    for(var j=0;j<2;j++) {
+                        var i = 2*3*(x + y*xdim + z*xdim*ydim) + j;
+                        var d = x<xdim-1 ? X[i]-B[i] - X[2*3*(x+1 + y*xdim + z*xdim*ydim)+j]+B[2*3*(x+1 + y*xdim + z*xdim*ydim)+j] : X[i]-B[i] - X[2*3*(y*xdim + z*xdim*ydim)+j]+B[2*3*(y*xdim + z*xdim*ydim)+j];
+                        d += y<ydim-1 ? X[i+2]-B[i+2] - X[2*3*(x + (y+1)*xdim + z*xdim*ydim)+j+2]+B[2*3*(x + (y+1)*xdim + z*xdim*ydim)+j+2] : X[i+2]-B[i+2] - X[2*3*(x + z*xdim*ydim)+j+2]+B[2*3*(x + z*xdim*ydim)+j+2];
+                        d += z<zdim-1 ? X[i+4]-B[i+4] - X[2*3*(x + y*xdim + (z+1)*xdim*ydim)+j+4]+B[2*3*(x + y*xdim + (z+1)*xdim*ydim)+j+4] : X[i+4]-B[i+4] - X[2*3*(x + y*xdim) +j+4]+B[2*3*(x + y*xdim) + j+4];
+                        rhs[2*(x + y*xdim + z*xdim*ydim) + j] = murf[2*(x + y*xdim + z*xdim*ydim) + j]*scale + lambda*d + gam*img[2*(x + y*xdim + z*xdim*ydim) + j];
+                    }
                 }
             }
         }
-        rhs = rfft2d(rhs, k_xdim, k_ydim);
+        print_stats("rhs in", rhs);
+        rhs = fft2d(rhs, k_xdim, k_ydim);
+        print_stats("rhs out", rhs);
         for(var i=0;i<rhs.length;i++) {
             rhs[i] = rhs[i]*uker[i];
         }
-        img = irfft2d(rhs, k_xdim, k_ydim);
+        img = ifft2d(rhs, k_xdim, k_ydim);
+        print_stats("img", img);
         //% update x and y
         for(var x=0;x<xdim;x++) {
             for(var y=0;y<ydim;y++) {
                 for(var z=0;z<zdim;z++) {
-                    var i = 3* (x + y*xdim + z*xdim*ydim);
-                    B[i] = x<xdim-1 ? img[x + y*xdim + z*xdim*ydim]-img[x+1 + y*xdim + z*xdim*ydim] + B[i] : 0;
-                    B[i+1] = y<ydim-1 ? img[x + y*xdim + z*xdim*ydim]-img[x + (y+1)*xdim + z*xdim*ydim] + B[i] : 0;
-                    B[i+2] = z<zdim-1 ? img[x + y*xdim + z*xdim*ydim]-img[x + y*xdim + (z+1)*xdim*ydim] + B[i] : 0;
-                    var s = Math.abs(X[i]);
-                    var ss = s - 1/lambda;
-                    ss = ss > 0 ? ss : 0;
-                    s = s + (s < 1/lambda ? 1 : 0);
-                    ss = ss / s;
-                    X[i] = ss * X[i];
-                    //% update bregman parameters
-                    B[i] = B[i] - X[i];
+                    for(var j=0;j<2;j++) {
+                        var i = 2*3*(x + y*xdim + z*xdim*ydim) + j;
+                        B[i] = x>0 ? img[2*(x + y*xdim + z*xdim*ydim)+j]-img[2*(x-1 + y*xdim + z*xdim*ydim)+j] + B[i] : img[2*(x + y*xdim + z*xdim*ydim)+j]-img[2*(xdim-1 + y*xdim + z*xdim*ydim)+j] + B[i];
+                        B[i+2] = y>0 ? img[2*(x + y*xdim + z*xdim*ydim)+j]-img[2*(x + (y-1)*xdim + z*xdim*ydim)+j] + B[i+2] : img[2*(x + y*xdim + z*xdim*ydim)+j]-img[2*(x + (ydim-1)*xdim + z*xdim*ydim)+j] + B[i+2];
+                        B[i+4] = z>0 ? img[2*(x + y*xdim + z*xdim*ydim)+j]-img[2*(x + y*xdim + (z-1)*xdim*ydim)+j] + B[i+4] : img[2*(x + y*xdim + z*xdim*ydim)+j]-img[2*(x + y*xdim + (zdim-1)*xdim*ydim)+j] + B[i+4];
+                    }
                 }
             }
         }
+        for(var i=0;i<X.length;i+=2) {
+            var s = Math.sqrt(X[i]*X[i]+X[i+1]*X[i+1]);
+            var ss = s - 1/lambda;
+            ss = ss > 0 ? ss : 0;
+            s = s + (s < 1/lambda ? 1 : 0);
+            ss = ss / s;
+            X[i] = ss * X[i];
+            //% update bregman parameters
+            B[i] = B[i] - X[i];
+            X[i+1] = ss * X[i+1];
+            //% update bregman parameters
+            B[i+1] = B[i+1] - X[i+1];
+        }
       }
-      var k_img = rfft2d(img, k_xdim, k_ydim);
+      var k_img = fft2d(img, k_xdim, k_ydim);
+      print_stats("k_img", k_img);
       for(var i=0;i<data.length;i++) {
         data[i] = data[i] + data0[i] - mask[i] * k_img[i] / scale;
       }
     }
     //% undo the normalization so that results are scaled properly
-    for(var i=0;i<img.length;i++) {
-        img[i] = img[i] / norm_factor / scale;
+    print_stats("img in", img);
+    var result_img = new Float32Array(data.length/2);
+    for(var i=0;i<result_img.length;i++) {
+        result_img[i] = Math.sqrt(img[2*i]*img[2*i]+img[2*i+1]*img[2*i+1]) / norm_factor / scale;
     }
+    print_stats("img out", result_img);
     return img;
 }
 
@@ -683,7 +715,10 @@ function get_norm_factor(mask, data) {
     }
     var nm = math.matrix(Array.from(n), "dense", "number");
     nm.resize([k_xdim, k_ydim])
-    return 1 / math.norm(nm);
+    var norm = math.norm(nm)
+    print_stats("norm", n);
+    console.log(norm);
+    return 1 / norm;
 }
 
 function dist(z0,y0,x0,z1,y1,x1) {
