@@ -155,7 +155,6 @@ function calcKSpace(result) {
         }
         var fft_res = rfft2d(slice_data, k_xdim, k_ydim);
         k_data_im_re.set(fft_res, z * k_xdim * k_ydim * 2)
-
         k_result.set(transformKSpace(fft_res), z * k_xdim * k_ydim);
     }
     return k_result
@@ -182,35 +181,22 @@ function transformKSpace(fft_res) {
     var maxval = 0;
     var minval = 999999999;
     for (var i = 0; i < k_data.length; i++) {
-        if (fft_res[2 * i] == -1) {
-            k_data[i] = -1;
-        } else {
-            k_data[i] = Math.sqrt(fft_res[2 * i] * fft_res[2 * i] + fft_res[2 * i + 1] * fft_res[2 * i + 1]);
-            if (k_data[i] == -Infinity) {
-                k_data[i] = 0;
-            }
-            maxval = Math.max(maxval, k_data[i]);
-            minval = Math.min(minval, k_data[i]);
-        }
+        k_data[i] = Math.sqrt(fft_res[2 * i] * fft_res[2 * i] + fft_res[2 * i + 1] * fft_res[2 * i + 1]);
+        maxval = Math.max(maxval, k_data[i]);
+        minval = Math.min(minval, k_data[i]);
     }
+    for(var x = 0;x<=k_xdim/2;x++) {
+        for(var y=0;y<k_ydim;y++) {
+            var i = x + y*(k_xdim/2+1)
+            var val = (k_data[i] - minval) * 255 / maxval;
 
-    for (var i = 0; i < (k_xdim / 2 + 1) * k_ydim; i++) {
-
-        var val = (k_data[i] - minval) * 255 / maxval;
-
-        var y = (Math.floor(i / (xdim / 2 + 1)) + k_ydim / 2) % k_ydim;
-        var x = i % (k_xdim / 2 + 1) + k_xdim / 2;
-
-        var j = y * k_xdim + x - 1;
-        var k = y * k_xdim + (k_xdim - x);
-        if (k_data[i] == -1) {
-            k_result[j] = -1;
-            k_result[k] = -1;
-        } else {
+            var j = (x+k_xdim/2)+((y+k_ydim/2)%k_ydim)*k_xdim;
             k_result[j] = val;
-            k_result[k] = val;
+            j = (k_xdim-x-k_xdim/2-1)+((y+k_ydim/2)%k_ydim)*k_xdim;
+            k_result[j] = val;
         }
     }
+
     return k_result;
 }
 
@@ -748,14 +734,74 @@ function getVolumeVoxel(z,y,x, zdim, ydim, xdim) {
     for(var xi=Math.round(x-xs);xi<x+xs;xi++) {
         for(var yi=Math.round(y-ys);yi<y+ys;yi++) {
             for(var zi=Math.round(z-zs);zi<z+zs;zi++) {
-               var [pos, d] = dist(z,y,x, zi,yi,xi);
-               if(!poss.includes(pos)) {
-                   poss.push(pos); ds.push(d);
-               }
+               //var [pos, d] = dist(z,y,x, zi,yi,xi);
+               //if(!poss.includes(pos)) {
+                   //poss.push(pos); ds.push(d);
+               //}
+               poss.push(zi*k_xdim*k_ydim+yi*k_xdim+xi);
+               ds.push(1);
             }
         }
     }
     return [poss, ds];
+}
+
+function addGaussianNoiseRatio(img, mean, sigma) {
+    var result = new Float32Array(img.length);
+    var e1 = Math.sqrt(2.0/Math.E);
+    var r1, r2;
+    for(var i=0;i<result.length;i++) {
+        {
+            r1 = 2*Math.random()-1;
+            r2 = 2*Math.random()-1;
+            r2 = (2.0*r2-1.0)*e1;
+        } while(r1== 0 && -4*r1*r1*Math.log(r1) < r2*r2);
+        var n = sigma * r2 / r1 + mean;
+        result[i] = img[i] + n;
+    }
+    return result
+}
+
+function addGaussianNoiseBoxMuller(img, mean, sigma) {
+    var result = new Float32Array(img.length);
+    var u,v,s,x,y;
+    for(var i=0;i<result.length;i+=2) {
+        u = Math.random();
+        v = Math.random();
+        s = Math.sqrt(-2.0*Math.log(u));
+        x = s * Math.cos(2.0*Math.PI*v);
+        y = s * Math.sin(2.0*Math.PI*v);
+        result[i] = img[i] + (sigma*x+mean);
+        result[i+1] = img[i+1] + (sigma*y+mean);
+    }
+    return result
+}
+
+function addImageNoise(img, params) {
+    var type = "img_noise_type" in params ? params["img_noise_type"] : 0;
+    switch (type) {
+        case "0":
+            return img;
+        case "1":
+            var mean = "img_noise_mean" in params ? parseFloat(params["img_noise_mean"]) : 0;
+            var sigma = "img_noise_sigma" in params ? parseFloat(params["img_noise_sigma"]) : 0.001;
+            return addGaussianNoiseBoxMuller(img, mean, sigma);
+    }
+    return img;
+}
+
+function addKSpaceNoise(kSpace, img, params) {
+    var type = "img_noise_type" in params ? params["img_noise_type"] : 0;
+    switch (type) {
+        case "0":
+            return [kSpace, img];
+        case "2":
+            var mean = "img_noise_mean" in params ? parseFloat(params["img_noise_mean"]) : 0;
+            var sigma = "img_noise_sigma" in params ? parseFloat(params["img_noise_sigma"]) : 0.001;
+            kSpace = addGaussianNoiseBoxMuller(kSpace, mean, sigma);
+            return [kSpace, undefined]
+    }
+    return [kSpace, img];
 }
 
 function simulateImage(params) {
@@ -804,23 +850,39 @@ function simulateImage(params) {
             }
         }
     }
+    result = addImageNoise(result, params);
     result = new MRImage(xdim, ydim, zdim, result);
     var k_result = calcKSpace(result);
-    console.log(cs==0, cs==1, cs==2);
+    [k_data_im_re, result] = addKSpaceNoise(k_data_im_re, result, params);
+    console.log(cs==0, cs==1, cs==2, result==undefined);
     switch(cs) {
         case 0:
             break;
         case 1:
             console.log("apply filter");
-            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask);
+            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t);
             [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
             break;
         case 2:
             console.log("apply filter + cs");
-            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask);
+            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t);
             k_result = transformKSpace3d(k_data_im_re);
-            result = compressed_sensing(k_data_im_re, params);
+            var result = new Float32Array(xdim*ydim*zdim);
+            for(var z=0;z<zdim;z++) {
+                console.log("z", z);
+                var k_data_slice = new Float32Array(k_xdim*k_ydim*2);
+                for(var i=0;i<k_data_slice.length;i++) {
+                    k_data_slice[i] = k_data_im_re[i+k_xdim*k_ydim*2*z];
+                }
+                result.set(compressed_sensing(k_data_slice, params), z*xdim*ydim);
+                if (z>2) {
+                break;
+                }
+            }
             break;
+    }
+    if (result == undefined) {
+        [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
     }
     return [result, k_result, [256, 256, 0, 256]];
 }
@@ -870,9 +932,20 @@ function reply() {
     });
 }
 
+var running = false;
 onmessage = async function (oEvent) {
+    if (running) {
+        console.log("function already running", oEvent);
+        defaultReply(oEvent.data);
+    }
     if (oEvent.data instanceof Object && oEvent.data.hasOwnProperty('queryMethod') && oEvent.data.hasOwnProperty('queryMethodArguments')) {
-        queryableFunctions[oEvent.data.queryMethod].apply(self, oEvent.data.queryMethodArguments);
+        running = true;
+        try {
+            queryableFunctions[oEvent.data.queryMethod].apply(self, oEvent.data.queryMethodArguments);
+        } catch (e) {
+            throw e;
+        }
+        running = false;
     } else {
         defaultReply(oEvent.data);
     }

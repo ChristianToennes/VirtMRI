@@ -16,6 +16,10 @@ function QueryableWorker(url) {
         worker = new Worker(url //, {type: "module"}
         ),
         listeners = {};
+    
+    worker.onerror = function (event) {
+        console.log(event.message, event);
+    };
 
     this.defaultListener = function () {};
 
@@ -597,17 +601,18 @@ function read_params(param_div, params) {
     for (var child_id in param_div.children) {
         var child = param_div.children[child_id];
         if (child.children == undefined) { continue;}
-        var input = child.children[1];
-        switch (input.type) {
-            case "number":
-            case "range":
-                params[input.name] = parseFloat(input.value);
-                break;
-            case "select-one":
-                params[input.name] = input.value;
-                break;
+        for(var input_id in child.children) {
+            var input = child.children[input_id];
+            switch (input.type) {
+                case "number":
+                case "range":
+                    params[input.name] = parseFloat(input.value);
+                    break;
+                case "select-one":
+                    params[input.name] = input.value;
+                    break;
+            }
         }
-
     }
     return params;
 }

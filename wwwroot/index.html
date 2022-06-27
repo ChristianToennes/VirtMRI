@@ -86,12 +86,30 @@
                     </div>
                     <div class="form-row">
                         <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">Noise:</label>
+                        </div>
+                        <select class="col-sm form-control" type="select" id="img_noise_type" name="img_noise_type" oninput="updateTime()">
+                             <option value="0" selected>No Noise</option>
+                             <!--<option value="1">Gaussian Noise in Image Domain</option>-->
+                             <option value="2">Gaussian Noise in Frequency Domain</option>
+                        </select>
+                        <div class="col-auto ml-4">
+                            <label class="mb-0 align-self-center">Mean:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" value="0" name="img_noise_mean" id="img_noise_mean" oninput="updateTime()" />
+                        <div class="col-auto ml-4">
+                            <label class="mb-0 align-self-center">SD:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" min="0" value="10" name="img_noise_sigma" id="img_noise_sigma" oninput="updateTime()" />
+                    </div>
+                    <div class="form-row hidden">
+                        <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">Compressed Sensing:</label>
                         </div>
                         <select class="col-sm form-control" type="select" id="cs" name="cs" oninput="updateTime()">
-                            <option value="0">Disable</option>
+                            <option value="0" selected>Disable</option>
                             <option value="1">Only K-Space Filter</option>
-                            <option value="2" selected>Full</option>
+                            <option value="2">Full</option>
                        </select>
                     </div>
                     <div class="form-row hidden">
