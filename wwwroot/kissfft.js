@@ -1,17 +1,17 @@
 self.importScripts("./a.out.js");
 
 /** Compute the FFT of a real-valued mxn matrix. */
-function rfft2d(data, m, n) {
+function fft(data, m) {
     /* Allocate input and output arrays on the heap. */
     var heapData = allocFromArray(data);
-    var heapSpectrum = alloc(2*m*n*4);
+    var heapSpectrum = alloc(2*m*4);
 
-    _rfft2d(heapData.byteOffset, heapSpectrum.byteOffset, m, n);
+    _fft(heapData.byteOffset, heapSpectrum.byteOffset, m);
 
     /* Get spectrum from the heap, copy it to local array. */
-    var spectrum = new Float32Array(m*n*2);
+    var spectrum = new Float32Array(m*2);
     spectrum.set(new Float32Array(Module.HEAPU8.buffer,
-                                  heapSpectrum.byteOffset, m*n*2));
+                                  heapSpectrum.byteOffset, m*2));
 
     /* Free heap objects. */
     free(heapData);
@@ -20,20 +20,19 @@ function rfft2d(data, m, n) {
     return spectrum;
 }
 
-
 /** Compute the inverse FFT of a real-valued mxn matrix. */
-function irfft2d(spectrum, m, n) {
+function ifft(spectrum, m) {
     var heapSpectrum = allocFromArray(spectrum);
-    var heapData = alloc(m*n*4);
+    var heapData = alloc(m*4);
 
-    _irfft2d(heapSpectrum.byteOffset, heapData.byteOffset, m, n);
+    _ifft(heapSpectrum.byteOffset, heapData.byteOffset, m);
 
-    var data = new Float32Array(m*n);
+    var data = new Float32Array(m*2);
     data.set(new Float32Array(Module.HEAPU8.buffer,
-                              heapData.byteOffset, m*n));
+                              heapData.byteOffset, m*2));
 
-    for (var i=0;i<m*n;i++) {
-        data[i] /= m*n;
+    for (i=0;i<m*2;i++) {
+        data[i] /= m;
     }
 
     free(heapSpectrum);
@@ -41,6 +40,7 @@ function irfft2d(spectrum, m, n) {
 
     return data;
 }
+
 /** Compute the FFT of a real-valued mxn matrix. */
 function fft2d(data, m, n) {
     /* Allocate input and output arrays on the heap. */
@@ -65,7 +65,7 @@ function fft2d(data, m, n) {
 /** Compute the inverse FFT of a real-valued mxn matrix. */
 function ifft2d(spectrum, m, n) {
     var heapSpectrum = allocFromArray(spectrum);
-    var heapData = alloc(2*m*n*4);
+    var heapData = alloc(m*n*4);
 
     _ifft2d(heapSpectrum.byteOffset, heapData.byteOffset, m, n);
 
@@ -73,49 +73,8 @@ function ifft2d(spectrum, m, n) {
     data.set(new Float32Array(Module.HEAPU8.buffer,
                               heapData.byteOffset, m*n*2));
 
-    for (var i=0;i<m*n*2;i++) {
+    for (i=0;i<m*n*2;i++) {
         data[i] /= m*n;
-    }
-
-    free(heapSpectrum);
-    free(heapData);
-
-    return data;
-}
-/** Compute the FFT of a real-valued mxn matrix. */
-function rfft3d(data, m, n, l) {
-    /* Allocate input and output arrays on the heap. */
-    var heapData = allocFromArray(data);
-    var heapSpectrum = alloc(2*m*n*l*4);
-
-    _rfft3d(heapData.byteOffset, heapSpectrum.byteOffset, m, n, l);
-
-    /* Get spectrum from the heap, copy it to local array. */
-    var spectrum = new Float32Array(m*n*l*2);
-    spectrum.set(new Float32Array(Module.HEAPU8.buffer,
-                                  heapSpectrum.byteOffset, m*n*l*2));
-
-    /* Free heap objects. */
-    free(heapData);
-    free(heapSpectrum);
-
-    return spectrum;
-}
-
-
-/** Compute the inverse FFT of a real-valued mxn matrix. */
-function irfft3d(spectrum, m, n, l) {
-    var heapSpectrum = allocFromArray(spectrum);
-    var heapData = alloc(2*m*n*l*4);
-
-    _irfft3d(heapSpectrum.byteOffset, heapData.byteOffset, m, n, l);
-
-    var data = new Float32Array(m*n*l);
-    data.set(new Float32Array(Module.HEAPU8.buffer,
-                              heapData.byteOffset, m*n*l));
-
-    for (var i=0;i<m*n*l;i++) {
-        data[i] /= m*n*l;
     }
 
     free(heapSpectrum);
@@ -148,7 +107,7 @@ function fft3d(data, m, n, l) {
 /** Compute the inverse FFT of a real-valued mxn matrix. */
 function ifft3d(spectrum, m, n, l) {
     var heapSpectrum = allocFromArray(spectrum);
-    var heapData = alloc(2*m*n*l*4);
+    var heapData = alloc(m*n*l*4);
 
     _ifft3d(heapSpectrum.byteOffset, heapData.byteOffset, m, n, l);
 
@@ -156,7 +115,7 @@ function ifft3d(spectrum, m, n, l) {
     data.set(new Float32Array(Module.HEAPU8.buffer,
                               heapData.byteOffset, m*n*l*2));
 
-    for (var i=0;i<m*n*l*2;i++) {
+    for (i=0;i<m*n*l*2;i++) {
         data[i] /= m*n*l;
     }
 
