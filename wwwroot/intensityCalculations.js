@@ -283,31 +283,48 @@ function calcKSpace(result) {
     k_result = new Float32Array(k_xdim * k_ydim * zdim);
     k_data_im_re = new Float32Array(k_xdim * k_ydim * zdim * 2);
     for (var z = 0; z < zdim; z++) {
-        var slice_data = new Float32Array(k_xdim * k_ydim);
+        var slice_data = new Float32Array(k_xdim * k_ydim * 2);
         slice_data.fill(0);
         for (var x = 0; x < xdim; x++) {
             for (var y=0; y < ydim; y++) {
-                slice_data[xoff+x + (yoff+y)*k_xdim] = result.data[x + y*xdim + z*xdim*ydim];
+                slice_data[2*(xoff+x + (yoff+y)*k_xdim)] = result.data[x + y*xdim + z*xdim*ydim];
             }
         }
-        var fft_res = rfft2d(slice_data, k_xdim, k_ydim);
+        var fft_res = fft2d(slice_data, k_xdim, k_ydim);
         k_data_im_re.set(fft_res, z * k_xdim * k_ydim * 2)
-        k_result.set(transformKSpace(fft_res), z * k_xdim * k_ydim);
     }
+    k_result = transformKSpace3d(k_data_im_re);
+    return k_result
+}
+
+function calcKSpace3d(result) {
+    var xdim = result.xdim;
+    var ydim = result.ydim;
+    var zdim = result.zdim;
+    k_data_im_re = fft3d(result.data, xdim, ydim, zdim);
+    k_result = transformKSpace3d(k_data_im_re);
     return k_result
 }
 
 function transformKSpace3d(k_data_im_re) {
-    var k_result = new Uint8ClampedArray(k_xdim * k_ydim * zdim);
+    var k_result = new Float32Array(k_xdim * k_ydim * zdim);
     for (var z = 0; z < zdim; z++) {
         var slice_data = new Float32Array(k_xdim * k_ydim*2);
         for (var x = 0; x < k_xdim; x++) {
             for (var y=0; y < k_ydim; y++) {
-                slice_data[x + y*k_xdim] = k_data_im_re[x + y*k_xdim + z*k_xdim*k_ydim];
-                slice_data[x + y*k_xdim + 1] = k_data_im_re[x + y*k_xdim + z*k_xdim*k_ydim + 1];
+                slice_data[2*(x + y*k_xdim)] = k_data_im_re[2*(x + y*k_xdim + z*k_xdim*k_ydim)];
+                slice_data[2*(x + y*k_xdim)+1] = k_data_im_re[2*(x + y*k_xdim + z*k_xdim*k_ydim) + 1];
+                if(slice_data[2*(x + y*k_xdim)] == NaN || slice_data[2*(x + y*k_xdim)] == undefined || slice_data[2*(x + y*k_xdim)+1] == undefined || slice_data[2*(x + y*k_xdim)+1] == NaN) {
+                    console.log("fft output undefined", x,y,z);
+                }
             }
         }
-        k_result.set(transformKSpace(slice_data), z * k_xdim * k_ydim);
+        k_result.set(transformKSpace(slice_data), ((z+zdim/2)%zdim) * k_xdim * k_ydim);
+    }
+    var max = k_result.reduce((p,v) => Math.max(p,v));
+    var min = k_result.reduce((p,v) => Math.min(p,v));
+    for(var i=0;i<k_result.length;i++) {
+        k_result[i] = 255*(k_result[i]-min) / (max-min);
     }
     return k_result
 }
@@ -322,15 +339,15 @@ function transformKSpace(fft_res) {
         maxval = Math.max(maxval, k_data[i]);
         minval = Math.min(minval, k_data[i]);
     }
-    for(var x = 0;x<=k_xdim/2;x++) {
+    for(var x = 0;x<k_xdim;x++) {
         for(var y=0;y<k_ydim;y++) {
-            var i = x + y*(k_xdim/2+1)
-            var val = (k_data[i] - minval) * 255 / maxval;
-
+            var i = x + y*k_xdim;
+            var val = (k_data[i] - minval) * 255 / (maxval-minval);
             var j = (x+k_xdim/2)+((y+k_ydim/2)%k_ydim)*k_xdim;
-            k_result[j] = val;
-            j = (k_xdim-x-k_xdim/2-1)+((y+k_ydim/2)%k_ydim)*k_xdim;
-            k_result[j] = val;
+            k_result[j] = k_data[i];
+            //k_result[j] = val;
+            //j = (k_xdim-x-k_xdim/2-1)+((y+k_ydim/2)%k_ydim)*k_xdim;
+            //k_result[j] = val;
         }
     }
 
@@ -341,19 +358,40 @@ function genMapKSpace(xdim, ydim, xlines, ylines, fmin, fmax) {
     var dx = xdim / xlines;
     var dy = ydim / ylines;
     return function filterKSpace(value, d_index) {
-        var index = Math.floor((d_index) / 2);
-        var y = (Math.floor(index / (xdim/2 + 1))) % ydim;
-        if (y > ydim / 2) {
-            y = ydim - y;
+        var index = Math.floor(d_index / 2);
+        var y = Math.floor(index / xdim);
+        var x = index-y*xdim;
+        if(y>ydim/2) {
+            y = ydim-y;
         }
-        var x = index % (xdim / 2 + 1);
-        if (index > ydim * (xdim + 2) / 2) {
-            x = x + xdim / 2 + 1;
+        if(x>xdim/2) {
+            x = xdim-x;
         }
-        var f = Math.sqrt((x) * (x) + (y) * (y));
+        var f = Math.sqrt(x*x+y*y);
+        
+        var res1 = f >= fmin && f <= fmax;
+        var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
 
-        var y = (Math.floor(index / (xdim / 2 + 1)) + ydim / 2);
-        var x = index % (xdim / 2 + 1) + xdim / 2;
+
+        return res ? value : 0;
+    }
+}
+
+function genMapKSpace3d(xdim, ydim, xlines, ylines, fmin, fmax) {
+    var dx = xdim / xlines;
+    var dy = ydim / ylines;
+    return function filterKSpace(value, d_index) {
+        var index = Math.floor(d_index / 2);
+        var z = Math.floor(index / (xdim*ydim));
+        var y = Math.floor((index-z*xdim*ydim) / xdim);
+        var x = index-y*xdim-z*xdim*ydim;
+        if(y>ydim/2) {
+            y = ydim-y;
+        }
+        if(x>xdim/2) {
+            x = xdim-x;
+        }
+        var f = Math.sqrt(x*x+y*y);
         
         var res1 = f >= fmin && f <= fmax;
         var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
@@ -368,10 +406,14 @@ function inverseKSpace(kSpace, xdim, ydim, zdim, xlines, ylines, fmin, fmax, noI
     var result = new Float32Array(xdim * ydim * zdim);
     var k_result = new Float32Array(k_xdim * k_ydim * zdim);
     k_result.fill(0);
-    var zend = 10;
+    var zend = Math.max(Math.floor(zdim/25), 1);
     for (var z = 0; z < zdim; z++) {
         if (2*z*k_xdim*k_ydim > kSpace.length) { zdim = z; break; }
-        var slice_data = kSpace.subarray(z * k_xdim * k_ydim * 2, (z + 1) * k_xdim * k_ydim * 2);
+        //var slice_data = kSpace.subarray(z * k_xdim * k_ydim * 2, (z + 1) * k_xdim * k_ydim * 2);
+        var slice_data = new Float32Array(k_xdim*k_ydim*2);
+        for(var i=0;i<slice_data.length;i++) {
+            slice_data[i] = kSpace[i+z*k_xdim*k_ydim*2];
+        }
 
         var _fmax = fmax;
         if (z<zend) {
@@ -385,19 +427,59 @@ function inverseKSpace(kSpace, xdim, ydim, zdim, xlines, ylines, fmin, fmax, noI
         k_result.set(transformKSpace(input_data), z * k_xdim * k_ydim);
 
         if (!noIfft) {
-            var img_result = irfft2d(input_data, k_xdim, k_ydim)
-            var maxval = 0;
-            var minval = 999999999;
-            for (var i = 0; i < img_result.length; i++) {
-                maxval = Math.max(maxval, img_result[i]);
-                minval = Math.min(minval, img_result[i]);
-            }
-            //console.log(z, minval, maxval);
+            var fft_result = ifft2d(input_data, k_xdim, k_ydim);
+
             var xoff = Math.floor((k_xdim-xdim) / 2);
             var yoff = Math.floor((k_ydim-ydim) / 2);
             for (var x = 0; x < xdim; x++) {
                 for (var y=0; y < ydim; y++) {
-                    result[x + y*xdim + z*xdim*ydim] = img_result[xoff+x + (yoff+y)*k_xdim];
+                    result[x+y*xdim+z*xdim*ydim] = Math.sqrt(fft_result[2*(xoff+x + (yoff+y)*k_xdim)]*fft_result[2*(xoff+x + (yoff+y)*k_xdim)]+fft_result[2*(xoff+x + (yoff+y)*k_xdim)+1]*fft_result[2*(xoff+x + (yoff+y)*k_xdim)+1]);
+                    //result[x+y*xdim+z*xdim*ydim] = mag_result[xoff+x+(yoff+y)*k_xdim]
+                }
+            }
+        }
+    }
+    if (noIfft) {
+        return [undefined, k_result, [xlines, ylines, fmin, fmax]];
+    }
+    result = new MRImage(xdim, ydim, zdim, result);
+    return [result, k_result, [xlines, ylines, fmin, fmax]];
+}
+
+function inverseKSpace3d(kSpace, xdim, ydim, zdim, xlines, ylines, fmin, fmax, noIfft = false) {
+    //var mapKSpace = genMapKSpace(xlines, ylines, fmin, fmax)
+    var result = new Float32Array(xdim * ydim * zdim);
+    //var k_result = new Float32Array(k_xdim * k_ydim * zdim);
+    //k_result.fill(0);
+    var zend = Math.max(Math.floor(zdim/25), 1);
+    
+    var _fmax = fmax;
+    if (z<zend) {
+        _fmax = z/zend*z/zend * fmax;
+    }
+    if (z > zdim-zend) {
+        _fmax = (zdim-z)/zend*(zdim-z)/zend * fmax;
+    }
+    var mapKSpace = genMapKSpace3d(k_xdim, k_ydim, xlines, ylines, fmin, fmax)
+    var input_data = kSpace.map(mapKSpace);
+    var k_result = transformKSpace3d(kSpace);
+
+    if (!noIfft) {
+        var fft_result = ifft3d(kSpace, k_xdim, k_ydim, k_zdim);
+        /*var maxval = 0;
+        var minval = 999999999;
+        for (var i = 0; i < img_result.length; i++) {
+            maxval = Math.max(maxval, img_result[i]);
+            minval = Math.min(minval, img_result[i]);
+        }*/
+        var xoff = Math.floor((k_xdim-xdim) / 2);
+        var yoff = Math.floor((k_ydim-ydim) / 2);
+        for (var x = 0; x < xdim; x++) {
+            for (var y=0; y < ydim; y++) {
+                for(var z=0;z<zdim;z++) {
+                    var pos = 2*(xoff+x + (yoff+y)*k_xdim+z*k_xdim*k_ydim);
+                    result[x+y*xdim+z*xdim*ydim] = Math.sqrt(fft_result[pos]*fft_result[pos]+fft_result[pos+1]*fft_result[pos+1]);
+                //result[x+y*xdim+z*xdim*ydim] = mag_result[xoff+x+(yoff+y)*k_xdim]
                 }
             }
         }
@@ -645,7 +727,7 @@ function compressed_sensing_mriquestions(k_space, params) {
     var threshold = "cs_threshold" in params ? params["cs_threshold"] : 0.3;
     k_space = sparsify(k_space);
     //var slice_data = k_space.subarray(z * k_xdim * k_ydim * 2, (z + 1) * k_xdim * k_ydim * 2);
-    var initial_img = irfft2d(slice_data, k_xdim, k_ydim)
+    var initial_img = ifft2d(slice_data, k_xdim, k_ydim)
     var update_img = sparsify_transform(initial_img);
     for(var i=0;i<update_img.length;i++) {
         if(update_img[i] < threshold) { 
@@ -653,7 +735,7 @@ function compressed_sensing_mriquestions(k_space, params) {
         }
     }
     update_img = i_sparsify_transform(update_img);
-    var k_space_d = rfft2d(update_img);
+    var k_space_d = fft2d(update_img);
     for(var i=0;i<k_space_d.length;i++) {
         k_space_d[i] -= k_space[i];
     }
