@@ -1076,6 +1076,17 @@ function simulateImage(params) {
     //console.log(xdim, ydim, zdim);
     var nearest = "nearest" in params ? parseInt(params["nearest"]) : 2;
     var cs = "cs" in params ? parseInt(params["cs"]) : 0;
+    var cs_filt = "cs_filter" in params ? parseInt(params["cs_filter"]) : 0;
+    var cs_mask_t = cs_mask2_t;
+    switch(cs_filt) {
+        case 0:
+            cs_mask_t = cs_mask2_t;
+            break;
+        case 1:
+            cs_mask_t = cs_mask4_t;
+            break;
+    }
+    var fft3d = 'fft' in params ? params['fft'] == '3d' : true;
 
     if (S == undefined) {
         return undefined;
@@ -1088,7 +1099,6 @@ function simulateImage(params) {
                 var pos = [], d = [];
                 switch (nearest) {
                     case 0:
-                        console.log("nearest");
                         [pos, d] = getNearest(z*k_zdim/zdim, y*k_ydim/ydim, x*k_xdim/xdim);
                         break;
                     case 1:
@@ -1108,37 +1118,67 @@ function simulateImage(params) {
     }
     result = addImageNoise(result, params);
     result = new MRImage(xdim, ydim, zdim, result);
-    var k_result = calcKSpace(result);
+    var k_result;
+    if (fft3d) {
+        k_result = calcKSpace3d(result);
+    } else {
+        k_result = calcKSpace(result);
+    }   
     [k_data_im_re, result] = addKSpaceNoise(k_data_im_re, result, params);
-    console.log(cs==0, cs==1, cs==2, result==undefined);
+    /*for(var z=0;z<k_zdim;z++) {
+        k_data_im_re.set(phant_data, z*k_xdim*k_ydim*2);
+        k_result.set(transformKSpace(phant_data),z*k_xdim*k_ydim);
+    }*/
     switch(cs) {
         case 0:
             break;
         case 1:
-            console.log("apply filter");
-            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t);
-            [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t, zdim);
+            if(fft3d) {
+                [result, k_result, p] = inverseKSpace3d(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+            } else {
+                [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+            }
             break;
         case 2:
-            console.log("apply filter + cs");
-            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t);
+            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t, zdim);
             k_result = transformKSpace3d(k_data_im_re);
             var result = new Float32Array(xdim*ydim*zdim);
-            for(var z=0;z<zdim;z++) {
-                console.log("z", z);
-                var k_data_slice = new Float32Array(k_xdim*k_ydim*2);
-                for(var i=0;i<k_data_slice.length;i++) {
-                    k_data_slice[i] = k_data_im_re[i+k_xdim*k_ydim*2*z];
-                }
-                result.set(compressed_sensing(k_data_slice, params), z*xdim*ydim);
-                if (z>2) {
-                break;
+            if(fft3d) {
+                result = compressed_sensing(k_data_im_re, params);
+            } else {
+                for(var z=0;z<zdim;z++) {
+                    console.log("z", z);
+                    var k_data_slice = new Float32Array(k_xdim*k_ydim*2);
+                    for(var i=0;i<k_data_slice.length;i++) {
+                        k_data_slice[i] = k_data_im_re[i+k_xdim*k_ydim*2*z];
+                    }
+                    var nparams = Object.assign({}, params);
+                    nparams["zdim"] = 1;
+                    var slice_result = compressed_sensing(k_data_slice, nparams);
+                    result.set(slice_result, z*xdim*ydim);
                 }
             }
+            result = new MRImage(xdim, ydim, zdim, result);
+            break;
+        case 3:
+            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t);
+            k_result = transformKSpace3d(k_data_im_re);
+            var result = compressed_sensing(k_data_im_re, params);
+            result = new MRImage(xdim, ydim, zdim, result);
+            break;
+        case 4:
+            break;
+        case 5:
+            k_result = magnitude_image(k_data_im_re);
             break;
     }
     if (result == undefined) {
-        [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+        if(fft3d) {
+            [result, k_result, p] = inverseKSpace3d(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+        } else {
+            [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+        }
     }
     return [result, k_result, [256, 256, 0, 256]];
 }
@@ -1163,7 +1203,7 @@ var queryableFunctions = {
         reply('result', simulateImage(params));
     },
     reco: function (params) {
-        reply('result', inverseKSpace(k_data_im_re, ...params));
+        reply('result', inverseKSpace3d(k_data_im_re, ...params));
     },
     loadData: async function (path) {
         reply('loadData', await loadDataSet(path));
