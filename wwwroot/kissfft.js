@@ -1,4 +1,4 @@
-self.importScripts("./a.out.js");
+self.importScripts("a.out.js");
 
 /** Compute the FFT of a real-valued mxn matrix. */
 function fft(data, m) {
@@ -23,7 +23,7 @@ function fft(data, m) {
 /** Compute the inverse FFT of a real-valued mxn matrix. */
 function ifft(spectrum, m) {
     var heapSpectrum = allocFromArray(spectrum);
-    var heapData = alloc(m*4);
+    var heapData = alloc(2*m*4);
 
     _ifft(heapSpectrum.byteOffset, heapData.byteOffset, m);
 
@@ -42,7 +42,7 @@ function ifft(spectrum, m) {
 }
 
 /** Compute the FFT of a real-valued mxn matrix. */
-function fft2d(data, m, n) {
+function kfft2d(data, m, n) {
     /* Allocate input and output arrays on the heap. */
     var heapData = allocFromArray(data);
     var heapSpectrum = alloc(2*m*n*4);
@@ -61,11 +61,10 @@ function fft2d(data, m, n) {
     return spectrum;
 }
 
-
 /** Compute the inverse FFT of a real-valued mxn matrix. */
-function ifft2d(spectrum, m, n) {
+function kifft2d(spectrum, m, n) {
     var heapSpectrum = allocFromArray(spectrum);
-    var heapData = alloc(m*n*4);
+    var heapData = alloc(2*m*n*4);
 
     _ifft2d(heapSpectrum.byteOffset, heapData.byteOffset, m, n);
 
@@ -84,7 +83,7 @@ function ifft2d(spectrum, m, n) {
 }
 
 /** Compute the FFT of a real-valued mxn matrix. */
-function fft3d(data, m, n, l) {
+function kfft3d(data, m, n, l) {
     /* Allocate input and output arrays on the heap. */
     var heapData = allocFromArray(data);
     var heapSpectrum = alloc(2*m*n*l*4);
@@ -105,7 +104,7 @@ function fft3d(data, m, n, l) {
 
 
 /** Compute the inverse FFT of a real-valued mxn matrix. */
-function ifft3d(spectrum, m, n, l) {
+function kifft3d(spectrum, m, n, l) {
     var heapSpectrum = allocFromArray(spectrum);
     var heapData = alloc(m*n*l*4);
 

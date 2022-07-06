@@ -3,6 +3,7 @@ self.importScripts("./pako.min.js")
 self.importScripts("./math.js")
 self.importScripts("./discrete-wavelets.umd.min.js")
 self.importScripts("./Mask_CS_Accel2.txt.js");
+self.importScripts("./Mask_CS_Accel4.txt.js");
 
 //var xdim = 256;
 //var ydim = 256;
@@ -135,6 +136,142 @@ async function loadDataSet(path) {
         xhr.send();
     });
     return [array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2f, array_na_t2s, zdim, ydim, xdim];
+}
+
+function my_fft_stride(data, offset, stride, length) {
+    var slice = new Float32Array(2*length);
+    for(var i=0;i<slice.length;i+=2) {
+        slice[i] = data[offset+i*stride];
+        slice[i+1] = data[offset+i*stride+1];
+        if(slice[i] == NaN || slice[i] == undefined) {
+            console.log("nan before", i, offset, i*stride);
+        }
+    }
+    //console.log("data", data.reduce((p,v) => Math.min(p,v)), data.reduce((p,v) => Math.max(p,v)))
+    //console.log("input", slice.reduce((p,v) => Math.min(p,v)), slice.reduce((p,v) => Math.max(p,v)))
+    var result = fft(slice, length);
+    //console.log(length, slice.length, result.length);
+    //console.log("result", result.reduce((p,v) => Math.min(p,v)), result.reduce((p,v) => Math.max(p,v)));
+    for(var i=0;i<slice.length;i+=2) {
+        data[offset+i*stride] = result[i];
+        data[offset+i*stride+1] = result[i+1];
+        if(data[offset+i*stride] == undefined) {
+            console.log("nan after", i, offset+i*stride-data.length);
+        }
+    }
+}
+
+function my_ifft_stride(data, offset, stride, length) {
+    var slice = new Float32Array(2*length);
+    for(var i=0;i<slice.length;i+=2) {
+        slice[i] = data[offset+i*stride];
+        slice[i+1] = data[offset+i*stride+1];
+        if(slice[i] == NaN || slice[i] == undefined) {
+            console.log("nan before", i, offset, i*stride);
+        }
+    }
+    //console.log("data", data.reduce((p,v) => Math.min(p,v)), data.reduce((p,v) => Math.max(p,v)))
+    //console.log("input", slice.reduce((p,v) => Math.min(p,v)), slice.reduce((p,v) => Math.max(p,v)))
+    var result = ifft(slice, length);
+    //console.log(length, slice.length, result.length);
+    //console.log("result", result.reduce((p,v) => Math.min(p,v)), result.reduce((p,v) => Math.max(p,v)));
+    for(var i=0;i<slice.length;i+=2) {
+        data[offset+i*stride] = result[i];
+        data[offset+i*stride+1] = result[i+1];
+        if(data[offset+i*stride] == undefined) {
+            console.log("nan after", i, offset+i*stride-data.length);
+        }
+    }
+}
+
+function _fft2d(data, xdim, ydim) {
+    var k_data_im_re = new Float32Array(xdim * ydim * 2);
+    k_data_im_re.set(data);
+    for(var i=0;i<k_ydim;i++) {
+        my_fft_stride(k_data_im_re, 2*i*xdim, 1, xdim);
+    }
+    for(var i=0;i<k_xdim;i++) {
+        my_fft_stride(k_data_im_re, 2*i, xdim, ydim);
+    }
+    return k_data_im_re;
+}
+
+function fft2d(data, xdim, ydim) {
+    return kfft2d(data, xdim, ydim);
+}
+
+function _ifft2d(data, xdim, ydim) {
+    var k_data_im_re = new Float32Array(xdim * ydim * 2);
+    k_data_im_re.set(data);
+    for(var i=0;i<k_ydim;i++) {
+        my_ifft_stride(k_data_im_re, 2*i*xdim, 1, xdim);
+    }
+    for(var i=0;i<k_xdim;i++) {
+        my_ifft_stride(k_data_im_re, 2*i, xdim, ydim);
+    }
+    return k_data_im_re;
+}
+
+function ifft2d(data, xdim, ydim) {
+    return kifft2d(data, xdim, ydim);
+}
+
+function fft3d(data, xdim, ydim, zdim) {
+    var k_data_im_re = new Float32Array(xdim * ydim * zdim * 2);
+    if(data.length == k_data_im_re.length) {
+        k_data_im_re.set(data);
+    } else {
+        k_data_im_re.fill(0);
+        for(var i=0;i<data.length;i++) {
+            k_data_im_re[2*i] = data[i];
+        }
+    }
+    var slice = new Float32Array(xdim*ydim*2);
+    for(var z=0;z<zdim;z++) {
+        for(var i=0;i<slice.length;i++) {
+            slice[i] = k_data_im_re[i+z*xdim*ydim*2];
+        }
+        k_data_im_re.set(fft2d(slice, xdim, ydim), z*xdim*ydim*2);
+    }
+    for(var i=0;i<xdim*ydim;i++) {
+        my_fft_stride(k_data_im_re, 2*i, xdim*ydim, zdim);
+    }
+    return k_data_im_re;
+}
+
+function _fft3d(data, xdim, ydim, zdim) {
+    var in_data = new Float32Array(xdim * ydim * zdim * 2);
+    if(data.length == in_data.length) {
+        in_data.set(data);
+    } else {
+        in_data.fill(0);
+        for(var i=0;i<data.length;i++) {
+            in_data[2*i] = data[i];
+        }
+    }
+    var result = kfft3d(in_data, xdim, ydim, zdim);
+    console.log(result.reduce((p,v)=>Math.min(p,v)), result.reduce((p,v)=>Math.max(p,v)));
+    return result;
+}
+
+function ifft3d(data, xdim, ydim, zdim) {
+    var img = new Float32Array(xdim * ydim * zdim * 2);
+    img.set(data);
+    var slice = new Float32Array(xdim*ydim*2);
+    for(var z=0;z<zdim;z++) {
+        for(var i=0;i<slice.length;i++) {
+            slice[i] = img[i+z*xdim*ydim*2];
+        }
+        img.set(ifft2d(slice, xdim, ydim), z*xdim*ydim*2);
+    }
+    for(var i=0;i<xdim*ydim;i++) {
+        my_ifft_stride(img, 2*i, k_xdim*k_ydim, zdim);
+    }
+    return img;
+}
+
+function _ifft3d(data, xdim, ydim, zdim) {
+    return kfft3d(data, xdim, ydim, zdim);
 }
 
 function calcKSpace(result) {
