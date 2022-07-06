@@ -3,6 +3,7 @@ self.importScripts("./pako.min.js")
 self.importScripts("./math.js")
 self.importScripts("./discrete-wavelets.umd.min.js")
 self.importScripts("./Mask_CS_Accel2.txt.js");
+self.importScripts("./Mask_CS_Accel4.txt.js");
 
 //var xdim = 256;
 //var ydim = 256;
@@ -137,6 +138,142 @@ async function loadDataSet(path) {
     return [array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2f, array_na_t2s, zdim, ydim, xdim];
 }
 
+function my_fft_stride(data, offset, stride, length) {
+    var slice = new Float32Array(2*length);
+    for(var i=0;i<slice.length;i+=2) {
+        slice[i] = data[offset+i*stride];
+        slice[i+1] = data[offset+i*stride+1];
+        if(slice[i] == NaN || slice[i] == undefined) {
+            console.log("nan before", i, offset, i*stride);
+        }
+    }
+    //console.log("data", data.reduce((p,v) => Math.min(p,v)), data.reduce((p,v) => Math.max(p,v)))
+    //console.log("input", slice.reduce((p,v) => Math.min(p,v)), slice.reduce((p,v) => Math.max(p,v)))
+    var result = fft(slice, length);
+    //console.log(length, slice.length, result.length);
+    //console.log("result", result.reduce((p,v) => Math.min(p,v)), result.reduce((p,v) => Math.max(p,v)));
+    for(var i=0;i<slice.length;i+=2) {
+        data[offset+i*stride] = result[i];
+        data[offset+i*stride+1] = result[i+1];
+        if(data[offset+i*stride] == undefined) {
+            console.log("nan after", i, offset+i*stride-data.length);
+        }
+    }
+}
+
+function my_ifft_stride(data, offset, stride, length) {
+    var slice = new Float32Array(2*length);
+    for(var i=0;i<slice.length;i+=2) {
+        slice[i] = data[offset+i*stride];
+        slice[i+1] = data[offset+i*stride+1];
+        if(slice[i] == NaN || slice[i] == undefined) {
+            console.log("nan before", i, offset, i*stride);
+        }
+    }
+    //console.log("data", data.reduce((p,v) => Math.min(p,v)), data.reduce((p,v) => Math.max(p,v)))
+    //console.log("input", slice.reduce((p,v) => Math.min(p,v)), slice.reduce((p,v) => Math.max(p,v)))
+    var result = ifft(slice, length);
+    //console.log(length, slice.length, result.length);
+    //console.log("result", result.reduce((p,v) => Math.min(p,v)), result.reduce((p,v) => Math.max(p,v)));
+    for(var i=0;i<slice.length;i+=2) {
+        data[offset+i*stride] = result[i];
+        data[offset+i*stride+1] = result[i+1];
+        if(data[offset+i*stride] == undefined) {
+            console.log("nan after", i, offset+i*stride-data.length);
+        }
+    }
+}
+
+function _fft2d(data, xdim, ydim) {
+    var k_data_im_re = new Float32Array(xdim * ydim * 2);
+    k_data_im_re.set(data);
+    for(var i=0;i<k_ydim;i++) {
+        my_fft_stride(k_data_im_re, 2*i*xdim, 1, xdim);
+    }
+    for(var i=0;i<k_xdim;i++) {
+        my_fft_stride(k_data_im_re, 2*i, xdim, ydim);
+    }
+    return k_data_im_re;
+}
+
+function fft2d(data, xdim, ydim) {
+    return kfft2d(data, xdim, ydim);
+}
+
+function _ifft2d(data, xdim, ydim) {
+    var k_data_im_re = new Float32Array(xdim * ydim * 2);
+    k_data_im_re.set(data);
+    for(var i=0;i<k_ydim;i++) {
+        my_ifft_stride(k_data_im_re, 2*i*xdim, 1, xdim);
+    }
+    for(var i=0;i<k_xdim;i++) {
+        my_ifft_stride(k_data_im_re, 2*i, xdim, ydim);
+    }
+    return k_data_im_re;
+}
+
+function ifft2d(data, xdim, ydim) {
+    return kifft2d(data, xdim, ydim);
+}
+
+function fft3d(data, xdim, ydim, zdim) {
+    var k_data_im_re = new Float32Array(xdim * ydim * zdim * 2);
+    if(data.length == k_data_im_re.length) {
+        k_data_im_re.set(data);
+    } else {
+        k_data_im_re.fill(0);
+        for(var i=0;i<data.length;i++) {
+            k_data_im_re[2*i] = data[i];
+        }
+    }
+    var slice = new Float32Array(xdim*ydim*2);
+    for(var z=0;z<zdim;z++) {
+        for(var i=0;i<slice.length;i++) {
+            slice[i] = k_data_im_re[i+z*xdim*ydim*2];
+        }
+        k_data_im_re.set(fft2d(slice, xdim, ydim), z*xdim*ydim*2);
+    }
+    for(var i=0;i<xdim*ydim;i++) {
+        my_fft_stride(k_data_im_re, 2*i, xdim*ydim, zdim);
+    }
+    return k_data_im_re;
+}
+
+function _fft3d(data, xdim, ydim, zdim) {
+    var in_data = new Float32Array(xdim * ydim * zdim * 2);
+    if(data.length == in_data.length) {
+        in_data.set(data);
+    } else {
+        in_data.fill(0);
+        for(var i=0;i<data.length;i++) {
+            in_data[2*i] = data[i];
+        }
+    }
+    var result = kfft3d(in_data, xdim, ydim, zdim);
+    console.log(result.reduce((p,v)=>Math.min(p,v)), result.reduce((p,v)=>Math.max(p,v)));
+    return result;
+}
+
+function ifft3d(data, xdim, ydim, zdim) {
+    var img = new Float32Array(xdim * ydim * zdim * 2);
+    img.set(data);
+    var slice = new Float32Array(xdim*ydim*2);
+    for(var z=0;z<zdim;z++) {
+        for(var i=0;i<slice.length;i++) {
+            slice[i] = img[i+z*xdim*ydim*2];
+        }
+        img.set(ifft2d(slice, xdim, ydim), z*xdim*ydim*2);
+    }
+    for(var i=0;i<xdim*ydim;i++) {
+        my_ifft_stride(img, 2*i, k_xdim*k_ydim, zdim);
+    }
+    return img;
+}
+
+function _ifft3d(data, xdim, ydim, zdim) {
+    return kfft3d(data, xdim, ydim, zdim);
+}
+
 function calcKSpace(result) {
     var xdim = result.xdim;
     var ydim = result.ydim;
@@ -146,31 +283,48 @@ function calcKSpace(result) {
     k_result = new Float32Array(k_xdim * k_ydim * zdim);
     k_data_im_re = new Float32Array(k_xdim * k_ydim * zdim * 2);
     for (var z = 0; z < zdim; z++) {
-        var slice_data = new Float32Array(k_xdim * k_ydim);
+        var slice_data = new Float32Array(k_xdim * k_ydim * 2);
         slice_data.fill(0);
         for (var x = 0; x < xdim; x++) {
             for (var y=0; y < ydim; y++) {
-                slice_data[xoff+x + (yoff+y)*k_xdim] = result.data[x + y*xdim + z*xdim*ydim];
+                slice_data[2*(xoff+x + (yoff+y)*k_xdim)] = result.data[x + y*xdim + z*xdim*ydim];
             }
         }
-        var fft_res = rfft2d(slice_data, k_xdim, k_ydim);
+        var fft_res = fft2d(slice_data, k_xdim, k_ydim);
         k_data_im_re.set(fft_res, z * k_xdim * k_ydim * 2)
-        k_result.set(transformKSpace(fft_res), z * k_xdim * k_ydim);
     }
+    k_result = transformKSpace3d(k_data_im_re);
+    return k_result
+}
+
+function calcKSpace3d(result) {
+    var xdim = result.xdim;
+    var ydim = result.ydim;
+    var zdim = result.zdim;
+    k_data_im_re = fft3d(result.data, xdim, ydim, zdim);
+    k_result = transformKSpace3d(k_data_im_re);
     return k_result
 }
 
 function transformKSpace3d(k_data_im_re) {
-    var k_result = new Uint8ClampedArray(k_xdim * k_ydim * zdim);
+    var k_result = new Float32Array(k_xdim * k_ydim * zdim);
     for (var z = 0; z < zdim; z++) {
         var slice_data = new Float32Array(k_xdim * k_ydim*2);
         for (var x = 0; x < k_xdim; x++) {
             for (var y=0; y < k_ydim; y++) {
-                slice_data[x + y*k_xdim] = k_data_im_re[x + y*k_xdim + z*k_xdim*k_ydim];
-                slice_data[x + y*k_xdim + 1] = k_data_im_re[x + y*k_xdim + z*k_xdim*k_ydim + 1];
+                slice_data[2*(x + y*k_xdim)] = k_data_im_re[2*(x + y*k_xdim + z*k_xdim*k_ydim)];
+                slice_data[2*(x + y*k_xdim)+1] = k_data_im_re[2*(x + y*k_xdim + z*k_xdim*k_ydim) + 1];
+                if(slice_data[2*(x + y*k_xdim)] == NaN || slice_data[2*(x + y*k_xdim)] == undefined || slice_data[2*(x + y*k_xdim)+1] == undefined || slice_data[2*(x + y*k_xdim)+1] == NaN) {
+                    console.log("fft output undefined", x,y,z);
+                }
             }
         }
-        k_result.set(transformKSpace(slice_data), z * k_xdim * k_ydim);
+        k_result.set(transformKSpace(slice_data), ((z+zdim/2)%zdim) * k_xdim * k_ydim);
+    }
+    var max = k_result.reduce((p,v) => Math.max(p,v));
+    var min = k_result.reduce((p,v) => Math.min(p,v));
+    for(var i=0;i<k_result.length;i++) {
+        k_result[i] = 255*(k_result[i]-min) / (max-min);
     }
     return k_result
 }
@@ -185,15 +339,15 @@ function transformKSpace(fft_res) {
         maxval = Math.max(maxval, k_data[i]);
         minval = Math.min(minval, k_data[i]);
     }
-    for(var x = 0;x<=k_xdim/2;x++) {
+    for(var x = 0;x<k_xdim;x++) {
         for(var y=0;y<k_ydim;y++) {
-            var i = x + y*(k_xdim/2+1)
-            var val = (k_data[i] - minval) * 255 / maxval;
-
+            var i = x + y*k_xdim;
+            var val = (k_data[i] - minval) * 255 / (maxval-minval);
             var j = (x+k_xdim/2)+((y+k_ydim/2)%k_ydim)*k_xdim;
-            k_result[j] = val;
-            j = (k_xdim-x-k_xdim/2-1)+((y+k_ydim/2)%k_ydim)*k_xdim;
-            k_result[j] = val;
+            k_result[j] = k_data[i];
+            //k_result[j] = val;
+            //j = (k_xdim-x-k_xdim/2-1)+((y+k_ydim/2)%k_ydim)*k_xdim;
+            //k_result[j] = val;
         }
     }
 
@@ -204,19 +358,40 @@ function genMapKSpace(xdim, ydim, xlines, ylines, fmin, fmax) {
     var dx = xdim / xlines;
     var dy = ydim / ylines;
     return function filterKSpace(value, d_index) {
-        var index = Math.floor((d_index) / 2);
-        var y = (Math.floor(index / (xdim/2 + 1))) % ydim;
-        if (y > ydim / 2) {
-            y = ydim - y;
+        var index = Math.floor(d_index / 2);
+        var y = Math.floor(index / xdim);
+        var x = index-y*xdim;
+        if(y>ydim/2) {
+            y = ydim-y;
         }
-        var x = index % (xdim / 2 + 1);
-        if (index > ydim * (xdim + 2) / 2) {
-            x = x + xdim / 2 + 1;
+        if(x>xdim/2) {
+            x = xdim-x;
         }
-        var f = Math.sqrt((x) * (x) + (y) * (y));
+        var f = Math.sqrt(x*x+y*y);
+        
+        var res1 = f >= fmin && f <= fmax;
+        var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
 
-        var y = (Math.floor(index / (xdim / 2 + 1)) + ydim / 2);
-        var x = index % (xdim / 2 + 1) + xdim / 2;
+
+        return res ? value : 0;
+    }
+}
+
+function genMapKSpace3d(xdim, ydim, xlines, ylines, fmin, fmax) {
+    var dx = xdim / xlines;
+    var dy = ydim / ylines;
+    return function filterKSpace(value, d_index) {
+        var index = Math.floor(d_index / 2);
+        var z = Math.floor(index / (xdim*ydim));
+        var y = Math.floor((index-z*xdim*ydim) / xdim);
+        var x = index-y*xdim-z*xdim*ydim;
+        if(y>ydim/2) {
+            y = ydim-y;
+        }
+        if(x>xdim/2) {
+            x = xdim-x;
+        }
+        var f = Math.sqrt(x*x+y*y);
         
         var res1 = f >= fmin && f <= fmax;
         var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
@@ -231,10 +406,14 @@ function inverseKSpace(kSpace, xdim, ydim, zdim, xlines, ylines, fmin, fmax, noI
     var result = new Float32Array(xdim * ydim * zdim);
     var k_result = new Float32Array(k_xdim * k_ydim * zdim);
     k_result.fill(0);
-    var zend = 10;
+    var zend = Math.max(Math.floor(zdim/25), 1);
     for (var z = 0; z < zdim; z++) {
         if (2*z*k_xdim*k_ydim > kSpace.length) { zdim = z; break; }
-        var slice_data = kSpace.subarray(z * k_xdim * k_ydim * 2, (z + 1) * k_xdim * k_ydim * 2);
+        //var slice_data = kSpace.subarray(z * k_xdim * k_ydim * 2, (z + 1) * k_xdim * k_ydim * 2);
+        var slice_data = new Float32Array(k_xdim*k_ydim*2);
+        for(var i=0;i<slice_data.length;i++) {
+            slice_data[i] = kSpace[i+z*k_xdim*k_ydim*2];
+        }
 
         var _fmax = fmax;
         if (z<zend) {
@@ -248,19 +427,59 @@ function inverseKSpace(kSpace, xdim, ydim, zdim, xlines, ylines, fmin, fmax, noI
         k_result.set(transformKSpace(input_data), z * k_xdim * k_ydim);
 
         if (!noIfft) {
-            var img_result = irfft2d(input_data, k_xdim, k_ydim)
-            var maxval = 0;
-            var minval = 999999999;
-            for (var i = 0; i < img_result.length; i++) {
-                maxval = Math.max(maxval, img_result[i]);
-                minval = Math.min(minval, img_result[i]);
-            }
-            //console.log(z, minval, maxval);
+            var fft_result = ifft2d(input_data, k_xdim, k_ydim);
+
             var xoff = Math.floor((k_xdim-xdim) / 2);
             var yoff = Math.floor((k_ydim-ydim) / 2);
             for (var x = 0; x < xdim; x++) {
                 for (var y=0; y < ydim; y++) {
-                    result[x + y*xdim + z*xdim*ydim] = img_result[xoff+x + (yoff+y)*k_xdim];
+                    result[x+y*xdim+z*xdim*ydim] = Math.sqrt(fft_result[2*(xoff+x + (yoff+y)*k_xdim)]*fft_result[2*(xoff+x + (yoff+y)*k_xdim)]+fft_result[2*(xoff+x + (yoff+y)*k_xdim)+1]*fft_result[2*(xoff+x + (yoff+y)*k_xdim)+1]);
+                    //result[x+y*xdim+z*xdim*ydim] = mag_result[xoff+x+(yoff+y)*k_xdim]
+                }
+            }
+        }
+    }
+    if (noIfft) {
+        return [undefined, k_result, [xlines, ylines, fmin, fmax]];
+    }
+    result = new MRImage(xdim, ydim, zdim, result);
+    return [result, k_result, [xlines, ylines, fmin, fmax]];
+}
+
+function inverseKSpace3d(kSpace, xdim, ydim, zdim, xlines, ylines, fmin, fmax, noIfft = false) {
+    //var mapKSpace = genMapKSpace(xlines, ylines, fmin, fmax)
+    var result = new Float32Array(xdim * ydim * zdim);
+    //var k_result = new Float32Array(k_xdim * k_ydim * zdim);
+    //k_result.fill(0);
+    var zend = Math.max(Math.floor(zdim/25), 1);
+    
+    var _fmax = fmax;
+    if (z<zend) {
+        _fmax = z/zend*z/zend * fmax;
+    }
+    if (z > zdim-zend) {
+        _fmax = (zdim-z)/zend*(zdim-z)/zend * fmax;
+    }
+    var mapKSpace = genMapKSpace3d(k_xdim, k_ydim, xlines, ylines, fmin, fmax)
+    var input_data = kSpace.map(mapKSpace);
+    var k_result = transformKSpace3d(kSpace);
+
+    if (!noIfft) {
+        var fft_result = ifft3d(kSpace, k_xdim, k_ydim, k_zdim);
+        /*var maxval = 0;
+        var minval = 999999999;
+        for (var i = 0; i < img_result.length; i++) {
+            maxval = Math.max(maxval, img_result[i]);
+            minval = Math.min(minval, img_result[i]);
+        }*/
+        var xoff = Math.floor((k_xdim-xdim) / 2);
+        var yoff = Math.floor((k_ydim-ydim) / 2);
+        for (var x = 0; x < xdim; x++) {
+            for (var y=0; y < ydim; y++) {
+                for(var z=0;z<zdim;z++) {
+                    var pos = 2*(xoff+x + (yoff+y)*k_xdim+z*k_xdim*k_ydim);
+                    result[x+y*xdim+z*xdim*ydim] = Math.sqrt(fft_result[pos]*fft_result[pos]+fft_result[pos+1]*fft_result[pos+1]);
+                //result[x+y*xdim+z*xdim*ydim] = mag_result[xoff+x+(yoff+y)*k_xdim]
                 }
             }
         }
@@ -574,13 +793,13 @@ function compressed_sensing_mriquestions(k_space, params) {
     return initial_img;
 }
 
-function filter_kspace_cs(k_data_im_re, mask_cs) {
+function filter_kspace_cs(k_data_im_re, mask_cs, zdim) {
     var k_data_im_re_f = new Float32Array(k_data_im_re.length);
     for(var z=0;z<zdim;z++) {
         for(var y=0;y<k_ydim;y++) {
-            for(var x=0;x<k_xdim/2+1;x++) {
-                var pos = x*2+y*(k_xdim+2)+z*k_xdim*k_ydim*2;
-                if(mask_cs[y][0] == 1) {
+            for(var x=0;x<k_xdim;x++) {
+                var pos = 2*(x+y*k_xdim+z*k_xdim*k_ydim);
+                if(mask_cs[y][z%100] == 1) {
                     k_data_im_re_f[pos] = k_data_im_re[pos]; 
                     k_data_im_re_f[pos+1] = k_data_im_re[pos+1];
                 } else {
@@ -598,10 +817,12 @@ function print_stats(name, array) {
     var min = array.reduce((p,c) => Math.min(p,c), Math.min());
     var sum = array.reduce((p,c) => p+c, 0);
     var nans = array.reduce((p,c) => { if(c == NaN){return p+1;}else{return p;}}, 0);
-    console.log(name, array.length, min, max, sum / array.length, nans);
+    var ones = array.reduce((p,c) => { if(c != 0){return p+1;}else{return p;}}, 0);
+    var zeros = array.reduce((p,c) => { if(c == 0){return p+1;}else{return p;}}, 0);
+    console.log(name, array.length, min, max, sum/array.length, nans, ones, zeros);
 }
 
-function compressed_sensing(data, params) {
+function compressed_sensing(f_data, params) {
     //%%CS_RECON_CARTESIAN  Spatial-only 2D and 3D CS recon.
     //%
     //% Total variation (L1-norm of gradient) constrained compressed
@@ -616,80 +837,81 @@ function compressed_sensing(data, params) {
     var zdim = Math.round(params["zdim"]);
     zdim = zdim > 0 ? zdim : k_zdim;
     zdim = zdim > k_zdim ? k_zdim : zdim;
-    zdim = 1
 
-    var ninner = 5;
-    var nbreg = 10;
+    var ninner = "cs_ninner" in params ? parseInt(params["cs_ninner"]) : 5;
+    var nbreg = "cs_nbreg" in params ? parseInt(params["cs_nbreg"]) : 10;
     var lambda = 4.0;
     var mu = "cs_mu" in params ? params["cs_mu"] : 20;
     var gam = 1;
     
-    var data_ndims = 2;
+    var data_ndims = zdim == 1 ? 2 : 3;
     //mask = data ~= 0.0;   //% not perfect, but good enough
     //print_stats("data", data);
-    var mask = new Uint8Array(data.length);
-    for(var i=0;i<data.length;i++) {
-        mask[i] = data[i] != 0;
+    var f_mask = new Uint8Array(f_data.length);
+    for(var i=0;i<f_data.length;i+=2) {
+        f_mask[i] = (f_data[i]+f_data[i+1]) != 0;
+        f_mask[i+1] = f_mask[i];
     }
+    //print_stats("mask", f_mask);
     //% normalize the data so that standard parameter values work
-    var norm_factor = get_norm_factor(mask, data);
-    for(var i=0;i<data.length;i++) {
-        data[i] = norm_factor * data[i];
+    var norm_factor = get_norm_factor(k_ydim, f_data);
+    for(var i=0;i<f_data.length;i++) {
+        f_data[i] = norm_factor * f_data[i];
     }
+    //print_stats("data", f_data);
     //% Reserve memory for the auxillary variables
-    var data0 = new Float32Array(data.length);
-    data0.set(data);
-    var img = new Float32Array(data.length);
-    var X = new Float32Array(data.length*3);
+    var f_data0 = new Float32Array(f_data.length);
+    f_data0.set(f_data);
+    var img = new Float32Array(f_data.length);
+    var X = new Float32Array(f_data.length*3);
     X.fill(0);
-    var B = new Float32Array(data.length*3);
+    var B = new Float32Array(f_data.length*3);
     B.fill(0);
-    var murf = new Float32Array(data.length);
-    var rhs = new Float32Array(data.length);
+    var i_murf = new Float32Array(f_data.length);
+    var i_rhs = new Float32Array(f_data.length);
     //% Build Kernels
-    var scale = Math.sqrt(data.length);
-    //for(var i=0;i<data.length;i++) {
-    //    X[i] = mu*mask[i]*data[i];
-    //}
-    //var murf = ifftn(mu * mask .* data) * scale;
-    //var murf = irfft2d(input_data, k_xdim, k_ydim)
-    var uker = new Float32Array(data.length);
-    uker.fill(0);
+    var scale = Math.sqrt(f_data.length/2);
+    var f_uker = new Float32Array(f_data.length);
+    f_uker.fill(0);
     if (data_ndims == 2) {
-      uker[0] = 4;
-      uker[1*2] = -1;
-      uker[xdim*2] = -1;
-      uker[(xdim-1)*2] = -1;
-      uker[xdim*(ydim-1)*2] = -1;
+      f_uker[0] = 4;
+      f_uker[1*2] = -1;
+      f_uker[xdim*2] = -1;
+      f_uker[(xdim-1)*2] = -1;
+      f_uker[xdim*(ydim-1)*2] = -1;
+      //console.log("index", 0, 1, xdim, xdim-1, xdim*(ydim-1)); 
     } else {// data_ndims == 3
-      uker[0] = 8;
-      uker[1*2] = -1;
-      uker[xdim*2] = -1;
-      uker[xdim*ydim*2] = -1;
-      uker[(xdim-1)*2] = -1;
-      uker[xdim*(ydim-1)*2] = -1;
-      uker[xdim*ydim*(zdim-1)*2] = -1;
+      f_uker[0] = 8;
+      f_uker[1*2] = -1;
+      f_uker[xdim*2] = -1;
+      f_uker[xdim*ydim*2] = -1;
+      f_uker[(xdim-1)*2] = -1;
+      f_uker[xdim*(ydim-1)*2] = -1;
+      f_uker[xdim*ydim*(zdim-1)*2] = -1;
     }
-    //print_stats("uker in", uker);
-    uker = fft2d(uker, k_xdim, k_ydim);
-    //print_stats("uker mid", uker);
-    console.log(mu, lambda, gam);
-    for(var i=0;i<uker.length;i++) {
-        uker[i] = 1 / (mu*mask[i]+lambda*uker[i]+gam);
+    //print_stats("uker in", f_uker);
+    f_uker = data_ndims==2? fft2d(f_uker, k_xdim, k_ydim) : fft3d(f_uker, k_xdim, k_ydim, k_zdim);
+    //print_stats("uker mid", f_uker);
+    //console.log(mu, lambda, gam);
+    var real, imag, d;
+    for(var i=0;i<f_uker.length;i+=2) {
+        real = (mu*f_mask[i]+lambda*f_uker[i]+gam);
+        imag = lambda*f_uker[i+1];
+        d = real*real+imag*imag;
+        f_uker[i] = real/d;
+        f_uker[i+1] = -imag/d;
     }
-    //print_stats("uker out", uker);
-    //uker = 1 ./ (mu * mask + lambda * fftn(uker) + gam);
+    //print_stats("uker out", f_uker);
     //%  Do the reconstruction
     for(var outer = 0;outer < nbreg; outer++) {
+      for(var i=0;i<f_data.length;i++) {
+        i_murf[i] = mu*f_mask[i]*f_data[i];
+      }
+      //print_stats("murf in", i_murf);
+      i_murf = data_ndims==2? ifft2d(i_murf, k_xdim, k_ydim) : ifft3d(i_murf, k_xdim, k_ydim, k_zdim);
+      //print_stats("murf out", i_murf);
       for(var inner = 0;inner < ninner;inner++) {
         //% update u
-        //%fprintf('i:%d, o:%d\n', inner, outer);
-        for(var i=0;i<data.length;i++) {
-            murf[i] = mu*mask[i]*data[i];
-        }
-        //print_stats("murf in", murf);
-        murf = ifft2d(murf, k_xdim, k_ydim)
-        //print_stats("murf out", murf);
         for(var x=0;x<xdim;x++) {
             for(var y=0;y<ydim;y++) {
                 for(var z=0;z<zdim;z++) {
@@ -698,19 +920,23 @@ function compressed_sensing(data, params) {
                         var d = x<xdim-1 ? X[i]-B[i] - X[2*3*(x+1 + y*xdim + z*xdim*ydim)+j]+B[2*3*(x+1 + y*xdim + z*xdim*ydim)+j] : X[i]-B[i] - X[2*3*(y*xdim + z*xdim*ydim)+j]+B[2*3*(y*xdim + z*xdim*ydim)+j];
                         d += y<ydim-1 ? X[i+2]-B[i+2] - X[2*3*(x + (y+1)*xdim + z*xdim*ydim)+j+2]+B[2*3*(x + (y+1)*xdim + z*xdim*ydim)+j+2] : X[i+2]-B[i+2] - X[2*3*(x + z*xdim*ydim)+j+2]+B[2*3*(x + z*xdim*ydim)+j+2];
                         d += z<zdim-1 ? X[i+4]-B[i+4] - X[2*3*(x + y*xdim + (z+1)*xdim*ydim)+j+4]+B[2*3*(x + y*xdim + (z+1)*xdim*ydim)+j+4] : X[i+4]-B[i+4] - X[2*3*(x + y*xdim) +j+4]+B[2*3*(x + y*xdim) + j+4];
-                        rhs[2*(x + y*xdim + z*xdim*ydim) + j] = murf[2*(x + y*xdim + z*xdim*ydim) + j]*scale + lambda*d + gam*img[2*(x + y*xdim + z*xdim*ydim) + j];
+                        i_rhs[2*(x + y*xdim + z*xdim*ydim) + j] = i_murf[2*(x + y*xdim + z*xdim*ydim) + j]*scale + lambda*d + gam*img[2*(x + y*xdim + z*xdim*ydim) + j];
                     }
                 }
             }
         }
-        print_stats("rhs in", rhs);
-        rhs = fft2d(rhs, k_xdim, k_ydim);
-        print_stats("rhs out", rhs);
-        for(var i=0;i<rhs.length;i++) {
-            rhs[i] = rhs[i]*uker[i];
+        //console.log("scale", scale);
+        //print_stats("rhs in", i_rhs);
+        var f_rhs = data_ndims==2? fft2d(i_rhs, k_xdim, k_ydim) : fft3d(i_rhs, k_xdim, k_ydim, k_zdim);
+        //print_stats("rhs out", f_rhs);
+        for(var i=0;i<f_rhs.length;i+=2) {
+            var x = f_rhs[i]; var y = f_rhs[i+1]; var u = f_uker[i]; var v = f_uker[i+1];
+            f_rhs[i] = x*u-y*v;
+            f_rhs[i+1] = x*v+y*u;
         }
-        img = ifft2d(rhs, k_xdim, k_ydim);
-        print_stats("img", img);
+        //print_stats("img_in", f_rhs);
+        img = data_ndims==2? ifft2d(f_rhs, k_xdim, k_ydim) : ifft3d(f_rhs, k_xdim, k_ydim, k_zdim);
+        //print_stats("img", img);
         //% update x and y
         for(var x=0;x<xdim;x++) {
             for(var y=0;y<ydim;y++) {
@@ -738,34 +964,29 @@ function compressed_sensing(data, params) {
             B[i+1] = B[i+1] - X[i+1];
         }
       }
-      var k_img = fft2d(img, k_xdim, k_ydim);
-      print_stats("k_img", k_img);
-      for(var i=0;i<data.length;i++) {
-        data[i] = data[i] + data0[i] - mask[i] * k_img[i] / scale;
+      var k_img = data_ndims==2? fft2d(img, k_xdim, k_ydim) : fft3d(img, k_xdim, k_ydim, k_zdim);
+      for(var i=0;i<f_data.length;i++) {
+        f_data[i] = f_data[i] + f_data0[i] - f_mask[i]*k_img[i] / scale;
       }
     }
     //% undo the normalization so that results are scaled properly
-    print_stats("img in", img);
-    var result_img = new Float32Array(data.length/2);
+    //print_stats("img in", img);
+    var result_img = new Float32Array(f_data.length/2);
     for(var i=0;i<result_img.length;i++) {
         result_img[i] = Math.sqrt(img[2*i]*img[2*i]+img[2*i+1]*img[2*i+1]) / norm_factor / scale;
     }
-    print_stats("img out", result_img);
-    return img;
+    //print_stats("img out", result_img);
+    return result_img;
 }
 
-function get_norm_factor(mask, data) {
-    var nz = 0;
-    for (var i=0;i<mask.length;i++) { nz += mask[i]; }
-    var n = new Float32Array(data.length);
+function get_norm_factor(ydim, data) {
+    var norm = 0;
     for(var i=0;i<data.length;i++) {
-        n[i] = data[i]/nz;
+        norm += data[i]*data[i];
     }
-    var nm = math.matrix(Array.from(n), "dense", "number");
-    nm.resize([k_xdim, k_ydim])
-    var norm = math.norm(nm)
-    print_stats("norm", n);
-    console.log(norm);
+    norm = Math.sqrt(norm) / ydim;
+    //print_stats("norm", norm);
+    //console.log("norm", norm, 1/norm);
     return 1 / norm;
 }
 
@@ -903,6 +1124,17 @@ function simulateImage(params) {
     //console.log(xdim, ydim, zdim);
     var nearest = "nearest" in params ? parseInt(params["nearest"]) : 2;
     var cs = "cs" in params ? parseInt(params["cs"]) : 0;
+    var cs_filt = "cs_filter" in params ? parseInt(params["cs_filter"]) : 0;
+    var cs_mask_t = cs_mask2_t;
+    switch(cs_filt) {
+        case 0:
+            cs_mask_t = cs_mask2_t;
+            break;
+        case 1:
+            cs_mask_t = cs_mask4_t;
+            break;
+    }
+    var fft3d = 'fft' in params ? params['fft'] == '3d' : true;
 
     if (S == undefined) {
         return undefined;
@@ -915,7 +1147,6 @@ function simulateImage(params) {
                 var pos = [], d = [];
                 switch (nearest) {
                     case 0:
-                        console.log("nearest");
                         [pos, d] = getNearest(z*k_zdim/zdim, y*k_ydim/ydim, x*k_xdim/xdim);
                         break;
                     case 1:
@@ -935,37 +1166,67 @@ function simulateImage(params) {
     }
     result = addImageNoise(result, params);
     result = new MRImage(xdim, ydim, zdim, result);
-    var k_result = calcKSpace(result);
+    var k_result;
+    if (fft3d) {
+        k_result = calcKSpace3d(result);
+    } else {
+        k_result = calcKSpace(result);
+    }   
     [k_data_im_re, result] = addKSpaceNoise(k_data_im_re, result, params);
-    console.log(cs==0, cs==1, cs==2, result==undefined);
+    /*for(var z=0;z<k_zdim;z++) {
+        k_data_im_re.set(phant_data, z*k_xdim*k_ydim*2);
+        k_result.set(transformKSpace(phant_data),z*k_xdim*k_ydim);
+    }*/
     switch(cs) {
         case 0:
             break;
         case 1:
-            console.log("apply filter");
-            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t);
-            [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t, zdim);
+            if(fft3d) {
+                [result, k_result, p] = inverseKSpace3d(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+            } else {
+                [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+            }
             break;
         case 2:
-            console.log("apply filter + cs");
-            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t);
+            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t, zdim);
             k_result = transformKSpace3d(k_data_im_re);
             var result = new Float32Array(xdim*ydim*zdim);
-            for(var z=0;z<zdim;z++) {
-                console.log("z", z);
-                var k_data_slice = new Float32Array(k_xdim*k_ydim*2);
-                for(var i=0;i<k_data_slice.length;i++) {
-                    k_data_slice[i] = k_data_im_re[i+k_xdim*k_ydim*2*z];
-                }
-                result.set(compressed_sensing(k_data_slice, params), z*xdim*ydim);
-                if (z>2) {
-                break;
+            if(fft3d) {
+                result = compressed_sensing(k_data_im_re, params);
+            } else {
+                for(var z=0;z<zdim;z++) {
+                    console.log("z", z);
+                    var k_data_slice = new Float32Array(k_xdim*k_ydim*2);
+                    for(var i=0;i<k_data_slice.length;i++) {
+                        k_data_slice[i] = k_data_im_re[i+k_xdim*k_ydim*2*z];
+                    }
+                    var nparams = Object.assign({}, params);
+                    nparams["zdim"] = 1;
+                    var slice_result = compressed_sensing(k_data_slice, nparams);
+                    result.set(slice_result, z*xdim*ydim);
                 }
             }
+            result = new MRImage(xdim, ydim, zdim, result);
+            break;
+        case 3:
+            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t);
+            k_result = transformKSpace3d(k_data_im_re);
+            var result = compressed_sensing(k_data_im_re, params);
+            result = new MRImage(xdim, ydim, zdim, result);
+            break;
+        case 4:
+            break;
+        case 5:
+            k_result = magnitude_image(k_data_im_re);
             break;
     }
     if (result == undefined) {
-        [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+        if(fft3d) {
+            [result, k_result, p] = inverseKSpace3d(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+        } else {
+            [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+        }
     }
     return [result, k_result, [256, 256, 0, 256]];
 }
@@ -990,7 +1251,7 @@ var queryableFunctions = {
         reply('result', simulateImage(params));
     },
     reco: function (params) {
-        reply('result', inverseKSpace(k_data_im_re, ...params));
+        reply('result', inverseKSpace3d(k_data_im_re, ...params));
     },
     loadData: async function (path) {
         reply('loadData', await loadDataSet(path));

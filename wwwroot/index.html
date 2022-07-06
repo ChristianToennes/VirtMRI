@@ -86,6 +86,15 @@
                     </div>
                     <div class="form-row">
                         <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">FFT:</label>
+                        </div>
+                        <select class="col-sm form-control" type="select" id="fft" name="fft" oninput="updateTime()">
+                            <option value="3d" selected>3D</option>
+                            <option value="2d">2D</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">Noise:</label>
                         </div>
                         <select class="col-sm form-control" type="select" id="img_noise_type" name="img_noise_type" oninput="updateTime()">
@@ -102,15 +111,24 @@
                         </div>
                         <input class="col-sm form-control" type="number" min="0" value="10" name="img_noise_sigma" id="img_noise_sigma" oninput="updateTime()" />
                     </div>
-                    <div class="form-row hidden">
+                    <div class="form-row">
                         <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">Compressed Sensing:</label>
                         </div>
                         <select class="col-sm form-control" type="select" id="cs" name="cs" oninput="updateTime()">
                             <option value="0" selected>Disable</option>
                             <option value="1">Only K-Space Filter</option>
-                            <option value="2">Full</option>
+                            <option value="2">CS Enabled</option>
+                            <!--<option value="3">CS Enabled + 3D</option>-->
+                            <!--<option value="4">fft3 test</option>-->
                        </select>
+                       <div class="col-auto w-25">
+                         <label class="mb-0 align-self-center">K-Space filtered Percentage:</label>
+                       </div>
+                       <select class="col-sm form-control" type="select" id="cs_filter" name="cs_filter" oninput="updateTime()">
+                        <option value="0" selected>50%</option>
+                        <option value="1">75%</option>
+                   </select>
                     </div>
                     <div class="form-row hidden">
                         <div class="col-auto w-25">

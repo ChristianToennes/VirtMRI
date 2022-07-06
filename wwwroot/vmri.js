@@ -141,10 +141,8 @@ w.addListener('loadData', loadDataMessageHandler);
 var imgResult;
 var kResult;
 const resultMessageHandler = function (data) {
-    //console.log("image result");
     if (data[0] != undefined) {
         imgResult = data[0];
-        //console.log(imgResult.data.reduce((a,b)=>Math.max(a,b), 0));
         if (data[1] != undefined) {
             kResult = data[1];
             if (data[2] != undefined) {
@@ -430,7 +428,7 @@ function displayAndWindow3DImage() {
     var dx = xdim / xlines;
     var dy = ydim / ylines;
     k_result = new Uint8ClampedArray(xdim * ydim * 4);
-    var zend = 10;
+    var zend = Math.max(Math.floor(zdim/25), 1);
     for (var index = 0; index < xdim * ydim; index++) {
         val = kResult[index + slice * xdim * ydim] * mult
         var _fmax = fmax;
@@ -443,9 +441,10 @@ function displayAndWindow3DImage() {
         var y = Math.floor(index / xdim);
         var x = index % xdim;
         var f = Math.sqrt((x - xdim / 2) * (x - xdim / 2) + (y - ydim / 2) * (y - ydim / 2));
-        var res1 = f >= fmin && f <= _fmax;
+        var res1 = f >= fmin && f <= fmax;
         var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
-
+        if(val<0) val = 0;
+        if(val>255) val = 255;
         if (!res) {
             k_result[4 * index] = 255
             k_result[4 * index + 1] = 0
@@ -580,16 +579,9 @@ function reco(update_slider, noIfft = false) {
         var param_div = document.getElementById("params-general");
         var params = read_params(param_div, {});
         var xdim = Math.round(params["xdim"]);
-        xdim = xdim > 0 ? xdim : k_xdim;
-        xdim = xdim > k_xdim ? k_xdim : xdim;
         var ydim = Math.round(params["ydim"]);
-        ydim = ydim > 0 ? ydim : k_ydim;
-        ydim = ydim > k_ydim ? k_ydim : ydim;
         var zdim = Math.round(params["zdim"]);
-        zdim = zdim > 0 ? zdim : k_zdim;
-        zdim = zdim > k_zdim ? k_zdim : zdim;
         var params = [xdim, ydim, zdim, xlines, ylines, fmin, fmax, noIfft];
-        //console.log(params);
         w.sendQuery("reco", params);
     } else {
         document.getElementById("kspace").removeAttribute("disabled");
@@ -644,7 +636,6 @@ function startScan() {
         params["tq_params"] = tq_params;
         params["sq_params"] = sq_params;
     }
-    //console.log(params);
     w.sendQuery("simulateImage", params);
 }
 
