@@ -504,11 +504,58 @@ function i_sparsify_transform(img) {
     return img;
 }
 
+function idwt2d(slice_data, wavelet, xdim, ydim) {
+    console.log(slice_data.length);
+    var line = new Float32Array(xdim);
+    var result = new Float32Array(slice_data.length);
+    for(var y=0;y<ydim;y++) {
+        for(var x=0;x<xdim;x++) {
+            line[x] = slice_data[x+y*xdim];
+        }
+        console.log(line.length, Array.from(line).length);
+        result.set(wt.idwt(Array.from(line), wavelet, "zero"), y*xdim);
+    }
+    var tmp_result;
+    for(var x=0;x<xdim;x++) {
+        for(var y=0;y<ydim;y++) {
+            line[y] = result[x+y*xdim];
+        }
+        tmp_result = wt.idwtc(line, wavelet);
+        for(var y=0;y<ydim;y++) {
+            result[x+y*xdim] = tmp_result[y];
+        }
+    }
+    return result;
+}
+
+function dwt2d(slice_data, wavelet, xdim, ydim) {
+    var line = new Float32Array(xdim);
+    var result = new Float32Array(slice_data.length);
+    for(var y=0;y<ydim;y++) {
+        for(var x=0;x<xdim;x++) {
+            line[x] = slice_data[x+y*xdim];
+        }
+        result.set(wt.waverec(line, wavelet), y*xdim);
+    }
+    var tmp_result;
+    for(var x=0;x<xdim;x++) {
+        for(var y=0;y<ydim;y++) {
+            line[y] = result[x+y*xdim];
+        }
+        tmp_result = wt.waverec(line, wavelet);
+        for(var y=0;y<ydim;y++) {
+            result[x+y*xdim] = tmp_result[y];
+        }
+    }
+    return result;
+}
+
 function compressed_sensing_mriquestions(k_space, params) {
     var threshold = "cs_threshold" in params ? params["cs_threshold"] : 0.3;
     k_space = sparsify(k_space);
     //var slice_data = k_space.subarray(z * k_xdim * k_ydim * 2, (z + 1) * k_xdim * k_ydim * 2);
-    var initial_img = irfft2d(slice_data, k_xdim, k_ydim)
+    //var initial_img = irfft2d(slice_data, k_xdim, k_ydim)
+    var initial_img = idwt2d(k_space, "db1", k_xdim, k_ydim);
     var update_img = sparsify_transform(initial_img);
     for(var i=0;i<update_img.length;i++) {
         if(update_img[i] < threshold) { 
@@ -516,7 +563,8 @@ function compressed_sensing_mriquestions(k_space, params) {
         }
     }
     update_img = i_sparsify_transform(update_img);
-    var k_space_d = rfft2d(update_img);
+    //var k_space_d = rfft2d(update_img);
+    var k_space_d = dwt2d(update_img, "db1", k_xdim, k_ydim);
     for(var i=0;i<k_space_d.length;i++) {
         k_space_d[i] -= k_space[i];
     }
