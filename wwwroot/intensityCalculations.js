@@ -745,13 +745,13 @@ function compressed_sensing_mriquestions(k_space, params) {
     return initial_img;
 }
 
-function filter_kspace_cs(k_data_im_re, mask_cs) {
+function filter_kspace_cs(k_data_im_re, mask_cs, zdim) {
     var k_data_im_re_f = new Float32Array(k_data_im_re.length);
     for(var z=0;z<zdim;z++) {
         for(var y=0;y<k_ydim;y++) {
-            for(var x=0;x<k_xdim/2+1;x++) {
-                var pos = x*2+y*(k_xdim+2)+z*k_xdim*k_ydim*2;
-                if(mask_cs[y][0] == 1) {
+            for(var x=0;x<k_xdim;x++) {
+                var pos = 2*(x+y*k_xdim+z*k_xdim*k_ydim);
+                if(mask_cs[y][z%100] == 1) {
                     k_data_im_re_f[pos] = k_data_im_re[pos]; 
                     k_data_im_re_f[pos+1] = k_data_im_re[pos+1];
                 } else {
@@ -769,10 +769,12 @@ function print_stats(name, array) {
     var min = array.reduce((p,c) => Math.min(p,c), Math.min());
     var sum = array.reduce((p,c) => p+c, 0);
     var nans = array.reduce((p,c) => { if(c == NaN){return p+1;}else{return p;}}, 0);
-    console.log(name, array.length, min, max, sum / array.length, nans);
+    var ones = array.reduce((p,c) => { if(c != 0){return p+1;}else{return p;}}, 0);
+    var zeros = array.reduce((p,c) => { if(c == 0){return p+1;}else{return p;}}, 0);
+    console.log(name, array.length, min, max, sum/array.length, nans, ones, zeros);
 }
 
-function compressed_sensing(data, params) {
+function compressed_sensing(f_data, params) {
     //%%CS_RECON_CARTESIAN  Spatial-only 2D and 3D CS recon.
     //%
     //% Total variation (L1-norm of gradient) constrained compressed
@@ -787,80 +789,81 @@ function compressed_sensing(data, params) {
     var zdim = Math.round(params["zdim"]);
     zdim = zdim > 0 ? zdim : k_zdim;
     zdim = zdim > k_zdim ? k_zdim : zdim;
-    zdim = 1
 
-    var ninner = 5;
-    var nbreg = 10;
+    var ninner = "cs_ninner" in params ? parseInt(params["cs_ninner"]) : 5;
+    var nbreg = "cs_nbreg" in params ? parseInt(params["cs_nbreg"]) : 10;
     var lambda = 4.0;
     var mu = "cs_mu" in params ? params["cs_mu"] : 20;
     var gam = 1;
     
-    var data_ndims = 2;
+    var data_ndims = zdim == 1 ? 2 : 3;
     //mask = data ~= 0.0;   //% not perfect, but good enough
     //print_stats("data", data);
-    var mask = new Uint8Array(data.length);
-    for(var i=0;i<data.length;i++) {
-        mask[i] = data[i] != 0;
+    var f_mask = new Uint8Array(f_data.length);
+    for(var i=0;i<f_data.length;i+=2) {
+        f_mask[i] = (f_data[i]+f_data[i+1]) != 0;
+        f_mask[i+1] = f_mask[i];
     }
+    //print_stats("mask", f_mask);
     //% normalize the data so that standard parameter values work
-    var norm_factor = get_norm_factor(mask, data);
-    for(var i=0;i<data.length;i++) {
-        data[i] = norm_factor * data[i];
+    var norm_factor = get_norm_factor(k_ydim, f_data);
+    for(var i=0;i<f_data.length;i++) {
+        f_data[i] = norm_factor * f_data[i];
     }
+    //print_stats("data", f_data);
     //% Reserve memory for the auxillary variables
-    var data0 = new Float32Array(data.length);
-    data0.set(data);
-    var img = new Float32Array(data.length);
-    var X = new Float32Array(data.length*3);
+    var f_data0 = new Float32Array(f_data.length);
+    f_data0.set(f_data);
+    var img = new Float32Array(f_data.length);
+    var X = new Float32Array(f_data.length*3);
     X.fill(0);
-    var B = new Float32Array(data.length*3);
+    var B = new Float32Array(f_data.length*3);
     B.fill(0);
-    var murf = new Float32Array(data.length);
-    var rhs = new Float32Array(data.length);
+    var i_murf = new Float32Array(f_data.length);
+    var i_rhs = new Float32Array(f_data.length);
     //% Build Kernels
-    var scale = Math.sqrt(data.length);
-    //for(var i=0;i<data.length;i++) {
-    //    X[i] = mu*mask[i]*data[i];
-    //}
-    //var murf = ifftn(mu * mask .* data) * scale;
-    //var murf = irfft2d(input_data, k_xdim, k_ydim)
-    var uker = new Float32Array(data.length);
-    uker.fill(0);
+    var scale = Math.sqrt(f_data.length/2);
+    var f_uker = new Float32Array(f_data.length);
+    f_uker.fill(0);
     if (data_ndims == 2) {
-      uker[0] = 4;
-      uker[1*2] = -1;
-      uker[xdim*2] = -1;
-      uker[(xdim-1)*2] = -1;
-      uker[xdim*(ydim-1)*2] = -1;
+      f_uker[0] = 4;
+      f_uker[1*2] = -1;
+      f_uker[xdim*2] = -1;
+      f_uker[(xdim-1)*2] = -1;
+      f_uker[xdim*(ydim-1)*2] = -1;
+      //console.log("index", 0, 1, xdim, xdim-1, xdim*(ydim-1)); 
     } else {// data_ndims == 3
-      uker[0] = 8;
-      uker[1*2] = -1;
-      uker[xdim*2] = -1;
-      uker[xdim*ydim*2] = -1;
-      uker[(xdim-1)*2] = -1;
-      uker[xdim*(ydim-1)*2] = -1;
-      uker[xdim*ydim*(zdim-1)*2] = -1;
+      f_uker[0] = 8;
+      f_uker[1*2] = -1;
+      f_uker[xdim*2] = -1;
+      f_uker[xdim*ydim*2] = -1;
+      f_uker[(xdim-1)*2] = -1;
+      f_uker[xdim*(ydim-1)*2] = -1;
+      f_uker[xdim*ydim*(zdim-1)*2] = -1;
     }
-    //print_stats("uker in", uker);
-    uker = fft2d(uker, k_xdim, k_ydim);
-    //print_stats("uker mid", uker);
-    console.log(mu, lambda, gam);
-    for(var i=0;i<uker.length;i++) {
-        uker[i] = 1 / (mu*mask[i]+lambda*uker[i]+gam);
+    //print_stats("uker in", f_uker);
+    f_uker = data_ndims==2? fft2d(f_uker, k_xdim, k_ydim) : fft3d(f_uker, k_xdim, k_ydim, k_zdim);
+    //print_stats("uker mid", f_uker);
+    //console.log(mu, lambda, gam);
+    var real, imag, d;
+    for(var i=0;i<f_uker.length;i+=2) {
+        real = (mu*f_mask[i]+lambda*f_uker[i]+gam);
+        imag = lambda*f_uker[i+1];
+        d = real*real+imag*imag;
+        f_uker[i] = real/d;
+        f_uker[i+1] = -imag/d;
     }
-    //print_stats("uker out", uker);
-    //uker = 1 ./ (mu * mask + lambda * fftn(uker) + gam);
+    //print_stats("uker out", f_uker);
     //%  Do the reconstruction
     for(var outer = 0;outer < nbreg; outer++) {
+      for(var i=0;i<f_data.length;i++) {
+        i_murf[i] = mu*f_mask[i]*f_data[i];
+      }
+      //print_stats("murf in", i_murf);
+      i_murf = data_ndims==2? ifft2d(i_murf, k_xdim, k_ydim) : ifft3d(i_murf, k_xdim, k_ydim, k_zdim);
+      //print_stats("murf out", i_murf);
       for(var inner = 0;inner < ninner;inner++) {
         //% update u
-        //%fprintf('i:%d, o:%d\n', inner, outer);
-        for(var i=0;i<data.length;i++) {
-            murf[i] = mu*mask[i]*data[i];
-        }
-        //print_stats("murf in", murf);
-        murf = ifft2d(murf, k_xdim, k_ydim)
-        //print_stats("murf out", murf);
         for(var x=0;x<xdim;x++) {
             for(var y=0;y<ydim;y++) {
                 for(var z=0;z<zdim;z++) {
@@ -869,19 +872,23 @@ function compressed_sensing(data, params) {
                         var d = x<xdim-1 ? X[i]-B[i] - X[2*3*(x+1 + y*xdim + z*xdim*ydim)+j]+B[2*3*(x+1 + y*xdim + z*xdim*ydim)+j] : X[i]-B[i] - X[2*3*(y*xdim + z*xdim*ydim)+j]+B[2*3*(y*xdim + z*xdim*ydim)+j];
                         d += y<ydim-1 ? X[i+2]-B[i+2] - X[2*3*(x + (y+1)*xdim + z*xdim*ydim)+j+2]+B[2*3*(x + (y+1)*xdim + z*xdim*ydim)+j+2] : X[i+2]-B[i+2] - X[2*3*(x + z*xdim*ydim)+j+2]+B[2*3*(x + z*xdim*ydim)+j+2];
                         d += z<zdim-1 ? X[i+4]-B[i+4] - X[2*3*(x + y*xdim + (z+1)*xdim*ydim)+j+4]+B[2*3*(x + y*xdim + (z+1)*xdim*ydim)+j+4] : X[i+4]-B[i+4] - X[2*3*(x + y*xdim) +j+4]+B[2*3*(x + y*xdim) + j+4];
-                        rhs[2*(x + y*xdim + z*xdim*ydim) + j] = murf[2*(x + y*xdim + z*xdim*ydim) + j]*scale + lambda*d + gam*img[2*(x + y*xdim + z*xdim*ydim) + j];
+                        i_rhs[2*(x + y*xdim + z*xdim*ydim) + j] = i_murf[2*(x + y*xdim + z*xdim*ydim) + j]*scale + lambda*d + gam*img[2*(x + y*xdim + z*xdim*ydim) + j];
                     }
                 }
             }
         }
-        print_stats("rhs in", rhs);
-        rhs = fft2d(rhs, k_xdim, k_ydim);
-        print_stats("rhs out", rhs);
-        for(var i=0;i<rhs.length;i++) {
-            rhs[i] = rhs[i]*uker[i];
+        //console.log("scale", scale);
+        //print_stats("rhs in", i_rhs);
+        var f_rhs = data_ndims==2? fft2d(i_rhs, k_xdim, k_ydim) : fft3d(i_rhs, k_xdim, k_ydim, k_zdim);
+        //print_stats("rhs out", f_rhs);
+        for(var i=0;i<f_rhs.length;i+=2) {
+            var x = f_rhs[i]; var y = f_rhs[i+1]; var u = f_uker[i]; var v = f_uker[i+1];
+            f_rhs[i] = x*u-y*v;
+            f_rhs[i+1] = x*v+y*u;
         }
-        img = ifft2d(rhs, k_xdim, k_ydim);
-        print_stats("img", img);
+        //print_stats("img_in", f_rhs);
+        img = data_ndims==2? ifft2d(f_rhs, k_xdim, k_ydim) : ifft3d(f_rhs, k_xdim, k_ydim, k_zdim);
+        //print_stats("img", img);
         //% update x and y
         for(var x=0;x<xdim;x++) {
             for(var y=0;y<ydim;y++) {
@@ -909,34 +916,29 @@ function compressed_sensing(data, params) {
             B[i+1] = B[i+1] - X[i+1];
         }
       }
-      var k_img = fft2d(img, k_xdim, k_ydim);
-      print_stats("k_img", k_img);
-      for(var i=0;i<data.length;i++) {
-        data[i] = data[i] + data0[i] - mask[i] * k_img[i] / scale;
+      var k_img = data_ndims==2? fft2d(img, k_xdim, k_ydim) : fft3d(img, k_xdim, k_ydim, k_zdim);
+      for(var i=0;i<f_data.length;i++) {
+        f_data[i] = f_data[i] + f_data0[i] - f_mask[i]*k_img[i] / scale;
       }
     }
     //% undo the normalization so that results are scaled properly
-    print_stats("img in", img);
-    var result_img = new Float32Array(data.length/2);
+    //print_stats("img in", img);
+    var result_img = new Float32Array(f_data.length/2);
     for(var i=0;i<result_img.length;i++) {
         result_img[i] = Math.sqrt(img[2*i]*img[2*i]+img[2*i+1]*img[2*i+1]) / norm_factor / scale;
     }
-    print_stats("img out", result_img);
-    return img;
+    //print_stats("img out", result_img);
+    return result_img;
 }
 
-function get_norm_factor(mask, data) {
-    var nz = 0;
-    for (var i=0;i<mask.length;i++) { nz += mask[i]; }
-    var n = new Float32Array(data.length);
+function get_norm_factor(ydim, data) {
+    var norm = 0;
     for(var i=0;i<data.length;i++) {
-        n[i] = data[i]/nz;
+        norm += data[i]*data[i];
     }
-    var nm = math.matrix(Array.from(n), "dense", "number");
-    nm.resize([k_xdim, k_ydim])
-    var norm = math.norm(nm)
-    print_stats("norm", n);
-    console.log(norm);
+    norm = Math.sqrt(norm) / ydim;
+    //print_stats("norm", norm);
+    //console.log("norm", norm, 1/norm);
     return 1 / norm;
 }
 
