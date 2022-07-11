@@ -855,8 +855,11 @@ function compressed_sensing(f_data, params) {
     //print_stats("mask", f_mask);
     //% normalize the data so that standard parameter values work
     var norm_factor = get_norm_factor(k_ydim, f_data);
-    for(var i=0;i<f_data.length;i++) {
-        f_data[i] = norm_factor * f_data[i];
+    for(var i=0;i<f_data.length;i+=2) {
+        var x = f_data[i];
+        var y = f_data[i+1];
+        f_data[i] = x*norm_factor[0] - y*norm_factor[1];
+        f_data[i+1] = x*norm_factor[1] + y*norm_factor[0];
     }
     //print_stats("data", f_data);
     //% Reserve memory for the auxillary variables
@@ -980,14 +983,18 @@ function compressed_sensing(f_data, params) {
 }
 
 function get_norm_factor(ydim, data) {
-    var norm = 0;
-    for(var i=0;i<data.length;i++) {
-        norm += data[i]*data[i];
+    var a = 0;
+    var b = 0;
+    for(var i=0;i<data.length;i+=2) {
+        a += data[i]*data[i]-data[i+1]*data[i+1];
+        b += 2*data[i]*data[i+1];
     }
-    norm = Math.sqrt(norm) / ydim;
+    var x = Math.sqrt((a+Math.sqrt(a*a+b*b))/2) / ydim;
+    var y = (b>0?1:-1)*Math.sqrt((-a+Math.sqrt(a*a+b*b))/2);
+
     //print_stats("norm", norm);
     //console.log("norm", norm, 1/norm);
-    return 1 / norm;
+    return [x/(x*x+y*y), -y/(x*x+y*y)];
 }
 
 function dist(z0,y0,x0,z1,y1,x1) {
