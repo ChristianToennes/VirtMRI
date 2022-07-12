@@ -119,7 +119,7 @@
                             <option value="0" selected>Disable</option>
                             <option value="1">Only K-Space Filter</option>
                             <option value="2">CS Enabled</option>
-                            <!--<option value="3">CS Enabled + 3D</option>-->
+                            <option value="3">CS Enabled fast</option>
                             <!--<option value="4">fft3 test</option>-->
                        </select>
                        <div class="col-auto w-25">
@@ -129,6 +129,32 @@
                         <option value="0" selected>50%</option>
                         <option value="1">75%</option>
                    </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">CS Ninner:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" name="cs_ninner" id="cs_ninner" value="1" oninput="updateTime()"/>
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">CS Nreg:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" name="cs_nbreg" id="cs_nbreg" value="80" oninput="updateTime()"/>
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">CS lambda 1:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" name="cs_lambda1" id="cs_lambda1" value="1" oninput="updateTime()"/>
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">CS lambda 2:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" name="cs_lambda2" id="cs_lambda2" value="0.15" oninput="updateTime()"/>
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">CS mu:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" name="cs_mu" id="cs_mu" value="1" oninput="updateTime()"/>
+                        <div class="col-auto w-25">
+                            <label class="mb-0 align-self-center">CS gam:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" name="cs_gam" id="cs_gam" value="1" oninput="updateTime()"/>
                     </div>
                     <div class="form-row hidden">
                         <div class="col-auto w-25">

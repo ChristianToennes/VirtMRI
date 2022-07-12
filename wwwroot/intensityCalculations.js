@@ -197,12 +197,7 @@ function _fft2d(data, xdim, ydim) {
 }
 
 function fft2d(data, xdim, ydim) {
-    var result64 = kfft2d(data, xdim, ydim);
-    var result = new Float32Array(result64.length);
-    for(var i=0;i<result.length;i++) {
-        result[i] = result64[i];
-    }
-    return result;
+    return kfft2d(data, xdim, ydim);
 }
 
 function _ifft2d(data, xdim, ydim) {
@@ -218,12 +213,7 @@ function _ifft2d(data, xdim, ydim) {
 }
 
 function ifft2d(data, xdim, ydim) {
-    var result64 = kifft2d(data, xdim, ydim);
-    var result = new Float32Array(result64.length);
-    for(var i=0;i<result.length;i++) {
-        result[i] = result64[i];
-    }
-    return result;
+    return kifft2d(data, xdim, ydim);
 }
 
 function fft3d(data, xdim, ydim, zdim) {
@@ -250,14 +240,7 @@ function fft3d(data, xdim, ydim, zdim) {
 }
 
 function _fft3d(data, xdim, ydim, zdim) {
-    var result64 = kfft3d(data, xdim, ydim, zdim);
-    var result = new Float32Array(result64.length);
-    for(var i=0;i<result.length;i++) {
-        result[i] = result64[i];
-    }
-    console.log(result64.reduce((p,v)=>Math.min(p,v)), result64.reduce((p,v)=>Math.max(p,v)));
-    console.log(result.reduce((p,v)=>Math.min(p,v)), result.reduce((p,v)=>Math.max(p,v)));
-    return result;
+    return kfft3d(data, xdim, ydim, zdim);
 }
 
 function ifft3d(data, xdim, ydim, zdim) {
@@ -277,12 +260,7 @@ function ifft3d(data, xdim, ydim, zdim) {
 }
 
 function _ifft3d(data, xdim, ydim, zdim) {
-    var result64 = kfft3d(data, xdim, ydim, zdim);
-    var result = new Float32Array(result64.length);
-    for(var i=0;i<result.length;i++) {
-        result[i] = result64[i];
-    }
-    return result;
+    return kfft3d(data, xdim, ydim, zdim);
 }
 
 function calcKSpace(result) {
@@ -843,10 +821,11 @@ function print_stats(name, array) {
     var nans = array.reduce((p,c) => { if(c == NaN){return p+1;}else{return p;}}, 0);
     var ones = array.reduce((p,c) => { if(c != 0){return p+1;}else{return p;}}, 0);
     var zeros = array.reduce((p,c) => { if(c == 0){return p+1;}else{return p;}}, 0);
-    console.log(name, array.length, min, max, sum/array.length, nans, ones, zeros);
+    //console.log(name, array.length, min, max, sum/array.length, nans, ones, zeros);
+    console.log(name, min, max, sum);
 }
 
-function __compressed_sensing(f_data, params) {
+function compressed_sensing(f_data, params) {
     //%%CS_RECON_CARTESIAN  Spatial-only 2D and 3D CS recon.
     //%
     //% Total variation (L1-norm of gradient) constrained compressed
@@ -871,7 +850,7 @@ function __compressed_sensing(f_data, params) {
     
     var data_ndims = zdim == 1 ? 2 : 3;
     //mask = data ~= 0.0;   //% not perfect, but good enough
-    //print_stats("data", data);
+    //print_stats("data", f_data);
     var f_mask = new Uint8Array(f_data.length);
     for(var i=0;i<f_data.length;i+=2) {
         f_mask[i] = (f_data[i]+f_data[i+1]) != 0;
@@ -888,6 +867,7 @@ function __compressed_sensing(f_data, params) {
     var f_data0 = new Float32Array(f_data.length);
     f_data0.set(f_data);
     var img = new Float32Array(f_data.length);
+    img.fill(0);
     var X = new Float32Array(f_data.length*3);
     X.fill(0);
     var B = new Float32Array(f_data.length*3);
@@ -1235,9 +1215,26 @@ function simulateImage(params) {
             result = new MRImage(xdim, ydim, zdim, result);
             break;
         case 3:
-            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t);
+            k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t, zdim);
             k_result = transformKSpace3d(k_data_im_re, fft3d);
-            var result = compressed_sensing(k_data_im_re, params);
+            var result = new Float32Array(xdim*ydim*zdim);
+            if(fft3d) {
+                result = compressed_sensing_fast(k_data_im_re, params);
+            } else {
+                for(var z=0;z<zdim;z++) {
+                    console.log("z", z);
+                    var k_data_slice = new Float32Array(k_xdim*k_ydim*2);
+                    for(var i=0;i<k_data_slice.length;i++) {
+                        k_data_slice[i] = k_data_im_re[i+k_xdim*k_ydim*2*z];
+                    }
+                    var nparams = Object.assign({}, params);
+                    nparams["zdim"] = 1;
+                    var slice_result = compressed_sensing_fast(k_data_slice, nparams);
+                    for(var i=0;i<slice_result.length;i++) {
+                        result[z*xdim*ydim+i] = slice_result[i];
+                    }
+                }
+            }
             result = new MRImage(xdim, ydim, zdim, result);
             break;
         case 4:
