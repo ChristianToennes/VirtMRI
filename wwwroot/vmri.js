@@ -462,6 +462,29 @@ function displayAndWindow3DImage() {
     k_ctx.putImageData(kdata, 0, 0);
 }
 
+function downloadKSpace() {
+    downloadArray(kResult, "kspace.csv");
+}
+
+function downloadImage() {
+    downloadArray(imgResult.data, "image.csv");
+}
+
+function downloadArray(array, name) {
+    const csvContent = array.join(",");
+    const blob = new Blob([csvContent], {
+    type: 'text/csv;charset=utf-8;'
+    });
+    const url = URL.createObjectURL(blob);
+
+    var link = document.getElementById("downloadLink");
+    link.setAttribute("href", url);
+    link.setAttribute("download", name);
+    link.click()
+
+    URL.revokeObjectURL(link.href)
+}
+
 function fillDatasets() {
     sel = document.getElementById("datasetPath");
     for(var p in datasets) {

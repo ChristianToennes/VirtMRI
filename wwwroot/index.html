@@ -470,11 +470,11 @@
 
             <div class="row pt-3 hidden align-items-start" id="result">
                 <div class="col-3">
-                    <figure>
+                    <figure class="row mb-2">
                         <div class="figcaption mb-1">K-Space</div>
                         <canvas class="border img-fluid w-100" onwheel="scrollResult(event)" id="kResult"></canvas>
                     </figure>
-                    <fieldset id="kspace">
+                    <fieldset id="kspace" class="row mb-2">
                         <label for="slice">K-Space brighten:</label>
                         <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="100"
                             name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
@@ -503,7 +503,13 @@
 
                         <input class="btn btn-secondary w-100" type="button" name="reco" id="reco" onclick="reco()"
                             value="Reconstruct image" />
+
                     </fieldset>
+                    <div class="row mb-2">
+                        <input class="col btn btn-secondary" type="button" name="downloadImage" id="downloadImage" onclick="downloadImage()" value="Download Image" />
+                        <input class="col btn btn-secondary" type="button" name="downloadKSpace" id="downloadKSpace" onclick="downloadKSpace()" value="Download KSpace" />
+                        <a class="col hidden" id="downloadLink"></a>
+                    </div>
                 </div>
                 <div class="col mb-2">
                     <div class="row w-100 container-fluid justify-content-center">
