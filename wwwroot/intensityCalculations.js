@@ -1250,7 +1250,7 @@ function simulateImage(params) {
             [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
         }
     }
-    return [result, k_result, [256, 256, 0, 256]];
+    return [result, k_result, [256, 256, 0, 256], params];
 }
 
 var imageFunctions = {
@@ -1277,6 +1277,9 @@ var queryableFunctions = {
     },
     loadData: async function (path) {
         reply('loadData', await loadDataSet(path));
+    },
+    kspace: async function() {
+        reply('kspace', k_data_im_re);
     },
 };
 

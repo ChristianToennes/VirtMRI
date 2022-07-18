@@ -76,6 +76,8 @@ const h_tabs = ["params-IR-tab", "params-SE-tab", "params-bSSFP-tab", "params-FI
 var current_tab = "params-IR-tab";
 var selected_tab = "params-IR-tab";
 
+var imgResultCache = {};
+
 function sequenceParametersKeyDown(e) {
     if(e.code == "Enter") {
         startScan();
@@ -151,6 +153,11 @@ const resultMessageHandler = function (data) {
             } else {
                 setKSpaceFilt(256,256,0,256);
             }
+            if (data[3] != undefined) {
+                if(data[3]["sequence"] != undefined) {
+                    imgResultCache[data[3]["sequence"]] = [imgResult, kResult, data[3]];
+                }
+            }
         }
     }
     r = document.getElementById("result");
@@ -198,7 +205,10 @@ const resultMessageHandler = function (data) {
 };
 w.addListener('result', resultMessageHandler);
 
-
+const kspaceMessageHandler = function(kspace) {
+    
+};
+w.addListener('kspace', kspaceMessageHandler);
 
 // Name, Label, T1, T2, T2*, PD
 const params = {
@@ -657,6 +667,8 @@ function updateIRTime() {
     var ti = parseFloat(document.getElementById("ir_ti").value)
     var te = parseFloat(document.getElementById("ir_te").value)
     var tr = parseFloat(document.getElementById("ir_tr").value)
+    var ydim = parseInt(document.getElementById("ydim").value)
+    var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("ir_time");
 
     if(ti+te >= tr) {
@@ -669,6 +681,8 @@ function updateIRTime() {
 function updateSETime() {
     var te = parseFloat(document.getElementById("se_te").value)
     var tr = parseFloat(document.getElementById("se_tr").value)
+    var ydim = parseInt(document.getElementById("ydim").value)
+    var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("se_time");
     
     if(te >= tr) {
@@ -682,6 +696,8 @@ function updatePSIFTime() {
     var te = parseFloat(document.getElementById("psif_te").value)
     var tr = parseFloat(document.getElementById("psif_tr").value)
     var fa = parseFloat(document.getElementById("psif_fa").value)
+    var ydim = parseInt(document.getElementById("ydim").value)
+    var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("psif_time");
     
     if(fa>180) { document.getElementById("psif_fa").value = 180; }
@@ -694,6 +710,8 @@ function updateFISPTime() {
     var te = parseFloat(document.getElementById("fisp_te").value)
     var tr = parseFloat(document.getElementById("fisp_tr").value)
     var fa = parseFloat(document.getElementById("fisp_fa").value)
+    var ydim = parseInt(document.getElementById("ydim").value)
+    var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("fisp_time");
         
     if(fa>180) { document.getElementById("fisp_fa").value = 180; }
@@ -706,6 +724,8 @@ function updateSGRETime() {
     var te = parseFloat(document.getElementById("sgre_te").value)
     var tr = parseFloat(document.getElementById("sgre_tr").value)
     var fa = parseFloat(document.getElementById("sgre_fa").value)
+    var ydim = parseInt(document.getElementById("ydim").value)
+    var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("sgre_time");
         
     if(fa>180) { document.getElementById("sgre_fa").value = 180; }
@@ -721,6 +741,8 @@ function updateSGRETime() {
 function updateBalancedSSFPTime() {
     var te = parseFloat(document.getElementById("bssfp_te").value)
     var fa = parseFloat(document.getElementById("bssfp_fa").value)
+    var ydim = parseInt(document.getElementById("ydim").value)
+    var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("bssfp_time");
         
     if(fa>180) { document.getElementById("bssfp_fa").value = 180; }
@@ -734,6 +756,8 @@ function updateBalancedSSFPTime() {
 function updateNaTime() {
     var te = parseFloat(document.getElementById("na_te").value)
     var tr = parseFloat(document.getElementById("na_tr").value)
+    var ydim = parseInt(document.getElementById("ydim").value)
+    var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("na_time");
     
     if(te >= tr) {
@@ -747,6 +771,8 @@ function updateSQTime() {
     var te_start = parseFloat(document.getElementById("sq_te_start").value)
     var te_end = parseFloat(document.getElementById("sq_te_end").value)
     var te_step = parseFloat(document.getElementById("sq_te_step").value)
+    var ydim = parseInt(document.getElementById("ydim").value)
+    var zdim = parseInt(document.getElementById("zdim").value)
     var te = document.getElementById("sq_te");
 
     var tes = ""+te_start;
@@ -760,6 +786,8 @@ function updateTQTime() {
     var te_start = parseFloat(document.getElementById("tq_te_start").value)
     var te_end = parseFloat(document.getElementById("tq_te_end").value)
     var te_step = parseFloat(document.getElementById("tq_te_step").value)
+    var ydim = parseInt(document.getElementById("ydim").value)
+    var zdim = parseInt(document.getElementById("zdim").value)
     var te = document.getElementById("tq_te");
 
     var tes = ""+te_start;

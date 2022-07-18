@@ -508,6 +508,12 @@ app {
         > label {
             border-bottom: 1px solid $gb-dm-fg3;
             width: 90%;
+            text-align: right;
+        }
+    }
+    > .w-25 {
+        > label {
+            text-align: left;
         }
     }
 }

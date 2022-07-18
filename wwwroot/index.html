@@ -58,19 +58,31 @@
                 <div class="col" id="params-general">
                     <div class="form-row">
                         <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">X-Dimensions:</label>
+                            <label class="mb-0 align-self-center">Image Dimensions:</label>
                         </div>
+                        <div class="col-sm"><label class="mb-0 align-self-center">X:</label></div>
                         <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="xdim" id="xdim" oninput="updateTime()" />
-                    </div>
-                    <div class="form-row">
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">Y-Dimensions:</label>
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">Y:</label>
                         </div>
                         <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="ydim" id="ydim" oninput="updateTime()" />
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">Z:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
                     </div>
                     <div class="form-row">
                         <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">Z-Dimensions:</label>
+                            <label class="mb-0 align-self-center">K-Space Dimensions:</label>
+                        </div>
+                        <div class="col-sm"><label class="mb-0 align-self-center">X:</label></div>
+                        <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="xdim" id="xdim" oninput="updateTime()" />
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">Y:</label>
+                        </div>
+                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="ydim" id="ydim" oninput="updateTime()" />
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">Z:</label>
                         </div>
                         <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
                     </div>
@@ -122,7 +134,7 @@
                             <option value="3">CS Enabled fast</option>
                             <!--<option value="4">fft3 test</option>-->
                        </select>
-                       <div class="col-auto w-25">
+                       <div class="col-sm">
                          <label class="mb-0 align-self-center">K-Space filtered Percentage:</label>
                        </div>
                        <select class="col-sm form-control" type="select" id="cs_filter" name="cs_filter" oninput="updateTime()">
@@ -132,27 +144,35 @@
                     </div>
                     <div class="form-row">
                         <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">CS Ninner:</label>
+                            <label class="mb-0 align-self-center">Compressed Sensing Parameters:</label>
+                        </div>
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">Ninner:</label>
                         </div>
                         <input class="col-sm form-control" type="number" name="cs_ninner" id="cs_ninner" value="1" oninput="updateTime()"/>
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">CS Nreg:</label>
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">Nreg:</label>
                         </div>
                         <input class="col-sm form-control" type="number" name="cs_nbreg" id="cs_nbreg" value="80" oninput="updateTime()"/>
+                    </div>
+                    <div class="form-row">
                         <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">CS lambda 1:</label>
+                            <!--<label class="mb-0 align-self-center">Compressed Sensing Parameters:</label>-->
+                        </div>
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">lambda 1:</label>
                         </div>
                         <input class="col-sm form-control" type="number" name="cs_lambda1" id="cs_lambda1" value="1" oninput="updateTime()"/>
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">CS lambda 2:</label>
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">lambda 2:</label>
                         </div>
                         <input class="col-sm form-control" type="number" name="cs_lambda2" id="cs_lambda2" value="0.15" oninput="updateTime()"/>
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">CS mu:</label>
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">mu:</label>
                         </div>
                         <input class="col-sm form-control" type="number" name="cs_mu" id="cs_mu" value="1" oninput="updateTime()"/>
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">CS gam:</label>
+                        <div class="col-sm">
+                            <label class="mb-0 align-self-center">gam:</label>
                         </div>
                         <input class="col-sm form-control" type="number" name="cs_gam" id="cs_gam" value="1" oninput="updateTime()"/>
                     </div>
