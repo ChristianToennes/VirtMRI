@@ -176,13 +176,19 @@ const resultMessageHandler = function (data) {
     }
     document.getElementById("cur_r_slice").max = imgResultCache["cur"].zdim;
     document.getElementById("cur_or_slice").max = imgResultCache["cur"].zdim;
+    document.getElementById("cur_r_slice").value = Math.round(imgResultCache["cur"].zdim/2);
+    document.getElementById("cur_or_slice").value = Math.round(imgResultCache["cur"].zdim/2);
     if(imgResultCache["pre"] != undefined) {
         document.getElementById("pre_r_slice").max = imgResultCache["pre"].zdim;
         document.getElementById("pre_or_slice").max = imgResultCache["pre"].zdim;
+        document.getElementById("pre_r_slice").value = Math.round(imgResultCache["pre"].zdim/2);
+        document.getElementById("pre_or_slice").value = Math.round(imgResultCache["pre"].zdim/2);
     }
     if(imgResultCache["cs"] != undefined) {
         document.getElementById("cs_r_slice").max = imgResultCache["cs"].zdim;
         document.getElementById("cs_or_slice").max = imgResultCache["cs"].zdim;
+        document.getElementById("cs_r_slice").value = Math.round(imgResultCache["cs"].zdim/2);
+        document.getElementById("cs_or_slice").value = Math.round(imgResultCache["cs"].zdim/2);
     }
 
     r = document.getElementById("result");
@@ -201,7 +207,7 @@ const resultMessageHandler = function (data) {
     var colorBar = document.getElementById("cur_colorBarContainer");
     if(isCurrentTabNa("cur")) {
         windowing.classList.add("hidden");
-        plot_colormap("colorBar");
+        plot_colormap("cur_colorBar");
         colorBar.classList.remove("hidden");
     } else {
         windowing.classList.remove("hidden");
@@ -212,7 +218,7 @@ const resultMessageHandler = function (data) {
     var colorBar = document.getElementById("pre_colorBarContainer");
     if(isCurrentTabNa("pre")) {
         windowing.classList.add("hidden");
-        plot_colormap("colorBar");
+        plot_colormap("pre_colorBar");
         colorBar.classList.remove("hidden");
     } else {
         windowing.classList.remove("hidden");
@@ -223,7 +229,7 @@ const resultMessageHandler = function (data) {
     var colorBar = document.getElementById("cs_colorBarContainer");
     if(isCurrentTabNa("cs")) {
         windowing.classList.add("hidden");
-        plot_colormap("colorBar");
+        plot_colormap("cs_colorBar");
         colorBar.classList.remove("hidden");
     } else {
         windowing.classList.remove("hidden");
@@ -264,8 +270,8 @@ w.addListener('kspace', kspaceMessageHandler);
 
 const progressMessageHandler = function(progress) {
     var bar = document.getElementById("cs_progress");
-    if(bar.classList.contains("hidden")) {
-        bar.classList.remove("hidden");
+    if(bar.parentElement.classList.contains("hidden")) {
+        bar.parentElement.classList.remove("hidden");
     }
     bar.style.cssText = "width:" + progress + "%";
 };
@@ -482,6 +488,9 @@ function displayAndWindow3DImage(which) {
             if (val > 255) { val = 255; }
             if (val < 0) {val = 0;}
             var c = jetmap[val];
+            if(c ==undefined) {
+                c = [0,0,0];
+            }
             image_result[4 * x] = c[0]*255
             image_result[4 * x + 1] = c[1]*255
             image_result[4 * x + 2] = c[2]*255
@@ -769,10 +778,6 @@ function startScan() {
         params["sq_params"] = sq_params;
     }
     
-    if(parseInt(params["cs"]) > 1) {
-        var progress = document.getElementById("cs_progress").parentElement;
-        progress.classList.remove("hidden");
-    }
     var spin = document.getElementById("scanningSpinner");
     spin.classList.remove("hidden");
     
