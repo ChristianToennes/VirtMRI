@@ -21,7 +21,7 @@ class FileChangeEventHandler(FileSystemEventHandler):
         compile_scss()
 
 observer = Observer()
-observer.schedule(FileChangeEventHandler(), "scss", recursive=True)
+observer.schedule(FileChangeEventHandler(), "scss", recursive=False)
 observer.start()
 
 class RequestHandler(SimpleHTTPRequestHandler):
