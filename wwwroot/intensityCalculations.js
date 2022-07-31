@@ -1220,6 +1220,7 @@ function simulateImage(params) {
             var result = new Float32Array(xdim*ydim*zdim);
             if(fft3d) {
                 result = compressed_sensing_fast(k_data_im_re, params);
+                [cs_result, k_cs_re_img] = compressed_sensing_fast(k_data_im_re, params);
             } else {
                 for(var z=0;z<zdim;z++) {
                     console.log("z", z);
@@ -1233,6 +1234,7 @@ function simulateImage(params) {
                     for(var i=0;i<slice_result.length;i++) {
                         result[z*xdim*ydim+i] = slice_result[i];
                     }
+                    var [slice_result, k_slice_re_img] = compressed_sensing_fast(k_data_slice, nparams);
                 }
             }
             result = new MRImage(xdim, ydim, zdim, result);
