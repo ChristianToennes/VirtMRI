@@ -124,14 +124,14 @@ const loadDataMessageHandler = function (data) {
     setSequence("IR");
     if (array_na_mm == null) {
         for (var tab in na_tabs) {
-            t = document.getElementById(tab);
+            t = document.getElementById(na_tabs[tab]);
             if (t != null) {
                 t.classList.add("hidden");
             }
         }
     } else {
         for (var tab in na_tabs) {
-            t = document.getElementById(tab);
+            t = document.getElementById(na_tabs[tab]);
             if (t!=null) {
                 t.classList.remove("hidden");
             }

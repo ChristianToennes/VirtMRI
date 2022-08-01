@@ -46,19 +46,20 @@ function onloadDataSet(xhr,resolve) {
     return function(e) {
         if (e.target.status != 200) {
             resolve(null);
+        } else {
+            var resp = pako.inflate(xhr.response).buffer;
+            var mm = new Float32Array(resp, 0, 2);
+            var shape = new Uint16Array(resp, 8, 3);
+            zdim = shape[0];
+            ydim = shape[1];
+            xdim = shape[2];
+            var a = new Uint8Array(resp, 14);
+            var b = new Float32Array(a.length);
+            for (var x = 0; x < a.length; x++) {
+                b[x] = (a[x] / 255.0) * (mm[1] - mm[0]) + mm[0];
+            }
+            resolve(b);
         }
-        var resp = pako.inflate(xhr.response).buffer;
-        var mm = new Float32Array(resp, 0, 2);
-        var shape = new Uint16Array(resp, 8, 3);
-        zdim = shape[0];
-        ydim = shape[1];
-        xdim = shape[2];
-        var a = new Uint8Array(resp, 14);
-        var b = new Float32Array(a.length);
-        for (var x = 0; x < a.length; x++) {
-            b[x] = (a[x] / 255.0) * (mm[1] - mm[0]) + mm[0];
-        }
-        resolve(b);
     };
 }
 
@@ -1178,9 +1179,10 @@ function simulateImage(params) {
         k_result = calcKSpace(result);
     }   
     [k_data_im_re, result] = addKSpaceNoise(k_data_im_re, result, params);
-    /*for(var z=0;z<k_zdim;z++) {
+    /*for(var z=0;z<zdim;z++) {
         k_data_im_re.set(phant_data, z*k_xdim*k_ydim*2);
         k_result.set(transformKSpace(phant_data),z*k_xdim*k_ydim);
+        result = undefined;
     }*/
     switch(cs) {
         case 0:
