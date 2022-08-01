@@ -23,10 +23,11 @@ function compressed_sensing_fast(data, params) {
     
     var params = _make_cs_params(xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam)
     var f_data = scalar_size == 4 ? allocFromArray(data) : allocFromArray(Float64Array.from(data));
+    var f_data_ptr = f_data.byteOffset;
     var out = alloc(xdim*ydim*zdim*scalar_size);
-    var out_ptr = out.byteOffset
+    var out_ptr = out.byteOffset;
 
-    _compressed_sensing(f_data.byteOffset, out.byteOffset, params);
+    _compressed_sensing(f_data_ptr, out_ptr, params);
 
     var img = new Float32Array(xdim*ydim*zdim);
     if(scalar_size == 8) {
@@ -39,12 +40,24 @@ function compressed_sensing_fast(data, params) {
     } else {
         img.set(new Float32Array(Module.HEAPU8.buffer, out_ptr, img.length));
     }
+
+    var kspace = new Float32Array(xdim*ydim*zdim*2);
+    if(scalar_size == 8) {
+        var tmp = new Float64Array(kspace.length);
+        tmp.set(new Float64Array(Module.HEAPU8.buffer, f_data_ptr, kspace.length));
+
+        for(var i=0;i<img.length;i++) {
+            kspace[i] = tmp[i];
+        }
+    } else {
+        kspace.set(new Float32Array(Module.HEAPU8.buffer, f_data_ptr, kspace.length));
+    }
     
     free(params);
     free(f_data);
     free(out);
 
-    return img;
+    return [img, kspace];
 }
 
 /** Compute the FFT of a real-valued mxn matrix. */

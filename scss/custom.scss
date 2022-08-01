@@ -241,16 +241,17 @@ $input-focus-border-color: $gb-dm-fg1;
 $input-box-shadow: inset 0 1px 1px $gb-dm-fg2;
 $input-placeholder-color: $gb-dm-fg3;
 $input-group-addon-bg: $gb-dm-bg2;
-$custom-control-indicator-bg: $gb-dm-bg2;
-$custom-control-indicator-box-shadow: inset 0 .25rem .25rem $gb-dm-fg2;
-$custom-control-indicator-disabled-bg: $gb-dm-bg3;
-$custom-control-label-disabled-color: $gb-dm-fg2;
-$custom-select-disabled-color: $gb-dm-fg2;
-$custom-select-bg: $gb-dm-bg1;
-$custom-select-disabled-bg: $gb-dm-bg3;
-$custom-select-indicator-color: $gb-dm-fg2;
-$custom-select-focus-border-color: $input-focus-border-color !default;
-$custom-select-focus-box-shadow: inset 0 1px 2px $gb-dm-fg2, 0 0 5px $custom-select-focus-border-color;
+$form-control-indicator-bg: $gb-dm-bg2;
+$form-control-indicator-box-shadow: inset 0 .25rem .25rem $gb-dm-fg2;
+$form-control-indicator-disabled-bg: $gb-dm-bg3;
+$form-control-label-disabled-color: $gb-dm-fg2;
+$form-select-disabled-color: $gb-dm-fg2;
+$form-select-bg: $gb-dm-bg1;
+$form-select-disabled-bg: $gb-dm-bg3;
+$form-select-indicator-color: $gb-dm-fg2;
+$form-select-focus-border-color: $input-focus-border-color !default;
+$form-select-focus-box-shadow: inset 0 1px 2px $gb-dm-fg2, 0 0 5px $form-select-focus-border-color;
+
 $dropdown-bg: $gb-dm-bg2;
 $dropdown-border-color: $gb-dm-fg3;
 $dropdown-divider-bg: $gb-dm-bg4;
@@ -454,7 +455,7 @@ app {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .invisible {
