@@ -3,10 +3,10 @@ const jetmap = [[0.0, 0.0, 0.5], [0.0, 0.0, 0.5178], [0.0, 0.0, 0.5357], [0.0, 0
 const datasets = {
     //0: ["BrainWeb 05 - 3T", "./3t/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
     //1: ["BrainWeb 05 - 1.5T", "./1.5T/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    2: ["BrainWeb 54 - 3T + Na", "./3t/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    3: ["BrainWeb 54 - 1.5T", "./1.5T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    4: ["BrainWeb colin27 - 3T + Na", "./3t/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
-    5: ["BrainWeb colin27 - 1.5T", "./1.5T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    2: ["BrainWeb colin27 - 3T + Na", "./3t/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    3: ["BrainWeb colin27 - 1.5T", "./1.5T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    4: ["BrainWeb 54 - 3T + Na", "./3t/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    5: ["BrainWeb 54 - 1.5T", "./1.5T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
     6: ["Phantomag - 1.5T", "./1.5T/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
     7: ["Phantomag - 1T", "./1t/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
 }
@@ -148,6 +148,7 @@ w.addListener('loadData', loadDataMessageHandler);
 
 //var imgResult;
 //var kResult;
+var resultTimer;
 const resultMessageHandler = function (data) {
     if(Array.isArray(data)) {
         imgResultCache["pre"] = data[0];
@@ -260,6 +261,7 @@ const resultMessageHandler = function (data) {
 
     displayAndWindow3DImage();
     toggleImg();
+    console.log(performance.now()-resultTimer);
 };
 w.addListener('result', resultMessageHandler);
 
@@ -461,10 +463,11 @@ function displayAndWindow3DImage(which) {
         }
         return;
     }
+    var imgResult = imgResultCache[which];
+    if(imgResult==undefined) {return;}
     //canvas = document.createElement('canvas');
     //res_element = document.getElementById("result");
     var canvas = document.getElementById(which+"_imgResult");
-    var imgResult = imgResultCache[which];
     var xdim = imgResult.xdim;
     var ydim = imgResult.ydim;
     var zdim = imgResult.zdim;
@@ -781,7 +784,40 @@ function startScan() {
     var spin = document.getElementById("scanningSpinner");
     spin.classList.remove("hidden");
     
+    resultTimer = performance.now();
     w.sendQuery("simulateImage", params);
+}
+
+function startScanFast() {
+    current_tab = selected_tab;
+    r = document.getElementById("result");
+    r.classList.add("hidden");
+    
+    
+    var params = {sequence: selectedSequence};
+    
+    var param_div = document.getElementById("params-general");
+    params = read_params(param_div, params);
+    
+    param_div = document.getElementById("params-" + selectedSequence);
+    params = read_params(param_div, params);
+    
+    if(selectedSequence == "TQSQR") {
+        var param_div = document.getElementById("params-SQ");
+        var tq_params = {};
+        tq_params = read_params(param_div, tq_params);
+        var param_div = document.getElementById("params-TQ");
+        var sq_params = {};
+        sq_params = read_params(param_div, sq_params);
+        params["tq_params"] = tq_params;
+        params["sq_params"] = sq_params;
+    }
+    
+    var spin = document.getElementById("scanningSpinner");
+    spin.classList.remove("hidden");
+    
+    resultTimer = performance.now();
+    w.sendQuery("simulateImageFast", params);
 }
 
 function displayDataSet() {

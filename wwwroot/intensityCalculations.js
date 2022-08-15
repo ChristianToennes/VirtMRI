@@ -22,6 +22,8 @@ const na_t2fr = 60;
 const na_mm = 140;
 const na_vol = 0.7;
 
+var ds = undefined;
+
 var array_pd = new Float32Array(256 * 256);
 var array_t1 = new Uint16Array(256 * 256);
 var array_t2 = new Uint16Array(256 * 256);
@@ -1304,6 +1306,27 @@ function simulateImage(params) {
     }
 }
 
+function simulateImageFast(params) {
+    if (ds == undefined) {
+        ds = make_dataset(array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
+    }
+    [image, kspace] = simulate_fast(ds, params);
+    var fft3d = 'fft' in params ? params['fft'] == '3d' : true;
+    var xdim = Math.round(params["xdim"]);
+    xdim = xdim > 0 ? xdim : k_xdim;
+    xdim = xdim > k_xdim ? k_xdim : xdim;
+    var ydim = Math.round(params["ydim"]);
+    ydim = ydim > 0 ? ydim : k_ydim;
+    ydim = ydim > k_ydim ? k_ydim : ydim;
+    var zdim = Math.round(params["zdim"]);
+    zdim = zdim > 0 ? zdim : k_zdim;
+    zdim = zdim > k_zdim ? k_zdim : zdim;
+
+    var k_result = transformKSpace3d(kspace, fft3d, zdim);
+    result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], image, k_result, params);
+    return result;
+}
+
 var imageFunctions = {
     SE: calcSpinEcho,
     IR: calcInversionRecovery,
@@ -1322,6 +1345,9 @@ var imageFunctions = {
 var queryableFunctions = {
     simulateImage: function(params) {
         reply('result', simulateImage(params));
+    },
+    simulateImageFast: function(params) {
+        reply('result', simulateImageFast(params));
     },
     reco: function (params) {
         reply('result', inverseKSpace3d(k_data_im_re, ...params));
