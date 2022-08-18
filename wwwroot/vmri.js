@@ -261,7 +261,7 @@ const resultMessageHandler = function (data) {
 
     displayAndWindow3DImage();
     toggleImg();
-    console.log(performance.now()-resultTimer);
+    console.log((performance.now()-resultTimer) / 1000);
 };
 w.addListener('result', resultMessageHandler);
 

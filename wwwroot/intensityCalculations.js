@@ -222,7 +222,7 @@ function ifft2d(data, xdim, ydim) {
     return kifft2d(data, xdim, ydim);
 }
 
-function fft3d(data, xdim, ydim, zdim) {
+function _fft3d(data, xdim, ydim, zdim) {
     var k_data_im_re = new Float32Array(xdim * ydim * zdim * 2);
     if(data.length == k_data_im_re.length) {
         k_data_im_re.set(data);
@@ -245,7 +245,7 @@ function fft3d(data, xdim, ydim, zdim) {
     return k_data_im_re;
 }
 
-function _fft3d(data, xdim, ydim, zdim) {
+function fft3d(data, xdim, ydim, zdim) {
     return kfft3d(data, xdim, ydim, zdim);
 }
 

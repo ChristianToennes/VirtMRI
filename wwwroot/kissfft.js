@@ -266,17 +266,20 @@ function kifft2d(spectrum, m, n) {
 /** Compute the FFT of a real-valued mxn matrix. */
 function kfft3d(data, m, n, l) {
     /* Allocate input and output arrays on the heap. */
-    var heapData = allocFromArray(Float64Array.from(data));
+    var heapData = scalar_size==4?allocFromArray(data):allocFromArray(Float64Array.from(data));
+    var heapData_ptr = heapData.byteOffset;
     var heapSpectrum = alloc(2*m*n*l*scalar_size);
+    var heapSpectrum_ptr = heapSpectrum.byteOffset;
 
-    _fft3d(heapData.byteOffset, heapSpectrum.byteOffset, m, n, l);
+    _fft3d(heapData_ptr, heapSpectrum_ptr, m, n, l);
 
     /* Get spectrum from the heap, copy it to local array. */
-    var spectrum = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, heapSpectrum.byteOffset, m*n*l*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, heapSpectrum.byteOffset, m*n*l*2));
+    var spectrum = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, heapSpectrum_ptr, m*n*l*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, heapSpectrum_ptr, m*n*l*2));
 
     /* Free heap objects. */
-    free(heapData);
-    free(heapSpectrum);
+
+    Module._free(heapData_ptr);
+    Module._free(heapSpectrum_ptr);
 
     return spectrum;
 }
