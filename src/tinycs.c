@@ -4,9 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>
+#include "stdbool.h"
 #include "kissfft/_kiss_fft_guts.h"
 
-cs_params* make_cs_params(int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam) {
+cs_params* make_cs_params(int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, double filter_fraction, int callback) {
     cs_params* params = malloc(sizeof(cs_params));
     params->xdim = xdim;
     params->ydim = ydim;
@@ -17,6 +18,8 @@ cs_params* make_cs_params(int xdim, int ydim, int zdim, int ninner, int nbreg, d
     params->lambda2 = lambda2;
     params->mu = mu;
     params->gam = gam;
+    params->filter_fraction = filter_fraction;
+    params->callback = callback;
     //fprintf(stdout, "%i %i %i %i %i %f %f %f %f\n", xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam);
     return params;
 }
@@ -56,6 +59,67 @@ void print_stats(char* name, kiss_fft_cpx* data, int length) {
     }
     fprintf(stderr, " %i %f %f %f\n", nans, min, max, sum);
 }*/
+
+void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, cs_params *params) {
+    int x,y,z,pos;
+    double r,rn,a,b,c;
+    bool filter = false;
+    int xdim = params->xdim;
+    int ydim = params->ydim;
+    int zdim = params->zdim;
+    int count = 0;
+    int count2 = 0;
+    double in_frac = 0.1;
+    if((params->filter_fraction-in_frac) < 0.5) {
+        // p = b*(1-in_frac)*0.5
+        b = (params->filter_fraction-in_frac)/(0.5*(1.0-in_frac));
+        a = b/(1.0-in_frac);
+    } else {
+        // p = (c+b)*0.5*(1-in_frac)
+        b = 1.0;
+        c = (params->filter_fraction-in_frac)/((1.0-in_frac)*0.5) - 1.0;
+        a = (b-c)/(1.0-in_frac);
+    }
+    //fprintf(stderr, "%f %f %f\n", params->filter_fraction, a, b);
+    for(z=0;z<zdim;z++) {
+        for(y=0;y<ydim;y++) {
+            r = (double)y/(double)params->ydim;
+            if(r>0.5) {
+                r = 1-r;
+            }
+            r *= 2;
+            if(r<in_frac) {
+                filter = false;
+            } else {
+                rn = (double)rand()/(double)RAND_MAX;
+                //filter = pow((1.0-r), params->filter_fraction/0.9) > rn;
+                // f(1) = 0
+                // f(0.1) = 1
+                // a = -1/0.9
+                // params->filter_fraction-0.1 = 0.5 * 0.9 * a
+                // a = (params->filter_fraction-0.1)/(0.5*0.9)
+                // f(x) = -a*x + c
+                // 0 = -a*1 + c
+                // f(x) = -a*x + a
+                filter = rn > (-a*(r-in_frac)+b);
+            }
+            /*if(z==0) {
+                fprintf(stderr, "%d %f %f %f %d\n", y, r, (-a*(r-in_frac)+b), rn, (int)filter);
+            }*/
+            for(x=0;x<xdim;x++) {
+                pos = x+y*xdim+z*xdim*ydim;
+                if(filter) {
+                    count2++;
+                    ASSIGN(out_kspace[pos], 0, 0);
+                } else {
+                    count++;
+                    out_kspace[pos] = kspace[pos];
+                }
+            }
+        }
+    }
+    fprintf(stderr, "sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
+}
 
 void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, cs_params *params) {
     int xdim = params->xdim;

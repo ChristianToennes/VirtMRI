@@ -137,10 +137,11 @@
                        <div class="col-sm">
                          <label class="mb-0 align-self-center">K-Space filtered Percentage:</label>
                        </div>
-                       <select class="col-sm form-select" type="select" id="cs_filter" name="cs_filter" oninput="updateTime()">
+                       <input class="col-sm form-control" type="number" min="0" max="100" value="50" name="cs_filter_fraction" id="cs_filter_fraction" oninput="updateTime()" />
+                       <!--<select class="col-sm form-select" type="select" id="cs_filter" name="cs_filter" oninput="updateTime()">
                         <option value="0" selected>50%</option>
                         <option value="1">75%</option>
-                   </select>
+                   </select>-->
                     </div>
                     <div class="row form-row">
                         <div class="col-auto w-25">

@@ -94,6 +94,10 @@ void free_dataset(dataset* ds) {
 const float na_vol = 0.7;
 const float na_t2fr = 60;
 
+void addGaussianNoise(kiss_fft_cpx* image) {
+    
+}
+
 double simVoxel(params* p, int pos, dataset* ds) {
     double te, tr, ti, fa, tau1, tau2, te_end, te_step, e_tr_t1, e_tr_t2, cfa, sfa, s;
     s = 0;
@@ -221,7 +225,7 @@ double simVoxel(params* p, int pos, dataset* ds) {
     return s;
 }
 
-void simulate(params* p, kiss_fft_cpx* image, kiss_fft_cpx* kspace, dataset* ds) {
+void simulate(params* p, kiss_fft_cpx* image, kiss_fft_cpx* kspace, kiss_fft_cpx* filt_image, kiss_fft_cpx* filt_kspace, kiss_fft_cpx* cs_image, kiss_fft_cpx* cs_kspace, dataset* ds) {
     int x,y,z,ipos,ds_pos,nx,ny,nz;
     double xs,ys,zs;
     double s,d;
@@ -295,10 +299,28 @@ void simulate(params* p, kiss_fft_cpx* image, kiss_fft_cpx* kspace, dataset* ds)
             fft2d(&image[z*p->xdim*p->ydim], &kspace[z*p->xdim*p->ydim], p->xdim, p->ydim);
         }
     }
-    if(p->use_cs) {
+
+    if(p->use_cs && cs_image != NULL) {
+        apply_cs_filter(kspace, filt_kspace, p->cs_params);
+        if(p->use_fft3) {
+            ifft3d(filt_kspace, filt_image, p->xdim, p->ydim, p->zdim);
+        } else {
+            for(z=0;z<p->zdim;z++) {
+                ifft2d(&filt_kspace[z*p->xdim*p->ydim], &filt_image[z*p->xdim*p->ydim], p->xdim, p->ydim);
+            }
+        }
+        for(int i=0;i<p->xdim*p->ydim*p->zdim;i++) {
+            cs_kspace[i] = filt_kspace[i];
+            ASSIGN(cs_image[i], 0, 0);
+        }
         p->cs_params->zdim = 1;
         for(z=0;z<p->zdim;z++) {
-            compressed_sensing(&kspace[z*p->xdim*p->ydim], &image[z*p->xdim*p->ydim], p->cs_params);
+            if (p->cs_params->callback != 0) {
+                ((cs_callback*)p->cs_params->callback)(z);
+            } else {
+                fprintf(stderr, "%d\n", z);
+            }
+            compressed_sensing(&cs_kspace[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->cs_params);
         }
     }
 }

@@ -67,9 +67,9 @@ function make_params(params) {
     var s_params = scalar_size == 4 ? allocFromArray(Float32Array.from(s_params)) : allocFromArray(Float64Array.from(s_params));
     var fft3d = 'fft' in params ? params['fft'] == '3d' : true;
     var use_cs = "cs" in params ? params["cs"]>1 : false;
-    var cs_params = make_cs_params(params);
+    var [cs_params, callback_ptr] = make_cs_params(params);
     c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["nearest"], use_cs, fft3d, cs_params)
-    return c_params;
+    return [c_params, callback_ptr];
 }
 
 function simulate_fast(ds, params) {
@@ -87,21 +87,70 @@ function simulate_fast(ds, params) {
     var image_ptr = image_buff.byteOffset;
     var kspace_buff = alloc(xdim*ydim*zdim*scalar_size*2);
     var kspace_ptr = kspace_buff.byteOffset;
+    var use_cs = "cs" in params ? params["cs"]>1 : false;
+    var cs_buff = undefined;
+    var cs_ptr = 0;
+    var cs_kspace_buff = undefined;
+    var cs_kspace_ptr = 0;
+    var filt_buff = undefined;
+    var filt_ptr = 0;
+    var filt_kspace_buff = undefined;
+    var filt_kspace_ptr = 0;
+    if(use_cs) {
+        cs_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+        cs_ptr = cs_buff.byteOffset;
+        cs_kspace_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+        cs_kspace_ptr = cs_kspace_buff.byteOffset;
+        filt_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+        filt_ptr = filt_buff.byteOffset;
+        filt_kspace_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+        filt_kspace_ptr = filt_kspace_buff.byteOffset;
+    }
 
-    p = make_params(params)
-    _simulate(p, image_ptr, kspace_ptr, ds);
+    [p, callback_ptr] = make_params(params)
+    _simulate(p, image_ptr, kspace_ptr, filt_ptr, filt_kspace_ptr, cs_ptr, cs_kspace_ptr, ds);
+    
     var in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, image_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, image_ptr, xdim*ydim*zdim*2));
     var image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
     for(var i = 0;i<image.length;i++) {
         image[i] = in_image[i*2];
     }
     var kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2));
+    
+    var cs_image = undefined;
+    var cs_kspace = undefined;
+    if(use_cs) {
+        in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2));
+        cs_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
+        for(var i = 0;i<cs_image.length;i++) {
+            cs_image[i] = in_image[i*2];
+        }
+        cs_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2));
+    }
 
+    var filt_image = undefined;
+    var filt_kspace = undefined;
+    if(use_cs) {
+        in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_ptr, xdim*ydim*zdim*2));
+        filt_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
+        for(var i = 0;i<filt_image.length;i++) {
+            filt_image[i] = in_image[i*2];
+        }
+        filt_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2));
+    }
+
+    Module.removeFunction(callback_ptr);
     free(p);
     Module._free(image_ptr);
     Module._free(kspace_ptr);
+    if(use_cs) { 
+        Module._free(cs_ptr); 
+        Module._free(cs_kspace_ptr);
+        Module._free(filt_ptr);
+        Module._free(cs_kspace_ptr);
+    }
 
-    return [image, kspace];
+    return [image, kspace, filt_image, filt_kspace, cs_image, cs_kspace];
 }
 
 function make_cs_params(params) {
@@ -122,9 +171,14 @@ function make_cs_params(params) {
     var lambda2 = "cs_lambda2" in params? parseFloat(params["cs_lambda2"]):0.15;
     var mu = "cs_mu" in params ? params["cs_mu"] : 1.0;
     var gam = "cs_gam" in params? parseFloat(params["cs_gam"]):1;
+    var filter_fraction = "cs_filter_fraction" in params? parseFloat(params["cs_filter_fraction"])/100.0:0.5;
+    var callback_ptr = 0;
+    if ("cs_callback" in params) {
+        callback_ptr = Module.addFunction(params["cs_callback"], "vi")
+    }
     
-    var cs_params = _make_cs_params(xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam)
-    return cs_params;
+    var cs_params = _make_cs_params(xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam, filter_fraction, callback_ptr)
+    return [cs_params, callback_ptr];
 }
 
 function compressed_sensing_fast(data, params) {
@@ -139,7 +193,7 @@ function compressed_sensing_fast(data, params) {
     zdim = zdim > 0 ? zdim : k_zdim;
     zdim = zdim > k_zdim ? k_zdim : zdim;
     
-    var cs_params = make_cs_params(params);
+    var [cs_params, callback_ptr] = make_cs_params(params);
     var f_data = scalar_size == 4 ? allocFromArray(data) : allocFromArray(Float64Array.from(data));
     var f_data_ptr = f_data.byteOffset;
     var out = alloc(xdim*ydim*zdim*scalar_size*2);
@@ -176,6 +230,7 @@ function compressed_sensing_fast(data, params) {
         kspace.set(new Float32Array(Module.HEAPU8.buffer, f_data_ptr, kspace.length));
     }
     
+    Module.removeFunction(callback_ptr);
     free(cs_params);
     free(f_data);
     free(out);

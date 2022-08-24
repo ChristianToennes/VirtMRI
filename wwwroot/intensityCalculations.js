@@ -1310,7 +1310,6 @@ function simulateImageFast(params) {
     if (ds == undefined) {
         ds = make_dataset(array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
     }
-    [image, kspace] = simulate_fast(ds, params);
     var fft3d = 'fft' in params ? params['fft'] == '3d' : true;
     var xdim = Math.round(params["xdim"]);
     xdim = xdim > 0 ? xdim : k_xdim;
@@ -1322,9 +1321,21 @@ function simulateImageFast(params) {
     zdim = zdim > 0 ? zdim : k_zdim;
     zdim = zdim > k_zdim ? k_zdim : zdim;
 
+    params["cs_callback"] = function (z) {reply('progress', 100*z/zdim)};
+    [image, kspace, filt_image, filt_kspace, cs_image, cs_kspace] = simulate_fast(ds, params);
+    delete params["cs_callback"];
+
     var k_result = transformKSpace3d(kspace, fft3d, zdim);
     result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], image, k_result, params);
-    return result;
+    if(cs_image != undefined) {
+        var cs_k_result = transformKSpace3d(cs_kspace, fft3d, zdim);
+        var filt_k_result = transformKSpace3d(filt_kspace, fft3d, zdim);
+        cs_result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], cs_image, cs_k_result, params);
+        filt_result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], filt_image, filt_k_result, params);
+        return [result, filt_result, cs_result];
+    } else {
+        return result;
+    }
 }
 
 var imageFunctions = {
