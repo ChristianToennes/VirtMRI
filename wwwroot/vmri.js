@@ -156,25 +156,14 @@ const resultMessageHandler = function (data) {
         imgResultCache["cs"] = data[2];
     } else {
         if ("cs" in imgResultCache) {
-            imgResultCache["cs"] = undefined;
-            imgResultCache["pre"] = undefined;
+            imgResultCache["pre"] = imgResultCache["cs"];
+            delete imgResultCache["cs"];
         } else if("cur" in imgResultCache) {
             imgResultCache["pre"] = imgResultCache["cur"];
-            document.getElementById("pre_r_slice").max = imgResultCache["pre"].zdim;
-            document.getElementById("pre_or_slice").max = imgResultCache["pre"].zdim;
-            var windowing = document.getElementById("pre_windowing");
-            var colorBar = document.getElementById("pre_colorBarContainer");
-            if(isCurrentTabNa("pre")) {
-                windowing.classList.add("hidden");
-                plot_colormap("colorBar");
-                colorBar.classList.remove("hidden");
-            } else {
-                windowing.classList.remove("hidden");
-                colorBar.classList.add("hidden");
-            }
         }
         imgResultCache["cur"] = data;
     }
+    console.log(imgResultCache["cur"].kSpace.length, imgResultCache["cur"].data.length);
     document.getElementById("cur_r_slice").max = imgResultCache["cur"].zdim;
     document.getElementById("cur_or_slice").max = imgResultCache["cur"].zdim;
     document.getElementById("cur_r_slice").value = Math.round(imgResultCache["cur"].zdim/2);
@@ -237,8 +226,8 @@ const resultMessageHandler = function (data) {
         colorBar.classList.add("hidden");
     }
     
-    var xdim = imgResultCache["cur"].xdim;
-    var ydim = imgResultCache["cur"].ydim;
+    //var xdim = imgResultCache["cur"].xdim;
+    //var ydim = imgResultCache["cur"].ydim;
     var zdim = imgResultCache["cur"].zdim;
 
     /*var canvas = document.getElementById("imgResult");
@@ -252,12 +241,12 @@ const resultMessageHandler = function (data) {
         }
     }
 
-    var slice = document.getElementById("xdim");
+    /*var slice = document.getElementById("xdim");
     slice.value = xdim;
     slice = document.getElementById("ydim");
     slice.value = ydim;
     slice = document.getElementById("zdim");
-    slice.value = zdim;
+    slice.value = zdim;*/
 
     displayAndWindow3DImage();
     toggleImg();
@@ -427,31 +416,34 @@ function windowResult(event, which) {
 }
 
 function isCurrentTabNa(which) {
-    if(which in imgResultCache) {
+    if(imgResultCache[which] != undefined) {
         return na_tabs.includes("params-"+imgResultCache[which].params["sequence"]+"-tab");
     }
     return na_tabs.includes(current_tab);
 }
 
 function toggleImg() {
-    var keys = Object.getOwnPropertyNames(imgResultCache);
+    var keys = ["pre", "cur", "cs"];
     var kspace = document.getElementById("kspace_visible");
     for(key in keys) {
         var which = keys[key];
         var div = document.getElementById(which+"_image");
         var checkbox = document.getElementById(which+"_visible");
-        if(checkbox.checked) {
-            div.classList.remove("hidden");
-        } else {
+        if(imgResultCache[which] == undefined) {
             div.classList.add("hidden");
-        }
-        var div = document.getElementById(which+"_kResult");
-        if(kspace.checked) {
-            div.classList.remove("hidden");
         } else {
-            div.classList.add("hidden");
+            if(checkbox.checked) {
+                div.classList.remove("hidden");
+            } else {
+                div.classList.add("hidden");
+            }
+            var div = document.getElementById(which+"_kResult");
+            if(kspace.checked) {
+                div.classList.remove("hidden");
+            } else {
+                div.classList.add("hidden");
+            }
         }
-        
     }
 }
 
@@ -524,11 +516,9 @@ function displayAndWindow3DImage(which) {
 
 
     k_canvas = document.getElementById(which+"_kResult");
-    var xdim = 256;
-    var ydim = 256;
+    k_ctx = k_canvas.getContext('2d');
     k_canvas.width = xdim;
     k_canvas.height = ydim
-    k_ctx = k_canvas.getContext('2d');
     kdata = k_ctx.createImageData(xdim, ydim);
 
     var mult = document.getElementById("kspacemult").valueAsNumber;

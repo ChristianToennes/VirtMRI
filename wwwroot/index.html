@@ -71,21 +71,21 @@
                         </div>
                         <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
                     </div>
-                    <div class="row form-row">
+                    <!--<div class="row form-row">
                         <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">K-Space Dimensions:</label>
                         </div>
                         <div class="col-sm"><label class="mb-0 align-self-center">X:</label></div>
-                        <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="xdim" id="xdim" oninput="updateTime()" />
+                        <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="k_xdim" id="k_xdim" oninput="updateTime()" />
                         <div class="col-sm">
                             <label class="mb-0 align-self-center">Y:</label>
                         </div>
-                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="ydim" id="ydim" oninput="updateTime()" />
+                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="k_ydim" id="k_ydim" oninput="updateTime()" />
                         <div class="col-sm">
                             <label class="mb-0 align-self-center">Z:</label>
                         </div>
-                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
-                    </div>
+                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="k_zdim" id="k_zdim" oninput="updateTime()" />
+                    </div>-->
                     <div class="row form-row">
                         <div class="col-auto w-25">
                             <label class="mb-0 align-self-center">Interpolation Mode:</label>
@@ -488,6 +488,10 @@
                     <input type="checkbox" class="form-check-input" name="kspace" id="kspace_visible" onchange="toggleImg()" />
                     <label class="form-check-label" for="kspace_visible">Show k-Space</label>
                 </div>
+                <div class="col">
+                <input type="number" class="pl-0 pr-0 form-control form-control-range" min="1"
+                            name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
+                </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="pre" id="pre_visible" onchange="toggleImg()" />
                     <label class="form-check-label" for="pre_visible">Show previous image</label>
@@ -520,7 +524,7 @@
                     <fieldset id="kspace" class="row mb-2">
                         <label for="slice">K-Space brighten:</label>
                         <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="100"
-                            name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
+                            name="_kspacemult" id="_kspacemult" value="20" onchange="displayAndWindow3DImage();" />
 
                         <label for="slice">K-Space y-lines:</label>
                         <input type="number" id="k_yline_number" class="form-control" min="1" max="256" value="256"

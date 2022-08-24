@@ -343,18 +343,20 @@ function kfft3d(data, m, n, l) {
 /** Compute the inverse FFT of a real-valued mxn matrix. */
 function kifft3d(spectrum, m, n, l) {
     var heapSpectrum = scalar_size==4?allocFromArray(spectrum):allocFromArray(Float64Array.from(spectrum));
+    var heapSpectrum_ptr = heapSpectrum.byteOffset;
     var heapData = alloc(m*n*l*scalar_size);
+    var heapData_ptr = heapData.byteOffset;
 
-    _ifft3d(heapSpectrum.byteOffset, heapData.byteOffset, m, n, l);
+    _ifft3d(heapSpectrum_ptr, heapData_ptr, m, n, l);
 
-    var data = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer,heapData.byteOffset, m*n*l*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer,heapData.byteOffset, m*n*l*2));
+    var data = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer,heapData_ptr, m*n*l*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer,heapData_ptr, m*n*l*2));
 
     //for (i=0;i<m*n*l*2;i++) {
         //data[i] /= m*n*l;
     //}
 
-    free(heapSpectrum);
-    free(heapData);
+    Module._free(heapSpectrum_ptr);
+    Module._free(heapData_ptr);
 
     return data;
 }

@@ -118,7 +118,7 @@ void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, cs_params *
             }
         }
     }
-    fprintf(stderr, "sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
+    fprintf(stdout, "sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
 void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, cs_params *params) {
