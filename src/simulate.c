@@ -232,11 +232,7 @@ void simulate(params* p, kiss_fft_cpx* image, kiss_fft_cpx* kspace, kiss_fft_cpx
     xs = (double)ds->k_xdim/(double)p->xdim/2.0;
     ys = (double)ds->k_ydim/(double)p->ydim/2.0;
     zs = (double)ds->k_zdim/(double)p->zdim/2.0;
-    /*fprintf(stderr, "%i %i ", p->sequence, p->n_params);
-    for(int i=0;i<p->n_params;i++) {
-        fprintf(stderr, "%f ", p->s_params[i]);
-    }
-    fprintf(stderr, "%i %i %i\n", p->xdim, p->ydim, p->zdim);*/
+    
     for(z = 0; z<p->zdim; z++) {
         for(y = 0;y<p->ydim; y++) {
             for(x = 0;x<p->xdim; x++) {
@@ -290,10 +286,9 @@ void simulate(params* p, kiss_fft_cpx* image, kiss_fft_cpx* kspace, kiss_fft_cpx
             }
         }
     }
-    //free_dataset(ds);
 
     if(p->use_fft3) {
-        fft3d(image, kspace, p->xdim, p->ydim, p->zdim);
+        fft3d(image, kspace, p->ydim, p->zdim, p->xdim);
     } else {
         for(z=0;z<p->zdim;z++) {
             fft2d(&image[z*p->xdim*p->ydim], &kspace[z*p->xdim*p->ydim], p->xdim, p->ydim);
@@ -303,7 +298,7 @@ void simulate(params* p, kiss_fft_cpx* image, kiss_fft_cpx* kspace, kiss_fft_cpx
     if(p->use_cs && cs_image != NULL) {
         apply_cs_filter(kspace, filt_kspace, p->cs_params);
         if(p->use_fft3) {
-            ifft3d(filt_kspace, filt_image, p->xdim, p->ydim, p->zdim);
+            ifft3d(filt_kspace, filt_image, p->ydim, p->zdim, p->xdim);
         } else {
             for(z=0;z<p->zdim;z++) {
                 ifft2d(&filt_kspace[z*p->xdim*p->ydim], &filt_image[z*p->xdim*p->ydim], p->xdim, p->ydim);
@@ -313,14 +308,18 @@ void simulate(params* p, kiss_fft_cpx* image, kiss_fft_cpx* kspace, kiss_fft_cpx
             cs_kspace[i] = filt_kspace[i];
             ASSIGN(cs_image[i], 0, 0);
         }
-        p->cs_params->zdim = 1;
-        for(z=0;z<p->zdim;z++) {
-            if (p->cs_params->callback != 0) {
-                ((cs_callback*)p->cs_params->callback)(z);
-            } else {
-                fprintf(stderr, "%d\n", z);
+        if(p->use_fft3) {
+            compressed_sensing(cs_kspace, cs_image, p->cs_params);
+        } else {
+            p->cs_params->zdim = 1;
+            for(z=0;z<p->zdim;z++) {
+                if (p->cs_params->callback != 0) {
+                    ((cs_callback*)p->cs_params->callback)(z);
+                } else {
+                    fprintf(stderr, "%d\n", z);
+                }
+                compressed_sensing(&cs_kspace[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->cs_params);
             }
-            compressed_sensing(&cs_kspace[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->cs_params);
         }
     }
 }

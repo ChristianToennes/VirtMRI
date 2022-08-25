@@ -20,5 +20,8 @@ void ifft3d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n, int l) {
 
    cfg = kiss_fftnd_alloc(dims, 3, 1, NULL, NULL);
    kiss_fftnd(cfg, in, out);
+   for(int i=0;i<m*n*l;i++) {
+      C_MULBYSCALAR(out[i], 1.0/(m*n*l));
+   }
    free(cfg);
 }

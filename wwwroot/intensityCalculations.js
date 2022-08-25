@@ -5,10 +5,6 @@ self.importScripts("./discrete-wavelets.umd.min.js")
 self.importScripts("./Mask_CS_Accel2.txt.js");
 self.importScripts("./Mask_CS_Accel4.txt.js");
 
-//var xdim = 256;
-//var ydim = 256;
-//var zdim = 256;
-
 var k_xdim = 256;
 var k_ydim = 256;
 var k_zdim = 256;
@@ -265,6 +261,7 @@ function transformKSpace3d(k_data_im_re, fft3d, xdim, ydim, zdim) {
         }
         if(fft3d) {
             k_result.set(transformKSpace(slice_data, xdim, ydim), ((z+zdim/2)%zdim) * xdim * ydim);
+            //k_result.set(transformKSpace(slice_data, xdim, ydim), z * xdim * ydim);
         } else {
             k_result.set(transformKSpace(slice_data, xdim, ydim), z * xdim * ydim);
         }
@@ -407,12 +404,6 @@ function inverseKSpace3d(kSpace, xdim, ydim, zdim, xlines, ylines, fmin, fmax, n
 
     if (!noIfft) {
         var fft_result = ifft3d(kSpace, xdim, ydim, zdim);
-        /*var maxval = 0;
-        var minval = 999999999;
-        for (var i = 0; i < img_result.length; i++) {
-            maxval = Math.max(maxval, img_result[i]);
-            minval = Math.min(minval, img_result[i]);
-        }*/
         var xoff = Math.floor((xdim-xdim) / 2);
         var yoff = Math.floor((ydim-ydim) / 2);
         for (var x = 0; x < xdim; x++) {
@@ -1055,7 +1046,6 @@ function addKSpaceNoise(kSpace, img, params) {
 function simulateImage(params) {
     var sequence = "sequence" in params ? params["sequence"] : undefined;
     var S = sequence in imageFunctions ? imageFunctions[sequence] : undefined;
-    //console.log(params, sequence, S);
     var xdim = Math.round(params["xdim"]);
     xdim = xdim > 0 ? xdim : k_xdim;
     xdim = xdim > k_xdim ? k_xdim : xdim;
@@ -1065,7 +1055,6 @@ function simulateImage(params) {
     var zdim = Math.round(params["zdim"]);
     zdim = zdim > 0 ? zdim : k_zdim;
     zdim = zdim > k_zdim ? k_zdim : zdim;
-    //console.log(xdim, ydim, zdim);
     var nearest = "nearest" in params ? parseInt(params["nearest"]) : 2;
     var cs = "cs" in params ? parseInt(params["cs"]) : 0;
     var cs_filt = "cs_filter" in params ? parseInt(params["cs_filter"]) : 0;
@@ -1191,9 +1180,6 @@ function simulateImage(params) {
                     var [slice_result, k_slice_re_img] = compressed_sensing_fast(k_data_slice, nparams);
                     cs_result.set(slice_result, z*xdim*ydim);
                     k_cs_re_img.set(k_slice_re_img, z*xdim*ydim*2);
-                    /*for(var i=0;i<slice_result.length;i++) {
-                        cs_result[z*xdim*ydim+i] = slice_result[i];
-                    }*/
                 }
                 reply('progress', 100);
             }
