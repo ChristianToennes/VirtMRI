@@ -66,11 +66,6 @@ function QueryableWorker(url) {
 }
 const w = new QueryableWorker("./intensityCalculations.js");
 
-//var xdim = 256;
-//var ydim = 256;
-//var zdim = 256;
-//var array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2s, array_na_t2f, result, k_data_im_re, slice_data;
-
 const na_tabs = ["params-Na-tab", "params-SQ-tab", "params-TQ-tab", "params-TQF-tab", "params-TQSQR-tab"];
 const h_tabs = ["params-IR-tab", "params-SE-tab", "params-bSSFP-tab", "params-FISP-tab", "params-PSIF-tab", "params-FLASH-tab", "params-SGRE-tab"];
 var current_tab = "params-IR-tab";
@@ -80,20 +75,13 @@ var imgResultCache = {};
 
 function sequenceParametersKeyDown(e) {
     if(e.code == "Enter") {
-        startScan();
+        startScanFast();
     }
 }
 
 
 const loadDataMessageHandler = function (data) {
-    //var array_pd = data[0];
-    //var array_t1 = data[1];
-    //var array_t2 = data[2];
-    //var array_t2s = data[3];
     var array_na_mm = data[4];
-    //var array_na_t1 = data[5];
-    //var array_na_t2s = data[6];
-    //var array_na_t2f = data[7];
     var zdim = data[8];
     var ydim = data[9];
     var xdim = data[10];
@@ -104,29 +92,21 @@ const loadDataMessageHandler = function (data) {
             node.value = Math.round(zdim/2);
         }
     }
-    /*slice = document.getElementById("slice");
-    slice.max = zdim;
-    slice.value = Math.round(zdim/2);
-
-    slice = document.getElementById("or_slice");
-    slice.max = zdim;
-    slice.value = Math.round(zdim/2);*/
-
+    
     slice = document.getElementById("xdim")
     slice.max = xdim;
-    slice.value = xdim;
+    //slice.value = xdim;
     slice = document.getElementById("ydim")
     slice.max = ydim;
-    slice.value = ydim;
+    //slice.value = ydim;
     slice = document.getElementById("zdim")
     slice.max = zdim;
-    slice.value = zdim;
+    //slice.value = zdim;
 
     r = document.getElementById("content");
     r.classList.remove("hidden");
     spin = document.getElementById("datasetLoading");
     spin.classList.add("hidden");
-    //displayDataSet();
     setSequence("IR");
     if (array_na_mm == null) {
         for (var tab in na_tabs) {
@@ -146,8 +126,6 @@ const loadDataMessageHandler = function (data) {
 };
 w.addListener('loadData', loadDataMessageHandler);
 
-//var imgResult;
-//var kResult;
 var resultTimer;
 const resultMessageHandler = function (data) {
     if(Array.isArray(data)) {
@@ -164,21 +142,15 @@ const resultMessageHandler = function (data) {
         imgResultCache["cur"] = data;
     }
     console.log(imgResultCache["cur"].kSpace.length, imgResultCache["cur"].data.length);
-    document.getElementById("cur_r_slice").max = imgResultCache["cur"].zdim;
-    document.getElementById("cur_or_slice").max = imgResultCache["cur"].zdim;
-    document.getElementById("cur_r_slice").value = Math.round(imgResultCache["cur"].zdim/2);
-    document.getElementById("cur_or_slice").value = Math.round(imgResultCache["cur"].zdim/2);
+    document.getElementById("cur_slice").max = imgResultCache["cur"].zdim;
+    document.getElementById("cur_slice").value = Math.round(imgResultCache["cur"].zdim/2);
     if(imgResultCache["pre"] != undefined) {
-        document.getElementById("pre_r_slice").max = imgResultCache["pre"].zdim;
-        document.getElementById("pre_or_slice").max = imgResultCache["pre"].zdim;
-        document.getElementById("pre_r_slice").value = Math.round(imgResultCache["pre"].zdim/2);
-        document.getElementById("pre_or_slice").value = Math.round(imgResultCache["pre"].zdim/2);
+        document.getElementById("pre_slice").max = imgResultCache["pre"].zdim;
+        document.getElementById("pre_slice").value = Math.round(imgResultCache["pre"].zdim/2);
     }
     if(imgResultCache["cs"] != undefined) {
-        document.getElementById("cs_r_slice").max = imgResultCache["cs"].zdim;
-        document.getElementById("cs_or_slice").max = imgResultCache["cs"].zdim;
-        document.getElementById("cs_r_slice").value = Math.round(imgResultCache["cs"].zdim/2);
-        document.getElementById("cs_or_slice").value = Math.round(imgResultCache["cs"].zdim/2);
+        document.getElementById("cs_slice").max = imgResultCache["cs"].zdim;
+        document.getElementById("cs_slice").value = Math.round(imgResultCache["cs"].zdim/2);
     }
 
     r = document.getElementById("result");
@@ -225,14 +197,8 @@ const resultMessageHandler = function (data) {
         windowing.classList.remove("hidden");
         colorBar.classList.add("hidden");
     }
-    
-    //var xdim = imgResultCache["cur"].xdim;
-    //var ydim = imgResultCache["cur"].ydim;
-    var zdim = imgResultCache["cur"].zdim;
 
-    /*var canvas = document.getElementById("imgResult");
-    canvas.width = xdim;
-    canvas.height = ydim;*/
+    var zdim = imgResultCache["cur"].zdim;
 
     for (var node in document.querySelectorAll('input[type="range"]')) {
         if(node != undefined && node.id != undefined && node.id.endsWith("slice")) {
@@ -240,13 +206,6 @@ const resultMessageHandler = function (data) {
             node.value = Math.round(zdim/2);
         }
     }
-
-    /*var slice = document.getElementById("xdim");
-    slice.value = xdim;
-    slice = document.getElementById("ydim");
-    slice.value = ydim;
-    slice = document.getElementById("zdim");
-    slice.value = zdim;*/
 
     displayAndWindow3DImage();
     toggleImg();
@@ -371,16 +330,7 @@ function scrollResult(event) {
     var keys = Object.getOwnPropertyNames(imgResultCache)
     for(var key in keys) {
         which = keys[key]
-        r_slice = document.getElementById(which+"_or_slice");
-        r_slice.value = r_slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
-        if ("createEvent" in document) {
-            evt = new Event("change", {"bubbles": false, "cancelable": true});
-            r_slice.dispatchEvent(evt);
-        } else {
-            r_slice.fireEvent("onchange");
-        }
-        
-        r_slice = document.getElementById(which+"_r_slice")
+        r_slice = document.getElementById(which+"_slice")
         r_slice.value = r_slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
         if ("createEvent" in document) {
             evt = new Event("change", {"bubbles": false, "cancelable": true});
@@ -447,6 +397,18 @@ function toggleImg() {
     }
 }
 
+function toggleAccordion(which) {
+    var content = document.getElementById('acc-'+which+'-content');
+    var head = document.getElementById('acc-'+which+'-head').children[0];
+    if (content.classList.contains("show")) {
+        content.classList.remove("show");
+        head.classList.add("collapsed");
+    } else {
+        content.classList.add("show");
+        head.classList.remove("collapsed");
+    }
+}
+
 function displayAndWindow3DImage(which) {
     if(which == undefined) {
         var keys = Object.getOwnPropertyNames(imgResultCache)
@@ -470,11 +432,7 @@ function displayAndWindow3DImage(which) {
     idata = ctx.createImageData(xdim, ydim);
 
     var image_result = new Uint8ClampedArray(xdim * ydim * 4);
-    if(isCurrentTabNa(which)) {
-        in_slice = document.getElementById(which+"_or_slice");
-    } else {
-        in_slice = document.getElementById(which+"_r_slice");
-    }
+    in_slice = document.getElementById(which+"_slice");
     slice = parseInt(in_slice.value);
     
     if (isCurrentTabNa(which)) {
@@ -521,7 +479,7 @@ function displayAndWindow3DImage(which) {
     k_canvas.height = ydim
     kdata = k_ctx.createImageData(xdim, ydim);
 
-    var mult = document.getElementById("kspacemult").valueAsNumber;
+    var mult = document.getElementById(which+"_kspacemult").valueAsNumber;
     if(which=="cur") {
         var xlines = document.getElementById("k_xline").valueAsNumber;
         var ylines = document.getElementById("k_yline").valueAsNumber;
@@ -787,6 +745,10 @@ function startScanFast() {
     var params = {sequence: selectedSequence};
     
     var param_div = document.getElementById("params-general");
+    params = read_params(param_div, params);
+    param_div = document.getElementById("params-noise");
+    params = read_params(param_div, params);
+    param_div = document.getElementById("params-cs");
     params = read_params(param_div, params);
     
     param_div = document.getElementById("params-" + selectedSequence);

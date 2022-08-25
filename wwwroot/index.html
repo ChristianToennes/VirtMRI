@@ -55,133 +55,154 @@
             </div>
             
             <div class="row mt-2" onkeydown="sequenceParametersKeyDown(event)">
-                <div class="col" id="params-general">
-                    <div class="row form-row">
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">Image Dimensions:</label>
+                <div class="accordion">
+                    <div class="accordion-item">
+                        <div class="accordion-header" id="acc-general-head" onclick="toggleAccordion('general')">
+                            <button class="accordion-button" type="button">General Parameters</button>
                         </div>
-                        <div class="col-sm"><label class="mb-0 align-self-center">X:</label></div>
-                        <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="xdim" id="xdim" oninput="updateTime()" />
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">Y:</label>
+                        <div id="acc-general-content" class="accordion-collapse collapse show">
+                            <div class="accordion-body" id="params-general">                          
+                                <div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <label class="mb-0 align-self-center">Image Dimensions:</label>
+                                    </div>
+                                    <div class="col-sm"><label class="mb-0 align-self-center">X:</label></div>
+                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="xdim" id="xdim" oninput="updateTime()" />
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">Y:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="ydim" id="ydim" oninput="updateTime()" />
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">Z:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
+                                </div>
+                                <!--<div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <label class="mb-0 align-self-center">K-Space Dimensions:</label>
+                                    </div>
+                                    <div class="col-sm"><label class="mb-0 align-self-center">X:</label></div>
+                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="k_xdim" id="k_xdim" oninput="updateTime()" />
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">Y:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="k_ydim" id="k_ydim" oninput="updateTime()" />
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">Z:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="k_zdim" id="k_zdim" oninput="updateTime()" />
+                                </div>-->
+                                <div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <label class="mb-0 align-self-center">Interpolation Mode:</label>
+                                    </div>
+                                    <select class="col-sm form-select" type="select" id="nearest" name="nearest" oninput="updateTime()">
+                                        <option value="0">Nearest Neigbhbour</option>
+                                        <option value="1">Linear Interpolation, 8 Nearest Neighbours</option>
+                                        <option value="2" selected>Average</option>
+                                    </select>
+                                </div>
+                                <div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <label class="mb-0 align-self-center">FFT:</label>
+                                    </div>
+                                    <select class="col-sm form-select" type="select" id="fft" name="fft" oninput="updateTime()">
+                                        <option value="3d" selected>3D</option>
+                                        <option value="2d">2D</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="ydim" id="ydim" oninput="updateTime()" />
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">Z:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
                     </div>
-                    <!--<div class="row form-row">
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">K-Space Dimensions:</label>
+                    <div class="accordion-item">
+                        <div class="accordion-header" id="acc-noise-head" onclick="toggleAccordion('noise')">
+                            <button class="accordion-button collapsed" type="button">Noise</button>
                         </div>
-                        <div class="col-sm"><label class="mb-0 align-self-center">X:</label></div>
-                        <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="k_xdim" id="k_xdim" oninput="updateTime()" />
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">Y:</label>
+                        <div class="accordion-collapse collapse" id="acc-noise-content">
+                            <div class="accordion-body" id="params-noise">
+                                <div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <label class="mb-0 align-self-center">Noise:</label>
+                                    </div>
+                                    <select class="col-sm form-select" type="select" id="img_noise_type" name="img_noise_type" oninput="updateTime()">
+                                        <option value="0" selected>No Noise</option>
+                                        <!--<option value="1">Gaussian Noise in Image Domain</option>-->
+                                        <option value="2">Gaussian Noise in Frequency Domain</option>
+                                    </select>
+                                    <div class="col-auto ml-4">
+                                        <label class="mb-0 align-self-center">Mean:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" value="0" name="img_noise_mean" id="img_noise_mean" oninput="updateTime()" />
+                                    <div class="col-auto ml-4">
+                                        <label class="mb-0 align-self-center">SD:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="0" value="10" name="img_noise_sigma" id="img_noise_sigma" oninput="updateTime()" />
+                                </div>
+                            </div>
                         </div>
-                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="k_ydim" id="k_ydim" oninput="updateTime()" />
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">Z:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="k_zdim" id="k_zdim" oninput="updateTime()" />
-                    </div>-->
-                    <div class="row form-row">
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">Interpolation Mode:</label>
-                        </div>
-                        <select class="col-sm form-select" type="select" id="nearest" name="nearest" oninput="updateTime()">
-                             <option value="0">Nearest Neigbhbour</option>
-                             <option value="1">Linear Interpolation, 8 Nearest Neighbours</option>
-                             <option value="2" selected>Average</option>
-                        </select>
                     </div>
-                    <div class="row form-row">
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">FFT:</label>
+                    <div class="accordion-item">
+                        <div class="accordion-header" id="acc-cs-head" onclick="toggleAccordion('cs')">
+                            <button class="accordion-button collapsed" type="button">Compressed Sensing</button>
                         </div>
-                        <select class="col-sm form-select" type="select" id="fft" name="fft" oninput="updateTime()">
-                            <option value="3d" selected>3D</option>
-                            <option value="2d">2D</option>
-                        </select>
-                    </div>
-                    <div class="row form-row">
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">Noise:</label>
+                        <div class="accordion-collapse collapse" id="acc-cs-content">
+                            <div class="accordion-body" id="params-cs">
+                                <div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <label class="mb-0 align-self-center">Compressed Sensing:</label>
+                                    </div>
+                                    <select class="col-sm form-select" type="select" id="cs" name="cs" oninput="updateTime()">
+                                        <option value="0" selected>Disable</option>
+                                        <option value="1">Only K-Space Filter</option>
+                                        <option value="2">CS Enabled</option>
+                                        <option value="3">CS Enabled fast</option>
+                                        <!--<option value="4">fft3 test</option>-->
+                                </select>
+                                <div class="col-sm">
+                                    <label class="mb-0 align-self-center">K-Space filtered Percentage:</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" min="0" max="100" value="50" name="cs_filter_fraction" id="cs_filter_fraction" oninput="updateTime()" />
+                                <!--<select class="col-sm form-select" type="select" id="cs_filter" name="cs_filter" oninput="updateTime()">
+                                    <option value="0" selected>50%</option>
+                                    <option value="1">75%</option>
+                            </select>-->
+                                </div>
+                                <div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <label class="mb-0 align-self-center">Compressed Sensing Parameters:</label>
+                                    </div>
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">Ninner:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" name="cs_ninner" id="cs_ninner" value="1" oninput="updateTime()"/>
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">Nreg:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" name="cs_nbreg" id="cs_nbreg" value="80" oninput="updateTime()"/>
+                                </div>
+                                <div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <!--<label class="mb-0 align-self-center">Compressed Sensing Parameters:</label>-->
+                                    </div>
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">lambda 1:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" name="cs_lambda1" id="cs_lambda1" value="1" oninput="updateTime()"/>
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">lambda 2:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" name="cs_lambda2" id="cs_lambda2" value="0.001" oninput="updateTime()"/>
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">mu:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" name="cs_mu" id="cs_mu" value="1" oninput="updateTime()"/>
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">gam:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" name="cs_gam" id="cs_gam" value="1" oninput="updateTime()"/>
+                                </div>
+                            </div>
                         </div>
-                        <select class="col-sm form-select" type="select" id="img_noise_type" name="img_noise_type" oninput="updateTime()">
-                             <option value="0" selected>No Noise</option>
-                             <!--<option value="1">Gaussian Noise in Image Domain</option>-->
-                             <option value="2">Gaussian Noise in Frequency Domain</option>
-                        </select>
-                        <div class="col-auto ml-4">
-                            <label class="mb-0 align-self-center">Mean:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" value="0" name="img_noise_mean" id="img_noise_mean" oninput="updateTime()" />
-                        <div class="col-auto ml-4">
-                            <label class="mb-0 align-self-center">SD:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" min="0" value="10" name="img_noise_sigma" id="img_noise_sigma" oninput="updateTime()" />
-                    </div>
-                    <div class="row form-row">
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">Compressed Sensing:</label>
-                        </div>
-                        <select class="col-sm form-select" type="select" id="cs" name="cs" oninput="updateTime()">
-                            <option value="0" selected>Disable</option>
-                            <option value="1">Only K-Space Filter</option>
-                            <option value="2">CS Enabled</option>
-                            <option value="3">CS Enabled fast</option>
-                            <!--<option value="4">fft3 test</option>-->
-                       </select>
-                       <div class="col-sm">
-                         <label class="mb-0 align-self-center">K-Space filtered Percentage:</label>
-                       </div>
-                       <input class="col-sm form-control" type="number" min="0" max="100" value="50" name="cs_filter_fraction" id="cs_filter_fraction" oninput="updateTime()" />
-                       <!--<select class="col-sm form-select" type="select" id="cs_filter" name="cs_filter" oninput="updateTime()">
-                        <option value="0" selected>50%</option>
-                        <option value="1">75%</option>
-                   </select>-->
-                    </div>
-                    <div class="row form-row">
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">Compressed Sensing Parameters:</label>
-                        </div>
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">Ninner:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" name="cs_ninner" id="cs_ninner" value="1" oninput="updateTime()"/>
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">Nreg:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" name="cs_nbreg" id="cs_nbreg" value="80" oninput="updateTime()"/>
-                    </div>
-                    <div class="row form-row">
-                        <div class="col-auto w-25">
-                            <!--<label class="mb-0 align-self-center">Compressed Sensing Parameters:</label>-->
-                        </div>
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">lambda 1:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" name="cs_lambda1" id="cs_lambda1" value="1" oninput="updateTime()"/>
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">lambda 2:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" name="cs_lambda2" id="cs_lambda2" value="0.001" oninput="updateTime()"/>
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">mu:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" name="cs_mu" id="cs_mu" value="1" oninput="updateTime()"/>
-                        <div class="col-sm">
-                            <label class="mb-0 align-self-center">gam:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" name="cs_gam" id="cs_gam" value="1" oninput="updateTime()"/>
-                    </div>
-                    <div class="row form-row hidden">
-                        <div class="col-auto w-25">
-                            <label class="mb-0 align-self-center">Parallel Imaging:</label>
-                        </div>
-                        <input class="col-sm form-control" type="number" value="1" name="parallel" id="parallel" oninput="updateTime()" />
                     </div>
                 </div>
             </div>
@@ -488,10 +509,10 @@
                     <input type="checkbox" class="form-check-input" name="kspace" id="kspace_visible" onchange="toggleImg()" />
                     <label class="form-check-label" for="kspace_visible">Show k-Space</label>
                 </div>
-                <div class="col">
+                <!--<div class="col">
                 <input type="number" class="pl-0 pr-0 form-control form-control-range" min="1"
                             name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
-                </div>
+                </div>-->
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="pre" id="pre_visible" onchange="toggleImg()" />
                     <label class="form-check-label" for="pre_visible">Show previous image</label>
@@ -570,30 +591,32 @@
                     <div class="row colorBarContainer" id="pre_windowing">
                         <div class="col">
                             <label for="ti">Window Center: </label>
-                            <input type="range" class="pl-0 pr-0 form-control form-control-range" name="pre_wc" id="pre_wc"
+                            <input type="number" class="pl-0 pr-0 form-control form-control-range" name="pre_wc" id="pre_wc"
                                 min="0" max="4096" value="2048" onchange="displayAndWindow3DImage('pre');" />
                         </div>
                         <div class="col">
                             <label for="tr">Window Width:</label>
-                            <input type="range" class="pl-0 pr-0 form-control form-control-range" name="pre_ww" id="pre_ww"
+                            <input type="number" class="pl-0 pr-0 form-control form-control-range" name="pre_ww" id="pre_ww"
                                 min="0" max="4096" value="4096" onchange="displayAndWindow3DImage('pre');" />
                         </div>
                         <div class="col">
-                            <label for="slice">Slice:</label>
-                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                                name="pre_slice" id="pre_r_slice" value="100" onchange="displayAndWindow3DImage();" />
-                        </div>
-                        <div class="">
                             <input type="button" class="btn-secondary align-self-center" value="Auto Window"
                                 onclick="autoWindow('pre')" />
                         </div>
                     </div>
                     <div class="row my-2 colorBarContainer" id="pre_colorBarContainer">
                         <canvas class="colorBar" id="pre_colorBar"></canvas>
-                        <div class="col-3">
-                            <label for="slice">Slice:</label>
+                    </div>
+                    <div class="row my-2" id="pre_other">
+                        <div class="col">
+                            <label for="pre_kspacemult">KSpace Multiplier</label>
+                            <input type="number" class="pl-0 pr-0 form-control form-control-range" min="1"
+                                        name="pre_kspacemult" id="pre_kspacemult" value="20" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="pre_slice">Slice:</label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                                name="pre_slice" id="pre_or_slice" value="100" onchange="displayAndWindow3DImage();" />
+                                name="pre_slice" id="pre_slice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                     </div>
                 </div>
@@ -609,18 +632,13 @@
                     <div class="row colorBarContainer" id="cur_windowing">
                         <div class="col">
                             <label for="ti">Window Center: </label>
-                            <input type="range" class="pl-0 pr-0 form-control form-control-range" name="cur_wc" id="cur_wc"
+                            <input type="number" class="pl-0 pr-0 form-control form-control-range" name="cur_wc" id="cur_wc"
                                 min="0" max="4096" value="2048" onchange="displayAndWindow3DImage('cur');" />
                         </div>
                         <div class="col">
                             <label for="tr">Window Width:</label>
-                            <input type="range" class="pl-0 pr-0 form-control form-control-range" name="cur_ww" id="cur_ww"
+                            <input type="number" class="pl-0 pr-0 form-control form-control-range" name="cur_ww" id="cur_ww"
                                 min="0" max="4096" value="4096" onchange="displayAndWindow3DImage('cur');" />
-                        </div>
-                        <div class="col">
-                            <label for="slice">Slice:</label>
-                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                                name="cur_slice" id="cur_r_slice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                         <div class="col">
                             <input type="button" class="btn-secondary align-self-center" value="Auto Window"
@@ -629,10 +647,17 @@
                     </div>
                     <div class="row my-2 colorBarContainer" id="cur_colorBarContainer">
                         <canvas class="colorBar" id="cur_colorBar"></canvas>
-                        <div class="col-3">
-                            <label for="slice">Slice:</label>
+                    </div>
+                    <div class="row my-2" id="cur_other">
+                        <div class="col">
+                            <label for="cur_kspacemult">KSpace Multiplier</label>
+                            <input type="number" class="pl-0 pr-0 form-control form-control-range" min="1"
+                                        name="cur_kspacemult" id="cur_kspacemult" value="20" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="cur_slice">Slice:</label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                                name="cur_slice" id="cur_or_slice" value="100" onchange="displayAndWindow3DImage();" />
+                                name="cur_slice" id="cur_slice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                     </div>
                 </div>
@@ -648,18 +673,13 @@
                     <div class="row colorBarContainer" id="cs_windowing">
                         <div class="col">
                             <label for="ti">Window Center: </label>
-                            <input type="range" class="pl-0 pr-0 form-control form-control-range" name="cs_wc" id="cs_wc"
+                            <input type="number" class="pl-0 pr-0 form-control form-control-range" name="cs_wc" id="cs_wc"
                                 min="0" max="4096" value="2048" onchange="displayAndWindow3DImage('cs');" />
                         </div>
                         <div class="col">
                             <label for="tr">Window Width:</label>
-                            <input type="range" class="pl-0 pr-0 form-control form-control-range" name="cs_ww" id="cs_ww"
+                            <input type="number" class="pl-0 pr-0 form-control form-control-range" name="cs_ww" id="cs_ww"
                                 min="0" max="4096" value="4096" onchange="displayAndWindow3DImage('cs');" />
-                        </div>
-                        <div class="col">
-                            <label for="slice">Slice:</label>
-                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                                name="cs_slice" id="cs_r_slice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                         <div class="col">
                             <input type="button" class="btn-secondary align-self-center" value="Auto Window"
@@ -668,10 +688,17 @@
                     </div>
                     <div class="row my-2 colorBarContainer" id="cs_colorBarContainer">
                         <canvas class="colorBar" id="cs_colorBar"></canvas>
-                        <div class="col-3">
-                            <label for="slice">Slice:</label>
+                    </div>
+                    <div class="row my-2" id="cs_other">
+                        <div class="col">
+                            <label for="cs_kspacemult">KSpace Multiplier</label>
+                            <input type="number" class="pl-0 pr-0 form-control form-control-range" min="1"
+                                        name="cs_kspacemult" id="cs_kspacemult" value="20" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="cs_slice">Slice:</label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                                name="cs_slice" id="cs_or_slice" value="100" onchange="displayAndWindow3DImage();" />
+                                name="cs_slice" id="cs_slice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                     </div>
                 </div>

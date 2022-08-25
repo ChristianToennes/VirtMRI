@@ -546,6 +546,27 @@ app {
     border: 1px solid;
 }
 
+
+.accordion-item {
+    border: 1px solid;
+}
+
+.accordion-button {
+    color: $accordion-button-active-color;
+    &::after {
+        background-image: escape-svg($accordion-button-icon);
+      }
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: unset;
+    color: unset;
+    border-bottom: 1px solid;
+    &::after {
+        background-image: escape-svg($accordion-button-icon);
+      }
+}
+
 @media (max-width: 767.98px) {
     .main .top-row:not(.auth) {
         display: none;
