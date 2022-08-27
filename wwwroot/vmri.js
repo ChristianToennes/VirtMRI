@@ -141,7 +141,6 @@ const resultMessageHandler = function (data) {
         }
         imgResultCache["cur"] = data;
     }
-    console.log(imgResultCache["cur"].kSpace.length, imgResultCache["cur"].data.length);
     document.getElementById("cur_slice").max = imgResultCache["cur"].zdim;
     document.getElementById("cur_slice").value = Math.round(imgResultCache["cur"].zdim/2);
     if(imgResultCache["pre"] != undefined) {
