@@ -39,6 +39,7 @@ function make_params(params) {
         TQ: 8,
         TQSQR: 9,
         TQF: 10,
+        pcbSSFP: 11,
     };
     var sequence_params = ["te", "tr", "ti", "fa", "tau1", "tau2", "te_start", "te_end", "te_step"];
     var s_params = [];

@@ -12,7 +12,7 @@
 #include "_kiss_fft_guts.h"
 
 typedef enum Sequence {
-    SE, IR, bSSFP, FISP, PSIF, SGRE, Na, NaSQ, NaTQ, NaTQSQ, NaTQF
+    SE, IR, bSSFP, FISP, PSIF, SGRE, Na, NaSQ, NaTQ, NaTQSQ, NaTQF, pcbSSFP
 } sequence;
 
 typedef enum Nearest {
@@ -99,7 +99,7 @@ void addGaussianNoise(kiss_fft_cpx* image) {
 }
 
 double simVoxel(params* p, int pos, dataset* ds) {
-    double te, tr, ti, fa, tau1, tau2, te_end, te_step, e_tr_t1, e_tr_t2, cfa, sfa, s;
+    double te, tr, ti, fa, tau1, tau2, te_end, te_step, e_tr_t1, e_tr_t2, cfa, sfa, s, m, b;
     s = 0;
     switch(p->sequence) {
         case SE:
@@ -122,6 +122,16 @@ double simVoxel(params* p, int pos, dataset* ds) {
             sfa = sin(fa);
             cfa = cos(fa);
             s = fabs(ds->pd[pos]*sfa*(1.0-exp(-tr/ds->t1[pos]))/(1.0-(e_tr_t1+e_tr_t2)*cfa-e_tr_t1*e_tr_t2)*exp(-te/ds->t2[pos]) );
+            break;
+        case pcbSSFP:
+            te = p->s_params[0];
+            tr = p->s_params[1];
+            fa = p->s_params[2] * M_PI / 180.0;
+            e_tr_t1 = exp(-tr/ds->t1[pos]);
+            e_tr_t2 = exp(-tr/ds->t2[pos]);
+            sfa = sin(fa);
+            cfa = cos(fa);
+            // https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1002%2Fmrm.29302&file=mrm29302-sup-0001-supinfo.pdf
             break;
         case FISP:
             te = p->s_params[0];
