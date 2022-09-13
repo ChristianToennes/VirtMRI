@@ -130,19 +130,17 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
         case NaSQ:
             fa = p->s_params[0] * M_PI / 180;
             tau1 = p->s_params[1];
-            tau2 = p->s_params[2];
-            te = p->s_params[3];
-            te_end = p->s_params[4];
-            te_step = p->s_params[5];
+            te = p->s_params[2];
+            te_end = p->s_params[3];
+            te_step = p->s_params[4];
             t2s = ds->na_t2s[pos];
             t2f = ds->na_t2f[pos];
             pd = ds->na_mm[pos];
             sfa = sin(fa);
             s = 0;
-            for(;te<te_end;te++) {
-                s += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa);
+            for(;te<=te_end;te+=te_step) {
+                s += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa) / NA_SCALE;
             }
-            s /= (te_step*NA_SCALE);
             break;
         case NaTQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -156,10 +154,9 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             pd = ds->na_mm[pos];
             sfa = sin(fa);
             s = 0;
-            for(;te<te_end;te++) {
-                s += fabs(pd*( (exp(-te/t2s) - exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) ));
+            for(;te<=te_end;te+=te_step) {
+                s += fabs(pd*( (exp(-te/t2s) - exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) )) / NA_SCALE;
             }
-            s /= (te_step*NA_SCALE);
             break;
         case NaTQSQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -173,22 +170,19 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             pd = ds->na_mm[pos];
             sfa = sin(fa);
             e_tr_t1 = 0;
-            for(;te<te_end;te++) {
-                e_tr_t1 += fabs(pd*( (exp(-te/t2s)-exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) ));
+            for(;te<=te_end;te+=te_step) {
+                e_tr_t1 += fabs(pd*( (exp(-te/t2s)-exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) )) / NA_SCALE;
             }
-            e_tr_t1 /= (te_step*NA_SCALE);
             fa = p->s_params[6] * M_PI / 180;
             tau1 = p->s_params[7];
-            tau2 = p->s_params[8];
-            te = p->s_params[9];
-            te_end = p->s_params[10];
-            te_step = p->s_params[11];
+            te = p->s_params[8];
+            te_end = p->s_params[9];
+            te_step = p->s_params[10];
             sfa = sin(fa);
             e_tr_t2 = 0;
-            for(;te<te_end;te++) {
-                e_tr_t2 += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa);
+            for(;te<=te_end;te+=te_step) {
+                e_tr_t2 += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa) / NA_SCALE;
             }
-            e_tr_t2 /= (te_step*NA_SCALE);
             s = e_tr_t1 / e_tr_t2;
             break;
         case NaTQF:

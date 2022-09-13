@@ -408,6 +408,12 @@
                         <div class="col tab-pane" id="params-SQ">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">FA (Default 90):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="90" name="fa" id="sq_fa" oninput="updateSQTime()"/>
+                            </div>
+                            <div class="row form-row">
+                                <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">τ1 (Default: 10):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="10" name="tau1" id="sq_tau1" oninput="updateSQTime()"/>
@@ -416,13 +422,13 @@
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TE Start:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="1" name="te_start" id="sq_te_start" oninput="updateSQTime()"/>
+                                <input class="col-sm form-control" type="number" value="2" name="te_start" id="sq_te_start" oninput="updateSQTime()"/>
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">TE End:</label>
                                 </div>
-                                <input class="col-sm form-control" type="number" value="1" name="te_end" id="sq_te_end" oninput="updateSQTime()"/>
+                                <input class="col-sm form-control" type="number" value="3" name="te_end" id="sq_te_end" oninput="updateSQTime()"/>
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
@@ -438,6 +444,12 @@
                             </div>
                         </div>
                         <div class="col tab-pane" id="params-TQ">
+                            <div class="row form-row">
+                                <div class="col-auto w-25">
+                                    <label class="mb-0 align-self-center">FA (Default 90):</label>
+                                </div>
+                                <input class="col-sm form-control" type="number" value="90" name="fa" id="tq_fa" oninput="updateTQTime()"/>
+                            </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
                                     <label class="mb-0 align-self-center">τ1 (Default: 10):</label>
@@ -585,8 +597,8 @@
                         <a class="col hidden" id="downloadLink"></a>
                     </div>
                 </div>
-                <div class="col mb-2 hidden" id="pre_image">
-                    <div class="w-100 container-fluid justify-content-center">
+                <div class="col ml-0 mr-0 p-1 mb-2 hidden" id="pre_image">
+                    <div class="w-100 p-0 container-fluid justify-content-center">
                         <canvas class="border img-result w-100"
                             onwheel="scrollResult(event, 'pre')" onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                             onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')" id="pre_imgResult"></canvas>
@@ -626,8 +638,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col mb-2" id="cur_image">
-                    <div class="w-100 container-fluid justify-content-center">
+                <div class="col ml-0 mr-0 p-1 mb-2" id="cur_image">
+                    <div class="w-100 p-0 container-fluid justify-content-center">
                         <canvas class="border img-result w-100"
                             onwheel="scrollResult(event, 'cur')" onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                             onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')" id="cur_imgResult"></canvas>
@@ -667,8 +679,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col mb-2 hidden" id="cs_image">
-                    <div class="w-100 container-fluid justify-content-center">
+                <div class="col ml-0 mr-0 p-1 mb-2 hidden" id="cs_image">
+                    <div class="w-100 p-0 container-fluid justify-content-center">
                         <canvas class="border img-result w-100"
                             onwheel="scrollResult(event, 'cs')" onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                             onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')" id="cs_imgResult"></canvas>

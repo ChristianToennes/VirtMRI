@@ -134,17 +134,6 @@ function simulate_fast(ds, params) {
         image[i] = in_image[i*2];
     }
     var kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2));
-    
-    var cs_image = undefined;
-    var cs_kspace = undefined;
-    if(use_cs) {
-        in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2));
-        cs_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
-        for(var i = 0;i<cs_image.length;i++) {
-            cs_image[i] = in_image[i*2];
-        }
-        cs_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2));
-    }
 
     var filt_image = undefined;
     var filt_kspace = undefined;
@@ -155,6 +144,17 @@ function simulate_fast(ds, params) {
             filt_image[i] = in_image[i*2];
         }
         filt_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2));
+    }
+
+    var cs_image = undefined;
+    var cs_kspace = undefined;
+    if(use_cs) {
+        in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2));
+        cs_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
+        for(var i = 0;i<cs_image.length;i++) {
+            cs_image[i] = in_image[i*2];
+        }
+        cs_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2));
     }
 
     Module.removeFunction(callback_ptr);
