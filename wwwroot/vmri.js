@@ -75,7 +75,7 @@ var imgResultCache = {};
 
 function sequenceParametersKeyDown(e) {
     if(e.code == "Enter") {
-        startScanFast();
+        startScan();
     }
 }
 
@@ -704,38 +704,6 @@ function read_params(param_div, params) {
 }
 
 function startScan() {
-    current_tab = selected_tab;
-    r = document.getElementById("result");
-    r.classList.add("hidden");
-    
-    
-    var params = {sequence: selectedSequence};
-    
-    var param_div = document.getElementById("params-general");
-    params = read_params(param_div, params);
-    
-    param_div = document.getElementById("params-" + selectedSequence);
-    params = read_params(param_div, params);
-    
-    if(selectedSequence == "TQSQR") {
-        var param_div = document.getElementById("params-SQ");
-        var tq_params = {};
-        tq_params = read_params(param_div, tq_params);
-        var param_div = document.getElementById("params-TQ");
-        var sq_params = {};
-        sq_params = read_params(param_div, sq_params);
-        params["tq_params"] = tq_params;
-        params["sq_params"] = sq_params;
-    }
-    
-    var spin = document.getElementById("scanningSpinner");
-    spin.classList.remove("hidden");
-    
-    resultTimer = performance.now();
-    w.sendQuery("simulateImage", params);
-}
-
-function startScanFast() {
     current_tab = selected_tab;
     r = document.getElementById("result");
     r.classList.add("hidden");

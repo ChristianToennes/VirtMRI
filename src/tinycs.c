@@ -7,23 +7,6 @@
 #include "stdbool.h"
 #include "kissfft/_kiss_fft_guts.h"
 
-cs_params* make_cs_params(int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, double filter_fraction, int callback) {
-    cs_params* params = malloc(sizeof(cs_params));
-    params->xdim = xdim;
-    params->ydim = ydim;
-    params->zdim = zdim;
-    params->ninner = ninner;
-    params->nbreg = nbreg;
-    params->lambda = lambda;
-    params->lambda2 = lambda2;
-    params->mu = mu;
-    params->gam = gam;
-    params->filter_fraction = filter_fraction;
-    params->callback = callback;
-    //fprintf(stdout, "%i %i %i %i %i %f %f %f %f\n", xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam);
-    return params;
-}
-
 void print_stats(char* name, kiss_fft_cpx* data, int length) {
     fprintf(stderr, "%s", name);
     int nans = 0;
@@ -42,7 +25,7 @@ void print_stats(char* name, kiss_fft_cpx* data, int length) {
     fprintf(stderr, " %i %f %f %f\n", nans, min, max, sum);
 }
 
-void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, cs_params *params) {
+void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
     int x,y,z,pos;
     double r,rn,a,b,c;
     bool filter = false;
@@ -100,7 +83,7 @@ void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, cs_params *
     fprintf(stdout, "sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
-void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, cs_params *params) {
+void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, struct CSParams *params) {
     int xdim = params->xdim;
     int ydim = params->ydim;
     int zdim = params->zdim;

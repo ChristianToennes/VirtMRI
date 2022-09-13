@@ -71,11 +71,11 @@
                                     <div class="col-sm">
                                         <label class="mb-0 align-self-center">Y:</label>
                                     </div>
-                                    <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="ydim" id="ydim" oninput="updateTime()" />
+                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="ydim" id="ydim" oninput="updateTime()" />
                                     <div class="col-sm">
                                         <label class="mb-0 align-self-center">Z:</label>
                                     </div>
-                                    <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
+                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
                                 </div>
                                 <!--<div class="row form-row">
                                     <div class="col-auto w-25">
@@ -97,9 +97,9 @@
                                         <label class="mb-0 align-self-center">Interpolation Mode:</label>
                                     </div>
                                     <select class="col-sm form-select" type="select" id="nearest" name="nearest" oninput="updateTime()">
-                                        <option value="0">Nearest Neigbhbour</option>
+                                        <option value="0" selected>Nearest Neigbhbour</option>
                                         <option value="1">Linear Interpolation, 8 Nearest Neighbours</option>
-                                        <option value="2" selected>Average</option>
+                                        <option value="2">Average</option>
                                     </select>
                                 </div>
                                 <div class="row form-row">
@@ -109,6 +109,15 @@
                                     <select class="col-sm form-select" type="select" id="fft" name="fft" oninput="updateTime()">
                                         <option value="3d" selected>3D</option>
                                         <option value="2d">2D</option>
+                                    </select>
+                                </div>
+                                <div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <label class="mb-0 align-self-center">Computation Subsystem:</label>
+                                    </div>
+                                    <select class="col-sm form-select" type="select" id="compute" name="compute" oninput="updateTime()">
+                                        <option value="WebASM" selected>WebASM (fast)</option>
+                                        <option value="JS">JavaScript (slow)</option>
                                     </select>
                                 </div>
                             </div>
@@ -495,13 +504,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row mx-2 my-2">
-                        <input type="button" class="col btn-primary" onclick="startScan()" value="Start Scan"
-                            id="sequence_start" />
-                        <input type="button" class="col btn-primary" onclick="startScanFast()" value="Start Scan Fast"
-                            id="sequence_start" />
-                    </div>
                 </div>
+            </div>
+            <div class="row m-2">
+                <input type="button" class="col btn-primary" onclick="startScan()" value="Start Scan" id="sequence_start" />
             </div>
 
             <div class="row">

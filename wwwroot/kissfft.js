@@ -25,6 +25,22 @@ function make_dataset(pd, t1, t2, t2s, na_mm, na_t1, na_ex_frac, na_t2s, na_t2f)
     return dataset;
 }
 
+function make_noise_params(params) {
+    var mean = "img_noise_mean" in params ? parseFloat(params["img_noise_mean"]) : 0;
+    var sigma = "img_noise_sigma" in params ? parseFloat(params["img_noise_sigma"]) : 0.001;
+
+    var noise_types = {
+        Gaussian: 1,
+        Motion: 2,
+    };
+    var noise_type = 0;
+    if("img_noise_type" in params && params["img_noise_type"] == 2) {
+        noise_type += noise_types["Gaussian"];
+    }
+    noise_params = _make_noise_params(noise_type, mean, sigma);
+    return noise_params;
+}
+
 function make_params(params) {
     sequence = 0
     var sequence_enum = {
@@ -69,7 +85,8 @@ function make_params(params) {
     var fft3d = 'fft' in params ? params['fft'] == '3d' : true;
     var use_cs = "cs" in params ? params["cs"]>1 : false;
     var [cs_params, callback_ptr] = make_cs_params(params);
-    c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["nearest"], use_cs, fft3d, cs_params)
+    var noise_params = make_noise_params(params);
+    c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["nearest"], use_cs, fft3d, cs_params, noise_params);
     return [c_params, callback_ptr];
 }
 

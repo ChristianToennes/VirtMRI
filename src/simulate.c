@@ -7,79 +7,15 @@
 #include "fft2.h"
 #include "fft3.h"
 #include "tinycs.h"
+#include "noise.h"
 #include "stdbool.h"
 
 #include "_kiss_fft_guts.h"
+#include "params.h"
 
-typedef enum Sequence {
-    SE, IR, bSSFP, FISP, PSIF, SGRE, Na, NaSQ, NaTQ, NaTQSQ, NaTQF, pcbSSFP
-} sequence;
+#define NA_SCALE 140
 
-typedef enum Nearest {
-    Nearest, KNearest, Average
-} nearest;
-
-typedef struct {
-    sequence sequence;
-    int n_params;
-    float* s_params;
-    int xdim;
-    int ydim;
-    int zdim;
-    nearest nearest;
-    bool use_cs;
-    bool use_fft3;
-    cs_params* cs_params;
-} params;
-
-params* make_params(sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, nearest nearest, bool use_cs, bool use_fft3, cs_params* cs_params) {
-    params* p = (params*)malloc(sizeof(params));
-    p->sequence = sequence;
-    p->n_params = n_params;
-    p->s_params = s_params;
-    p->xdim = xdim;
-    p->ydim = ydim;
-    p->zdim = zdim;
-    p->nearest = nearest;
-    p->use_cs = use_cs;
-    p->use_fft3 = use_fft3;
-    p->cs_params = cs_params;
-    return p;
-}
-
-typedef struct {
-    float* pd;
-    float* t1;
-    float* t2;
-    float* t2s;
-    float* na_mm;
-    float* na_t1;
-    float* na_ex_frac;
-    float* na_t2s;
-    float* na_t2f;
-    int k_xdim;
-    int k_ydim;
-    int k_zdim;
-} dataset;
-
-dataset* make_dataset(int kxdim, int kydim, int kzdim, float* pd, float* t1, float* t2, float* t2s, float* na_mm, float* na_t1, float* na_ex_frac, float* na_t2s, float* na_t2f) {
-    dataset* ds = (dataset*)malloc(sizeof(dataset));
-    ds->k_xdim = kxdim;
-    ds->k_ydim = kydim;
-    ds->k_zdim = kzdim;
-    ds->pd = pd;
-    ds->t1 = t1;
-    ds->t2 = t2;
-    ds->t2s = t2s;
-    ds->na_mm = na_mm;
-    ds->na_t1 = na_t1;
-    ds->na_ex_frac = na_ex_frac;
-    ds->na_t2s = na_t2s;
-    ds->na_t2f = na_t2f;
-    return ds;
-}
-
-void free_dataset(dataset* ds) {
+void free_dataset(struct Dataset *ds) {
     free(ds->pd);
     free(ds->t1);
     free(ds->t2);
@@ -94,41 +30,50 @@ void free_dataset(dataset* ds) {
 const float na_vol = 0.7;
 const float na_t2fr = 60;
 
-void addGaussianNoise(kiss_fft_cpx* image) {
-    
-}
-
-double simVoxel(params* p, int pos, dataset* ds) {
+static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
     double te, tr, ti, fa, tau1, tau2, te_end, te_step, e_tr_t1, e_tr_t2, cfa, sfa, s, m, b;
+    double pd, t1, t2, t2s, t2f, ex_frac;
     s = 0;
     switch(p->sequence) {
         case SE:
             te = p->s_params[0];
             tr = p->s_params[1];
-            s = fabs((double)ds->pd[pos]*exp(-te/(double)ds->t2[pos])*(1.0-exp(-tr/(double)ds->t1[pos])));
+            pd = ds->pd[pos];
+            t1 = ds->t1[pos];
+            t2 = ds->t2[pos];
+            s = fabs(pd*exp(-te/t2)*(1.0-exp(-tr/t1)));
             break;
         case IR:
             te = p->s_params[0];
             tr = p->s_params[1];
             ti = p->s_params[2];
-            s = fabs((double)ds->pd[pos]*(1.0-2.0*exp(-ti/(double)ds->t1[pos])+exp(-tr/ti))*exp(-te/(double)ds->t2[pos]));
+            pd = ds->pd[pos];
+            t1 = ds->t1[pos];
+            t2 = ds->t2[pos];
+            s = fabs(pd*(1.0-2.0*exp(-ti/t1)+exp(-tr/ti))*exp(-te/t2));
             break;
         case bSSFP:
             te = p->s_params[0];
             tr = p->s_params[1];
             fa = p->s_params[2] * M_PI / 180.0;
-            e_tr_t1 = exp(-tr/ds->t1[pos]);
-            e_tr_t2 = exp(-tr/ds->t2[pos]);
+            pd = ds->pd[pos];
+            t1 = ds->t1[pos];
+            t2 = ds->t2[pos];
+            e_tr_t1 = exp(-tr/t1);
+            e_tr_t2 = exp(-tr/t2);
             sfa = sin(fa);
             cfa = cos(fa);
-            s = fabs(ds->pd[pos]*sfa*(1.0-exp(-tr/ds->t1[pos]))/(1.0-(e_tr_t1+e_tr_t2)*cfa-e_tr_t1*e_tr_t2)*exp(-te/ds->t2[pos]) );
+            s = fabs(pd*sfa*(1.0-e_tr_t1)/(1.0-(e_tr_t1+e_tr_t2)*cfa-e_tr_t1*e_tr_t2)*exp(-te/t2) );
             break;
         case pcbSSFP:
             te = p->s_params[0];
             tr = p->s_params[1];
             fa = p->s_params[2] * M_PI / 180.0;
-            e_tr_t1 = exp(-tr/ds->t1[pos]);
-            e_tr_t2 = exp(-tr/ds->t2[pos]);
+            pd = ds->pd[pos];
+            t1 = ds->t1[pos];
+            t2 = ds->t2[pos];
+            e_tr_t1 = exp(-tr/t1);
+            e_tr_t2 = exp(-tr/t2);
             sfa = sin(fa);
             cfa = cos(fa);
             // https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1002%2Fmrm.29302&file=mrm29302-sup-0001-supinfo.pdf
@@ -137,35 +82,50 @@ double simVoxel(params* p, int pos, dataset* ds) {
             te = p->s_params[0];
             tr = p->s_params[1];
             fa = p->s_params[2] * M_PI / 180.0;
-            e_tr_t1 = exp(-tr/ds->t1[pos]);
-            e_tr_t2 = exp(-tr/ds->t2[pos]);
+            pd = ds->pd[pos];
+            t1 = ds->t1[pos];
+            t2 = ds->t2[pos];
+            t2s = ds->t2s[pos];
+            e_tr_t1 = exp(-tr/t1);
+            e_tr_t2 = exp(-tr/t2);
             sfa = sin(fa);
             cfa = cos(fa);
-            s = fabs(ds->pd[pos] * sfa/(1+cfa) * (1 - (e_tr_t1-cfa)*sqrt((1-e_tr_t2*e_tr_t2)/( (1-e_tr_t1*cfa)*(1-e_tr_t1*cfa)-e_tr_t2*e_tr_t2*(e_tr_t1-cfa)*(e_tr_t1-cfa) ) ) ) * exp(-te/ds->t2s[pos]));
+            s = fabs(pd*sfa/(1+cfa) * (1 - (e_tr_t1-cfa)*sqrt((1-e_tr_t2*e_tr_t2)/( (1-e_tr_t1*cfa)*(1-e_tr_t1*cfa)-e_tr_t2*e_tr_t2*(e_tr_t1-cfa)*(e_tr_t1-cfa) ) ) ) * exp(-te/t2s));
             break;
         case PSIF:
             te = p->s_params[0];
             tr = p->s_params[1];
             fa = p->s_params[2] * M_PI / 180.0;
-            e_tr_t1 = exp(-tr/ds->t1[pos]);
-            e_tr_t2 = exp(-tr/ds->t2[pos]);
+            pd = ds->pd[pos];
+            t1 = ds->t1[pos];
+            t2 = ds->t2[pos];
+            e_tr_t1 = exp(-tr/t1);
+            e_tr_t2 = exp(-tr/t2);
             sfa = sin(fa);
             cfa = cos(fa);
-            s = fabs(ds->pd[pos] * sfa/(1+cfa)*(1-(1-e_tr_t1*cfa)*sqrt((1-e_tr_t2*e_tr_t2) /( (1-e_tr_t1*cfa)*(1-e_tr_t1*cfa)-e_tr_t2*e_tr_t2*(e_tr_t1-cfa)*(e_tr_t1-cfa) ))) * exp(-te/ds->t2[pos]));
+            s = fabs(pd * sfa/(1+cfa)*(1-(1-e_tr_t1*cfa)*sqrt((1-e_tr_t2*e_tr_t2) /( (1-e_tr_t1*cfa)*(1-e_tr_t1*cfa)-e_tr_t2*e_tr_t2*(e_tr_t1-cfa)*(e_tr_t1-cfa) ))) * exp(-te/t2));
             break;
         case SGRE:
             te = p->s_params[0];
             tr = p->s_params[1];
             fa = p->s_params[2] * M_PI / 180.0;
+            pd = ds->pd[pos];
+            t1 = ds->t1[pos];
+            t2s = ds->t2s[pos];
             sfa = sin(fa);
             cfa = cos(fa);
-            e_tr_t1 = exp(-tr/ds->t1[pos]);
-            s = fabs(ds->pd[pos] * (1-e_tr_t1)*sfa/(1-e_tr_t1*cfa) * exp(-te/ds->t2s[pos]));
+            e_tr_t1 = exp(-tr/t1);
+            s = fabs(pd * (1-e_tr_t1)*sfa/(1-e_tr_t1*cfa) * exp(-te/t2s));
             break;
         case Na:
             te = p->s_params[0];
             tr = p->s_params[1];
-            s = fabs((na_vol-ds->na_ex_frac[pos])* ds->na_mm[pos] * (1-exp(-tr/ds->na_t1[pos])) * (0.6*exp(-te/ds->na_t2f[pos]) + 0.4*exp(-te/ds->na_t2s[pos])) + ds->na_ex_frac[pos]*ds->na_mm[pos] * (1-exp(-tr/ds->na_t1[pos]))*exp(-te/na_t2fr))/140;
+            ex_frac = ds->na_ex_frac[pos];
+            t1 = ds->na_t1[pos];
+            t2s = ds->na_t2s[pos];
+            t2f = ds->na_t2f[pos];
+            pd = ds->na_mm[pos];
+            s = fabs((na_vol-ex_frac)*pd* (1-exp(-tr/t1)) * (0.6*exp(-te/t2f) + 0.4*exp(-te/t2s)) + ex_frac*pd* (1-exp(-tr/t1))*exp(-te/na_t2fr))/NA_SCALE;
             break;
         case NaSQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -174,12 +134,15 @@ double simVoxel(params* p, int pos, dataset* ds) {
             te = p->s_params[3];
             te_end = p->s_params[4];
             te_step = p->s_params[5];
+            t2s = ds->na_t2s[pos];
+            t2f = ds->na_t2f[pos];
+            pd = ds->na_mm[pos];
             sfa = sin(fa);
             s = 0;
             for(;te<te_end;te++) {
-                s += fabs(ds->na_mm[pos]*(exp(-(te+tau1)/ds->na_t2s[pos]) * exp(-(te+tau1)/ds->na_t2f[pos]))*sfa);
+                s += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa);
             }
-            s /= (te_step*140);
+            s /= (te_step*NA_SCALE);
             break;
         case NaTQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -188,12 +151,15 @@ double simVoxel(params* p, int pos, dataset* ds) {
             te = p->s_params[3];
             te_end = p->s_params[4];
             te_step = p->s_params[5];
+            t2s = ds->na_t2s[pos];
+            t2f = ds->na_t2f[pos];
+            pd = ds->na_mm[pos];
             sfa = sin(fa);
             s = 0;
             for(;te<te_end;te++) {
-                s += fabs(ds->na_mm[pos] * ( (exp(-te/ds->na_t2s[pos]) - exp(-te/ds->na_t2f[pos])) * (exp(-tau1/ds->na_t2s[pos])-exp(-tau1/ds->na_t2f[pos])) * exp(-tau2/ds->na_t2s[pos]) ));
+                s += fabs(pd*( (exp(-te/t2s) - exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) ));
             }
-            s /= (te_step*140);
+            s /= (te_step*NA_SCALE);
             break;
         case NaTQSQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -202,12 +168,15 @@ double simVoxel(params* p, int pos, dataset* ds) {
             te = p->s_params[3];
             te_end = p->s_params[4];
             te_step = p->s_params[5];
+            t2s = ds->na_t2s[pos];
+            t2f = ds->na_t2f[pos];
+            pd = ds->na_mm[pos];
             sfa = sin(fa);
             e_tr_t1 = 0;
             for(;te<te_end;te++) {
-                e_tr_t1 += fabs(ds->na_mm[pos] * ( (exp(-te/ds->na_t2s[pos]) - exp(-te/ds->na_t2f[pos])) * (exp(-tau1/ds->na_t2s[pos])-exp(-tau1/ds->na_t2f[pos])) * exp(-tau2/ds->na_t2s[pos]) ));
+                e_tr_t1 += fabs(pd*( (exp(-te/t2s)-exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) ));
             }
-            e_tr_t1 /= (te_step*140);
+            e_tr_t1 /= (te_step*NA_SCALE);
             fa = p->s_params[6] * M_PI / 180;
             tau1 = p->s_params[7];
             tau2 = p->s_params[8];
@@ -217,9 +186,9 @@ double simVoxel(params* p, int pos, dataset* ds) {
             sfa = sin(fa);
             e_tr_t2 = 0;
             for(;te<te_end;te++) {
-                e_tr_t2 += fabs(ds->na_mm[pos]*(exp(-(te+tau1)/ds->na_t2s[pos]) * exp(-(te+tau1)/ds->na_t2f[pos]))*sfa);
+                e_tr_t2 += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa);
             }
-            e_tr_t2 /= (te_step*140);
+            e_tr_t2 /= (te_step*NA_SCALE);
             s = e_tr_t1 / e_tr_t2;
             break;
         case NaTQF:
@@ -227,15 +196,18 @@ double simVoxel(params* p, int pos, dataset* ds) {
             fa = p->s_params[1] * M_PI / 180;
             tau1 = p->s_params[2];
             tau2 = p->s_params[3];
+            t2s = ds->na_t2s[pos];
+            t2f = ds->na_t2f[pos];
+            pd = ds->na_mm[pos];
             sfa = sin(fa);
             cfa = cos(fa);
-            s = fabs(ds->na_mm[pos] * (exp(-te/ds->na_t2s[pos])-exp(-te/ds->na_t2f[pos])) * (exp(-tau1/ds->na_t2s[pos])-exp(-tau1/ds->na_t2f[pos])) * exp(-tau2/ds->na_t2s[pos]) * (sfa*sfa*sfa*sfa*sfa));
+            s = fabs(pd*(exp(-te/t2s)-exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa));
             break;
     }
     return s;
 }
 
-void simulate(params* p, kiss_fft_cpx* image, kiss_fft_cpx* kspace, kiss_fft_cpx* filt_image, kiss_fft_cpx* filt_kspace, kiss_fft_cpx* cs_image, kiss_fft_cpx* cs_kspace, dataset* ds) {
+void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_fft_cpx *filt_image, kiss_fft_cpx *filt_kspace, kiss_fft_cpx *cs_image, kiss_fft_cpx *cs_kspace, struct Dataset *ds) {
     int x,y,z,ipos,ds_pos,nx,ny,nz;
     double xs,ys,zs;
     double s,d;
@@ -297,11 +269,23 @@ void simulate(params* p, kiss_fft_cpx* image, kiss_fft_cpx* kspace, kiss_fft_cpx
         }
     }
 
+    addImageNoise(image, p);
+
     if(p->use_fft3) {
         fft3d(image, kspace, p->ydim, p->zdim, p->xdim);
     } else {
         for(z=0;z<p->zdim;z++) {
             fft2d(&image[z*p->xdim*p->ydim], &kspace[z*p->xdim*p->ydim], p->xdim, p->ydim);
+        }
+    }
+
+    if(addKSpaceNoise(kspace, p)) {
+        if(p->use_fft3) {
+            ifft3d(kspace, image, p->ydim, p->zdim, p->xdim);
+        } else {
+            for(z=0;z<p->zdim;z++) {
+                ifft2d(&kspace[z*p->xdim*p->ydim], &image[z*p->xdim*p->ydim], p->xdim, p->ydim);
+            }
         }
     }
 
