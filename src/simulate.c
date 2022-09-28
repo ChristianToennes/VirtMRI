@@ -30,6 +30,26 @@ void free_dataset(struct Dataset *ds) {
 const float na_vol = 0.7;
 const float na_t2fr = 60;
 
+static inline void normalizeImage(kiss_fft_cpx* image, struct Params *p) {
+    double max = 0;
+    switch(p->sequence) {
+        case NaTQ:
+        case NaSQ:
+            max = REAL(image[0]);
+            for(int i=0;i<p->ydim*p->zdim*p->xdim;i++) {
+                if (max < REAL(image[i])) {
+                    max = REAL(image[i]);
+                }
+            }
+            for(int i=0;i<p->ydim*p->zdim*p->xdim;i++) {
+                ASSIGN(image[i], REAL(image[i])/max, 0);
+            }
+            break;
+        default:
+            break;
+    }
+}
+
 static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
     double te, tr, ti, fa, tau1, tau2, te_end, te_step, e_tr_t1, e_tr_t2, cfa, sfa, s, m, b;
     double pd, t1, t2, t2s, t2f, ex_frac;
@@ -125,7 +145,7 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             t2s = ds->na_t2s[pos];
             t2f = ds->na_t2f[pos];
             pd = ds->na_mm[pos];
-            s = fabs((na_vol-ex_frac)*pd* (1-exp(-tr/t1)) * (0.6*exp(-te/t2f) + 0.4*exp(-te/t2s)) + ex_frac*pd* (1-exp(-tr/t1))*exp(-te/na_t2fr))/NA_SCALE;
+            s = fabs((na_vol-ex_frac)*pd* (1-exp(-tr/t1)) * (0.6*exp(-te/t2f) + 0.4*exp(-te/t2s)) + ex_frac*pd* (1-exp(-tr/t1))*exp(-te/na_t2fr)) / NA_SCALE;
             break;
         case NaSQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -138,9 +158,12 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             pd = ds->na_mm[pos];
             sfa = sin(fa);
             s = 0;
+            m = 0;
             for(;te<=te_end;te+=te_step) {
-                s += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa) / NA_SCALE;
+                m++;
+                s += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa);
             }
+            s /= m;
             break;
         case NaTQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -154,9 +177,12 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             pd = ds->na_mm[pos];
             sfa = sin(fa);
             s = 0;
+            m = 0;
             for(;te<=te_end;te+=te_step) {
-                s += fabs(pd*( (exp(-te/t2s) - exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) )) / NA_SCALE;
+                m++;
+                s += fabs(pd*( (exp(-te/t2s) - exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa) ));
             }
+            s /= m;
             break;
         case NaTQSQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -170,9 +196,12 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             pd = ds->na_mm[pos];
             sfa = sin(fa);
             e_tr_t1 = 0;
+            m = 0;
             for(;te<=te_end;te+=te_step) {
-                e_tr_t1 += fabs(pd*( (exp(-te/t2s)-exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) )) / NA_SCALE;
+                m++;
+                e_tr_t1 += fabs(pd*( (exp(-te/t2s)-exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) ));
             }
+            e_tr_t1 /= m*NA_SCALE;
             fa = p->s_params[6] * M_PI / 180;
             tau1 = p->s_params[7];
             te = p->s_params[8];
@@ -180,9 +209,12 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             te_step = p->s_params[10];
             sfa = sin(fa);
             e_tr_t2 = 0;
+            m = 0;
             for(;te<=te_end;te+=te_step) {
-                e_tr_t2 += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa) / NA_SCALE;
+                m++;
+                e_tr_t2 += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa);
             }
+            e_tr_t2 /= m*NA_SCALE;
             s = e_tr_t1 / e_tr_t2;
             break;
         case NaTQF:
@@ -262,6 +294,8 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
             }
         }
     }
+
+    normalizeImage(image, p);
 
     addImageNoise(image, p);
 

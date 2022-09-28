@@ -544,6 +544,16 @@ app {
     width: 50%;
     align-self: center;
     border: 1px solid;
+    padding: 0;
+}
+
+.colorBarContainer::before {
+    content: '0mM';
+    padding-right: 0.5rem;
+}
+.colorBarContainer::after {
+    content: '140mM';
+    padding-left: 0.5rem;
 }
 
 

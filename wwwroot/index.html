@@ -231,7 +231,6 @@
                             <div class="nav-link" id="params-SQ-tab" onclick="setSequence('SQ')">Na SQ</div>
                             <div class="nav-link" id="params-TQ-tab" onclick="setSequence('TQ')">Na TQ</div>
                             <div class="nav-link" id="params-TQSQR-tab" onclick="setSequence('TQSQR')">Na TQ/SQ</div>
-                            <div class="nav-link" id="params-TQF-tab" onclick="setSequence('TQF')">Na TQF</div>
                         </div>
                     </div>
                     <div class="row border py-2 tab-content" id="params">
@@ -488,32 +487,6 @@
                             </div>
                         </div>
                         <div class="col tab-pane" id="params-TQSQR">
-                        </div>
-                        <div class="col tab-pane" id="params-TQF">
-                            <div class="row form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE:</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="2" name="te" id="tqf_te" oninput="updateTQFTime()"/>
-                            </div>
-                            <div class="row form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">τ1 (Default: 0.01):</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="0.01" name="tau1" id="tqf_tau1" oninput="updateTQFTime()"/>
-                            </div>
-                            <div class="row form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">τ2 (Default: 0.0001):</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="0.0001" name="tau2" id="tqf_tau2" oninput="updateTQFTime()"/>
-                            </div>
-                            <div class="row form-row">
-                                <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">FA (Default 90):</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" value="90" name="fa" id="tqf_fa" oninput="updateTQFTime()"/>
-                            </div>
                         </div>
                     </div>
                 </div>

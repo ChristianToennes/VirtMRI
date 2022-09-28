@@ -66,8 +66,8 @@ function QueryableWorker(url) {
 }
 const w = new QueryableWorker("./intensityCalculations.js");
 
-const na_tabs = ["params-Na-tab", "params-SQ-tab", "params-TQ-tab", "params-TQF-tab", "params-TQSQR-tab"];
-const h_tabs = ["params-IR-tab", "params-SE-tab", "params-bSSFP-tab", "params-FISP-tab", "params-PSIF-tab", "params-FLASH-tab", "params-SGRE-tab"];
+const na_tabs = ["params-Na-tab", "params-SQ-tab", "params-TQ-tab", "params-TQSQR-tab"];
+const h_tabs = ["params-IR-tab", "params-SE-tab", "params-bSSFP-tab", "params-FISP-tab", "params-PSIF-tab", "params-SGRE-tab"];
 var current_tab = "params-IR-tab";
 var selected_tab = "params-IR-tab";
 
@@ -713,6 +713,9 @@ function startScan() {
     
     var param_div = document.getElementById("params-general");
     params = read_params(param_div, params);
+    params["xdim"] = Math.ceil(params["xdim"]/2)*2;
+    params["ydim"] = Math.ceil(params["ydim"]/2)*2;
+    params["zdim"] = Math.ceil(params["zdim"]/2)*2;
     param_div = document.getElementById("params-noise");
     params = read_params(param_div, params);
     param_div = document.getElementById("params-cs");
@@ -888,9 +891,6 @@ function updateTQTime() {
 }
 
 function updateTQSQRTime() {
-}
-
-function updateTQFTime() {
 }
 
 function formatTime(time) {
