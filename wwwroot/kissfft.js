@@ -83,7 +83,7 @@ function make_params(params) {
     }
     var s_params = scalar_size == 4 ? allocFromArray(Float32Array.from(s_params)) : allocFromArray(Float64Array.from(s_params));
     var fft3d = 'fft' in params ? params['fft'] == '3d' : true;
-    var use_cs = "cs" in params ? params["cs"]>1 : false;
+    var use_cs = "cs" in params ? params["cs"]>0 : false;
     var [cs_params, callback_ptr] = make_cs_params(params);
     var noise_params = make_noise_params(params);
     c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["nearest"], use_cs, fft3d, cs_params, noise_params);
@@ -105,7 +105,7 @@ function simulate_fast(ds, params) {
     var image_ptr = image_buff.byteOffset;
     var kspace_buff = alloc(xdim*ydim*zdim*scalar_size*2);
     var kspace_ptr = kspace_buff.byteOffset;
-    var use_cs = "cs" in params ? params["cs"]>1 : false;
+    var use_cs = "cs" in params ? params["cs"]>0 : false;
     var cs_buff = undefined;
     var cs_ptr = 0;
     var cs_kspace_buff = undefined;
@@ -189,13 +189,15 @@ function make_cs_params(params) {
     var lambda2 = "cs_lambda2" in params? parseFloat(params["cs_lambda2"]):0.15;
     var mu = "cs_mu" in params ? params["cs_mu"] : 1.0;
     var gam = "cs_gam" in params? parseFloat(params["cs_gam"]):1;
+    var filter_only = "cs" in params ? parseInt(params["cs"])==1 : true;
+    var filter_mode = "cs_filter_mode" in params? parseInt(params["cs_filter_mode"]):0;
     var filter_fraction = "cs_filter_fraction" in params? parseFloat(params["cs_filter_fraction"])/100.0:0.5;
     var callback_ptr = 0;
     if ("cs_callback" in params) {
         callback_ptr = Module.addFunction(params["cs_callback"], "vi")
     }
     
-    var cs_params = _make_cs_params(xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam, filter_fraction, callback_ptr)
+    var cs_params = _make_cs_params(filter_only, xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam, filter_mode, filter_fraction, callback_ptr)
     return [cs_params, callback_ptr];
 }
 

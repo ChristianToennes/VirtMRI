@@ -330,17 +330,19 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
             cs_kspace[i] = filt_kspace[i];
             ASSIGN(cs_image[i], 0, 0);
         }
-        if(p->use_fft3) {
-            compressed_sensing(cs_kspace, cs_image, p->cs_params);
-        } else {
-            p->cs_params->zdim = 1;
-            for(z=0;z<p->zdim;z++) {
-                if (p->cs_params->callback != 0) {
-                    ((cs_callback*)p->cs_params->callback)(z);
-                } else {
-                    fprintf(stderr, "%d\n", z);
+        if(!p->cs_params->filter_only) {
+            if(p->use_fft3) {
+                compressed_sensing(cs_kspace, cs_image, p->cs_params);
+            } else {
+                p->cs_params->zdim = 1;
+                for(z=0;z<p->zdim;z++) {
+                    if (p->cs_params->callback != 0) {
+                        ((cs_callback*)p->cs_params->callback)(z);
+                    } else {
+                        fprintf(stderr, "%d\n", z);
+                    }
+                    compressed_sensing(&cs_kspace[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->cs_params);
                 }
-                compressed_sensing(&cs_kspace[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->cs_params);
             }
         }
     }

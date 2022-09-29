@@ -25,7 +25,7 @@ void print_stats(char* name, kiss_fft_cpx* data, int length) {
     fprintf(stderr, " %i %f %f %f\n", nans, min, max, sum);
 }
 
-void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
+void apply_pseudo_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
     int x,y,z,pos;
     double r,rn,a,b,c;
     bool filter = false;
@@ -80,7 +80,81 @@ void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSPa
             }
         }
     }
-    fprintf(stdout, "sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
+    fprintf(stdout, "pseudo randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
+}
+
+void apply_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
+    int count = 0;
+    int count2 = 0;
+    int x,y,z,pos;
+    int xdim = params->xdim;
+    int ydim = params->ydim;
+    int zdim = params->zdim;
+    double rn;
+    for(z=0;z<zdim;z++) {
+        for(y=0;y<ydim;y++) {
+            for(x=0;x<xdim;x++) {    
+                rn = (double)rand()/(double)RAND_MAX;
+                pos = x+y*xdim+z*xdim*ydim;
+                if(rn < params->filter_fraction == 0) {
+                    count2++;
+                    ASSIGN(out_kspace[pos], 0, 0);
+                } else {
+                    count++;
+                    out_kspace[pos] = kspace[pos];
+                }
+            }
+        }
+    }
+    fprintf(stdout, "randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
+}
+
+void apply_regular_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
+    int count = 0;
+    int count2 = 0;
+    int x,y,z,pos;
+    int xdim = params->xdim;
+    int ydim = params->ydim;
+    int zdim = params->zdim;
+    bool filtered = true;
+    double nth = round((1.0/params->filter_fraction)*100.0);
+    if(params->filter_fraction > 0.5) {
+        nth = round((1.0/(1.0-params->filter_fraction))*100.0);
+    }
+    for(z=0;z<zdim;z++) {
+        for(y=0;y<ydim;y++) {
+            filtered = fabs(round(y*100/nth)*nth/100.0-y) < 1;
+            if(params->filter_fraction > 0.5) {
+                filtered = !filtered;
+            }
+            //fprintf(stdout, "%i %f %f\n", y, round(y*100/nth)*nth/100.0, fabs(round(y*100/nth)*nth/100.0-y));
+            for(x=0;x<xdim;x++) {
+                pos = x+y*xdim+z*xdim*ydim;
+                if(filtered) {
+                    count2++;
+                    ASSIGN(out_kspace[pos], 0, 0);
+                } else {
+                    count++;
+                    out_kspace[pos] = kspace[pos];
+                }
+            }
+        }
+    }
+    fprintf(stdout, "regularly spaced sampled: %f discarded: %f frac: %f nth: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim), params->filter_fraction, nth);
+}
+
+void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
+    switch(params->filter_mode) {
+        case PseudoRandom:
+            apply_pseudo_random_filter(kspace, out_kspace, params);
+            break;
+        case Regular:
+            apply_regular_filter(kspace, out_kspace, params);
+            break;
+        case Random:
+            apply_random_filter(kspace, out_kspace, params);
+            break;
+    }
 }
 
 void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, struct CSParams *params) {

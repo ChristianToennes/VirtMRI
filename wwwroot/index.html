@@ -164,17 +164,21 @@
                                         <option value="0" selected>Disable</option>
                                         <option value="1">Only K-Space Filter</option>
                                         <option value="2">CS Enabled</option>
-                                        <option value="3">CS Enabled fast</option>
+                                        <!--<option value="3">CS Enabled fast</option>-->
                                         <!--<option value="4">fft3 test</option>-->
-                                </select>
-                                <div class="col-sm">
-                                    <label class="mb-0 align-self-center">K-Space filtered Percentage:</label>
-                                </div>
-                                <input class="col-sm form-control" type="number" min="0" max="100" value="50" name="cs_filter_fraction" id="cs_filter_fraction" oninput="updateTime()" />
-                                <!--<select class="col-sm form-select" type="select" id="cs_filter" name="cs_filter" oninput="updateTime()">
-                                    <option value="0" selected>50%</option>
-                                    <option value="1">75%</option>
-                            </select>-->
+                                    </select>
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">K-Space filtering mode:</label>
+                                    </div>
+                                    <select class="col-sm form-select" type="select" id="cs_filter_mode" name="cs_filter_mode" oninput="updateTime()">
+                                        <option value="0" selected>Pseudo Random</option>
+                                        <option value="1">Regulary spaced</option>
+                                        <option value="2">Random</option>
+                                    </select>
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">K-Space filtered Percentage:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="0" max="100" value="50" name="cs_filter_fraction" id="cs_filter_fraction" oninput="updateTime()" />
                                 </div>
                                 <div class="row form-row">
                                     <div class="col-auto w-25">

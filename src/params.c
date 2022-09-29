@@ -35,8 +35,9 @@ struct Dataset* make_dataset(int kxdim, int kydim, int kzdim, float* pd, float* 
     return ds;
 }
 
-struct CSParams* make_cs_params(int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, double filter_fraction, int callback) {
+struct CSParams* make_cs_params(bool filter_only, int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, enum FilterMode filter_mode, double filter_fraction, int callback) {
     struct CSParams* params = malloc(sizeof(struct CSParams));
+    params->filter_only = filter_only;
     params->xdim = xdim;
     params->ydim = ydim;
     params->zdim = zdim;
@@ -46,9 +47,10 @@ struct CSParams* make_cs_params(int xdim, int ydim, int zdim, int ninner, int nb
     params->lambda2 = lambda2;
     params->mu = mu;
     params->gam = gam;
+    params->filter_mode = filter_mode;
     params->filter_fraction = filter_fraction;
     params->callback = callback;
-    //fprintf(stdout, "%i %i %i %i %i %f %f %f %f %f\n", xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam, filter_fraction);
+    //fprintf(stdout, "%i %i %i %i %i %f %f %f %f %i %f\n", xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam, filter_mode, filter_fraction);
     return params;
 }
 

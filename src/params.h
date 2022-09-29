@@ -21,7 +21,14 @@ typedef struct NoiseParams {
 
 struct NoiseParams* make_noise_params(enum NoiseType noise, double mean, double sigma);
 
+typedef enum FilterMode {
+    PseudoRandom = 0,
+    Regular = 1,
+    Random = 2
+} filter_mode;
+
 typedef struct CSParams {
+    bool filter_only;
     int xdim;
     int ydim;
     int zdim;
@@ -31,11 +38,12 @@ typedef struct CSParams {
     double lambda2;
     double mu;
     double gam;
+    enum FilterMode filter_mode;
     double filter_fraction;
     int callback;
 } cs_params;
 
-struct CSParams* make_cs_params(int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, double filter_fraction, int callback);
+struct CSParams* make_cs_params(bool filter_only, int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, enum FilterMode filter_mode, double filter_fraction, int callback);
 
 typedef struct Dataset {
     float* pd;
