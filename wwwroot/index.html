@@ -168,7 +168,7 @@
                                         <!--<option value="4">fft3 test</option>-->
                                     </select>
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">K-Space filtering mode:</label>
+                                        <label class="mb-0 align-self-center">Filtering mode:</label>
                                     </div>
                                     <select class="col-sm form-select" type="select" id="cs_filter_mode" name="cs_filter_mode" oninput="updateTime()">
                                         <option value="0" selected>Pseudo Random</option>
@@ -176,7 +176,7 @@
                                         <option value="2">Random</option>
                                     </select>
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">K-Space filtered Percentage:</label>
+                                        <label class="mb-0 align-self-center">K-Space sampled %:</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" min="0" max="100" value="50" name="cs_filter_fraction" id="cs_filter_fraction" oninput="updateTime()" />
                                 </div>
@@ -501,7 +501,7 @@
 
             <div class="row">
                 <div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="kspace" id="kspace_visible" onchange="toggleImg()" />
+                    <input type="checkbox" class="form-check-input" name="kspace" id="kspace_visible" onchange="toggleImg()" checked />
                     <label class="form-check-label" for="kspace_visible">Show k-Space</label>
                 </div>
                 <!--<div class="col">
@@ -509,15 +509,15 @@
                             name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
                 </div>-->
                 <div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="pre" id="pre_visible" onchange="toggleImg()" />
+                    <input type="checkbox" class="form-check-input" name="pre" id="pre_visible" onchange="toggleImg()" checked />
                     <label class="form-check-label" for="pre_visible">Show previous image</label>
                 </div>
                 <div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="cur" id="cur_visible" onchange="toggleImg()" />
+                    <input type="checkbox" class="form-check-input" name="cur" id="cur_visible" onchange="toggleImg()" checked />
                     <label class="form-check-label" for="cur_visible">Show current image</label>
                 </div>
                 <div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="cs" id="cs_visible" onchange="toggleImg()" />
+                    <input type="checkbox" class="form-check-input" name="cs" id="cs_visible" onchange="toggleImg()" checked />
                     <label class="form-check-label" for="cs_visible">Show compressed sensing image</label>
                 </div>
             </div>
@@ -583,7 +583,7 @@
                             onwheel="scrollResult(event, 'pre')" onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                             onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')" id="pre_kResult"></canvas>
                     </div>
-                    <div class="row colorBarContainer" id="pre_windowing">
+                    <div class="row" id="pre_windowing">
                         <div class="col">
                             <label for="ti">Window Center: </label>
                             <input type="number" class="pl-0 pr-0 form-control form-control-range" name="pre_wc" id="pre_wc"
@@ -624,7 +624,7 @@
                             onwheel="scrollResult(event, 'cur')" onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                             onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')" id="cur_kResult"></canvas>
                     </div>
-                    <div class="row colorBarContainer" id="cur_windowing">
+                    <div class="row" id="cur_windowing">
                         <div class="col">
                             <label for="ti">Window Center: </label>
                             <input type="number" class="pl-0 pr-0 form-control form-control-range" name="cur_wc" id="cur_wc"
@@ -665,7 +665,7 @@
                             onwheel="scrollResult(event, 'cs')" onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                             onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')" id="cs_kResult"></canvas>
                     </div>
-                    <div class="row colorBarContainer" id="cs_windowing">
+                    <div class="row" id="cs_windowing">
                         <div class="col">
                             <label for="ti">Window Center: </label>
                             <input type="number" class="pl-0 pr-0 form-control form-control-range" name="cs_wc" id="cs_wc"

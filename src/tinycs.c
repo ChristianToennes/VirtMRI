@@ -49,7 +49,7 @@ void apply_pseudo_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, 
     for(z=0;z<zdim;z++) {
         for(y=0;y<ydim;y++) {
             r = (double)y/(double)params->ydim;
-            if(r>0.5) {
+            if(r>=0.5) {
                 r = 1-r;
             }
             r *= 2;
@@ -117,13 +117,13 @@ void apply_regular_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct
     int ydim = params->ydim;
     int zdim = params->zdim;
     bool filtered = true;
-    double nth = round((1.0/params->filter_fraction)*100.0);
+    double nth = params->filter_fraction;
     if(params->filter_fraction > 0.5) {
-        nth = round((1.0/(1.0-params->filter_fraction))*100.0);
+        nth = 1.0-params->filter_fraction;
     }
     for(z=0;z<zdim;z++) {
         for(y=0;y<ydim;y++) {
-            filtered = fabs(round(y*100/nth)*nth/100.0-y) < 1;
+            filtered = fabs(round(y*nth)/nth-y) < 1;
             if(params->filter_fraction > 0.5) {
                 filtered = !filtered;
             }
