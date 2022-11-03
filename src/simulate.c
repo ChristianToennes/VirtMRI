@@ -50,9 +50,11 @@ static inline void normalizeImage(kiss_fft_cpx* image, struct Params *p) {
     }
 }
 
+int call_count = 0;
 static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
     double te, tr, ti, fa, tau1, tau2, te_end, te_step, e_tr_t1, e_tr_t2, cfa, sfa, s, m, b;
     double pd, t1, t2, t2s, t2f, ex_frac;
+    call_count += 1;
     s = 0;
     switch(p->sequence) {
         case SE:
@@ -233,22 +235,75 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
     return s;
 }
 
+double ssim(kiss_fft_cpx* img1, kiss_fft_cpx* img2, int size) {
+    double mu1, mu2, var1, var2, sig_co, c1, c2, L, k1, k2;
+    k1 = 0.01;
+    k2 = 0.03;
+    //L = pow(2.0, sizeof(kiss_fft_scalar)*8)-1;
+    L = 0;
+    for(int i=0;i<size;i++) {
+        if(REAL(img1[i]) > L) {
+            L = REAL(img1[i]);
+        }
+    }
+    c1 = (L*k1)*(L*k1);
+    c2 = (L*k2)*(L*k2);
+    mu1 = 0.0;
+    mu2 = 0.0;
+    for(int i=0;i<size;i++) {
+        mu1 += REAL(img1[i]);
+        mu2 += REAL(img2[i]);
+    }
+    mu1 /= size;
+    mu2 /= size;
+    var1 = 0.0;
+    var2 = 0.0;
+    sig_co = 0.0;
+    for(int i=0;i<size;i++) {
+        var1 += (mu1-REAL(img1[i]))*(mu1-REAL(img1[i]));
+        var2 += (mu2-REAL(img2[i]))*(mu2-REAL(img2[i]));
+        sig_co += (mu2-REAL(img2[i]))*(mu1-REAL(img1[i]));
+    }
+    var1 /= size;
+    var2 /= size;
+    sig_co /= size;
+    double ssim = (2.0*mu1*mu2+c1)*(2.0*sig_co+c2)/((mu1*mu1+mu2*mu2+c1)*(var1+var2+c2));
+    //fprintf(stdout, "ssim: %f\n", ssim);
+    return ssim;
+}
+
 void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_fft_cpx *filt_image, kiss_fft_cpx *filt_kspace, kiss_fft_cpx *cs_image, kiss_fft_cpx *cs_kspace, struct Dataset *ds) {
-    int x,y,z,ipos,ds_pos,nx,ny,nz;
+    int x,y,z,ipos,ds_pos;
+    double nx,ny,nz;
+    int xi,x_start,x_end,yi,y_start,y_end,zi,z_start,z_end;
     double xs,ys,zs;
     double s,d;
+    call_count = 0;
     xs = (double)ds->k_xdim/(double)p->xdim/2.0;
     ys = (double)ds->k_ydim/(double)p->ydim/2.0;
     zs = (double)ds->k_zdim/(double)p->zdim/2.0;
+
+    for(int i=0;i<p->zdim*p->ydim*p->xdim;i++) {
+        ASSIGN(image[i], 0, 0);
+        ASSIGN(kspace[i], 0, 0);
+    }
+    if(p->use_cs && cs_image != NULL) {
+        for(int i=0;i<p->zdim*p->ydim*p->xdim;i++) {
+            ASSIGN(filt_image[i], 0, 0);
+            ASSIGN(filt_kspace[i], 0, 0);
+            ASSIGN(cs_image[i], 0, 0);
+            ASSIGN(cs_kspace[i], 0, 0);
+        }
+    }
     
     for(z = 0; z<p->zdim; z++) {
+        nz = (double)z*(double)ds->k_zdim/(double)p->zdim + zs;
         for(y = 0;y<p->ydim; y++) {
+            ny = (double)y*(double)ds->k_ydim/(double)p->ydim + ys;
             for(x = 0;x<p->xdim; x++) {
                 ipos = z*p->xdim*p->ydim + y*p->xdim + x;
                 d = 0; s = 0;
-                nz = z*ds->k_zdim/p->zdim;
-                ny = y*ds->k_ydim/p->ydim;
-                nx = x*ds->k_xdim/p->xdim;
+                nx = (double)x*(double)ds->k_xdim/(double)p->xdim + xs;
                 switch (p->nearest) {
                     case Nearest:
                         ds_pos = round(nz)*ds->k_xdim*ds->k_ydim+round(ny)*ds->k_xdim+round(nx);
@@ -275,12 +330,17 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
                         break;
                     case Average:
                     default:
-                        d = 0; s=0;
-                        for(int xi=floor(nx-xs);xi<ceil(nx+xs);xi+=1) {
-                            for(int yi=floor(ny-ys);yi<ceil(ny+ys);yi+=1) {
-                                for(int zi=floor(nz-zs);zi<ceil(nz+zs);zi+=1) {
-                                    ds_pos = zi*ds->k_xdim*ds->k_ydim+yi*ds->k_xdim+xi;
-                                    if(ds_pos >= 0 && ds_pos < ds->k_xdim*ds->k_ydim*ds->k_zdim && xi>=0 && xi<ds->k_xdim && yi>=0 && yi<ds->k_ydim && zi>=0 && zi<ds->k_zdim) {
+                        x_start=floor(nx-xs);
+                        x_end=ceil(x_start+2*xs);
+                        y_start=floor(ny-ys);
+                        y_end=ceil(y_start+2*ys);
+                        z_start=floor(nz-zs);
+                        z_end=ceil(z_start+2*zs);
+                        for(xi=x_start;xi<x_end;xi+=1) {
+                            for(yi=y_start;yi<y_end;yi+=1) {
+                                for(zi=z_start;zi<z_end;zi+=1) {
+                                    if(zi>=0&&zi<ds->k_zdim&&yi>=0&&yi<ds->k_ydim&&xi>=0&&xi<ds->k_xdim) {
+                                        ds_pos = zi*ds->k_xdim*ds->k_ydim+yi*ds->k_xdim+xi;
                                         s += simVoxel(p, ds_pos, ds);
                                         d += 1.0;
                                     }
@@ -307,7 +367,8 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
         }
     }
 
-    if(addKSpaceNoise(kspace, p)) {
+    bool modified = addKSpaceNoise(kspace, p);
+    if(modified) {
         if(p->use_fft3) {
             ifft3d(kspace, image, p->ydim, p->zdim, p->xdim);
         } else {
@@ -344,6 +405,14 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
                     compressed_sensing(&cs_kspace[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->cs_params);
                 }
             }
+            double s;
+            for(z=0;z<p->zdim;z++) {
+                s = ssim(&image[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->xdim*p->ydim);
+                fprintf(stdout, "ssim %d: %f ", z, s);
+            }
+            s = ssim(image, cs_image, p->xdim*p->ydim);
+            fprintf(stdout, "ssim: %f l1: %f l2: %f mu: %f gam: %f ninner: %d nreg: %d\n", s, p->cs_params->lambda, p->cs_params->lambda2, p->cs_params->mu, p->cs_params->gam, p->cs_params->ninner, p->cs_params->nbreg);
         }
     }
+    fprintf(stdout, "voxel sim call count: %d overlap: %f\n", call_count, (double)call_count/(256.0*256.0*256.0));
 }

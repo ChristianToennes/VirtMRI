@@ -1,7 +1,6 @@
 ﻿self.importScripts("./kissfft.js")
 self.importScripts("./pako.min.js")
-self.importScripts("./math.js")
-self.importScripts("./discrete-wavelets.umd.min.js")
+//self.importScripts("./discrete-wavelets.umd.min.js")
 self.importScripts("./Mask_CS_Accel2.txt.js");
 self.importScripts("./Mask_CS_Accel4.txt.js");
 
@@ -32,7 +31,7 @@ var array_na_t2f = new Uint16Array(256 * 256);
 var k_data_im_re, k_result;
 
 class MRImage {
-    constructor(xdim, ydim, zdim, kspace_filt, data, k_data, params) {
+    constructor(xdim, ydim, zdim, kspace_filt, data, k_data, params, raw_data) {
         this.xdim = xdim;
         this.ydim = ydim;
         this.zdim = zdim;
@@ -40,6 +39,7 @@ class MRImage {
         this.kSpace = k_data;
         this.kspace_filt = kspace_filt;
         this.params = params;
+        this.raw_data = raw_data;
     }
 }
 
@@ -422,7 +422,9 @@ function inverseKSpace3d(kSpace, xdim, ydim, zdim, xlines, ylines, fmin, fmax, n
     return [result, k_result, [xlines, ylines, fmin, fmax]];
 }
 
+var call_count = 0;
 function calcSpinEcho(pos, params) {
+    call_count += 1;
     var te = params["te"];
     var tr = params["tr"];
     //var fa = params["fa"] * Math.PI / 180;
@@ -437,6 +439,7 @@ function calcSpinEcho(pos, params) {
 }
 
 function calcInversionRecovery(pos, params) {
+    call_count += 1;
     var te = params["te"];
     var tr = params["tr"];
     var ti = params["ti"];
@@ -927,24 +930,25 @@ function dist(z0,y0,x0,z1,y1,x1) {
 }
 
 function getNearest(z,y,x) {
-    var [pos, d] = getNeighbours(z,y,x);
+    return [[Math.round(z)*k_xdim*k_ydim+Math.round(y)*k_xdim+Math.round(x)], [1]];
+    /*var [pos, d] = getNeighbours(z,y,x);
     var [max,mi] = d.reduce(function(o, v, i) { 
         if(o[0] < v) {
             return [v, i];
         } else { return o; }
     }, [d[0], 0]);
-    return [[pos[mi]], [max]];
+    return [[pos[mi]], [max]];*/
 }
 
 function getNeighbours(z,y,x) {
-    var [dpos1, d1] = dist(z,y,x, Math.floor(z*k_zdim/zdim), Math.floor(y*k_ydim/ydim), Math.floor(x*k_xdim/xdim));
-    var [dpos2, d2] = dist(z,y,x, Math.floor(z*k_zdim/zdim), Math.floor(y*k_ydim/ydim), Math.ceil(x*k_xdim/xdim));
-    var [dpos3, d3] = dist(z,y,x, Math.floor(z*k_zdim/zdim), Math.ceil(y*k_ydim/ydim),  Math.floor(x*k_xdim/xdim));
-    var [dpos4, d4] = dist(z,y,x, Math.floor(z*k_zdim/zdim), Math.ceil(y*k_ydim/ydim),  Math.ceil(x*k_xdim/xdim));
-    var [dpos5, d5] = dist(z,y,x, Math.ceil(z*k_zdim/zdim),  Math.floor(y*k_ydim/ydim), Math.floor(x*k_xdim/xdim));
-    var [dpos6, d6] = dist(z,y,x, Math.ceil(z*k_zdim/zdim),  Math.floor(y*k_ydim/ydim), Math.ceil(x*k_xdim/xdim));
-    var [dpos7, d7] = dist(z,y,x, Math.ceil(z*k_zdim/zdim),  Math.ceil(y*k_ydim/ydim),  Math.floor(x*k_xdim/xdim));
-    var [dpos8, d8] = dist(z,y,x, Math.ceil(z*k_zdim/zdim),  Math.ceil(y*k_ydim/ydim),  Math.ceil(x*k_xdim/xdim));
+    var [dpos1, d1] = dist(z,y,x, Math.floor(z), Math.floor(y), Math.floor(x));
+    var [dpos2, d2] = dist(z,y,x, Math.floor(z), Math.floor(y), Math.ceil(x));
+    var [dpos3, d3] = dist(z,y,x, Math.floor(z), Math.ceil(y),  Math.floor(x));
+    var [dpos4, d4] = dist(z,y,x, Math.floor(z), Math.ceil(y),  Math.ceil(x));
+    var [dpos5, d5] = dist(z,y,x, Math.ceil(z),  Math.floor(y), Math.floor(x));
+    var [dpos6, d6] = dist(z,y,x, Math.ceil(z),  Math.floor(y), Math.ceil(x));
+    var [dpos7, d7] = dist(z,y,x, Math.ceil(z),  Math.ceil(y),  Math.floor(x));
+    var [dpos8, d8] = dist(z,y,x, Math.ceil(z),  Math.ceil(y),  Math.ceil(x));
     var pos = [];
     var d = [];
     pos.push(dpos1);
@@ -966,9 +970,15 @@ function getVolumeVoxel(z,y,x, zdim, ydim, xdim) {
 
     var poss = [];
     var ds = [];
-    for(var xi=Math.floor(x-xs);xi<Math.ceil(x+xs);xi+=1) {
-        for(var yi=Math.floor(y-ys);yi<Math.ceil(y+ys);yi+=1) {
-            for(var zi=Math.floor(z-zs);zi<Math.ceil(z+zs);zi+=1) {
+    x_start=Math.floor(x-xs);
+    x_end=Math.ceil(x_start+2*xs);
+    y_start=Math.floor(y-ys);
+    y_end=Math.ceil(y_start+2*ys);
+    z_start=Math.floor(z-zs);
+    z_end=Math.ceil(z_start+2*zs);
+    for(xi=x_start;xi<x_end;xi+=1) {
+        for(yi=y_start;yi<y_end;yi+=1) {
+            for(zi=z_start;zi<z_end;zi+=1) {
                 var pos = zi*k_xdim*k_ydim+yi*k_xdim+xi;
                 if(pos >= 0 && pos < k_xdim*k_ydim*k_zdim && xi>=0 && xi<k_xdim && yi>=0 && yi<k_ydim && zi>=0 && zi<k_zdim) {
                     poss.push(pos);
@@ -977,11 +987,11 @@ function getVolumeVoxel(z,y,x, zdim, ydim, xdim) {
             }
         }
     }
-    //if(poss.length == 0) {
-        //console.log("x", k_xdim, xdim, x, xs, Math.round(x-xs), Math.ceil(x+xs));
-        //console.log("y", k_ydim, ydim, y, ys, Math.round(y-ys), Math.ceil(y+ys));
-        //console.log("z", k_zdim, zdim, z, zs, Math.round(z-zs), Math.ceil(z+zs));
-    //}
+    /*if(poss.length == 0) {
+        console.log("x", k_xdim, xdim, x, xs, Math.round(x-xs), Math.ceil(x+xs), x_start, x_end);
+        console.log("y", k_ydim, ydim, y, ys, Math.round(y-ys), Math.ceil(y+ys), y_start, y_end);
+        console.log("z", k_zdim, zdim, z, zs, Math.round(z-zs), Math.ceil(z+zs), z_start, z_end);
+    }*/
     return [poss, ds];
 }
 
@@ -1044,6 +1054,7 @@ function addKSpaceNoise(kSpace, img, params) {
 }
 
 function simulateImage(params) {
+    call_count = 0;
     var sequence = "sequence" in params ? params["sequence"] : undefined;
     var S = sequence in imageFunctions ? imageFunctions[sequence] : undefined;
     var xdim = Math.round(params["xdim"]);
@@ -1073,22 +1084,35 @@ function simulateImage(params) {
         return undefined;
     }
     var result = new Float32Array(xdim*ydim*zdim);
+    //var all_poss = new Set();
+    //var double_poss = [];
     for(var z = 0; z<zdim; z++) {
         for(var y = 0;y<ydim; y++) {
             for(var x = 0;x<xdim;x++) {
                 var ipos = z*xdim*ydim + y*xdim + x;
                 var pos = [], d = [];
+                var nz = z*k_zdim/zdim + (k_zdim/zdim/2.0);
+                var ny = y*k_ydim/ydim + (k_ydim/ydim/2.0);
+                var nx = x*k_xdim/xdim + (k_xdim/xdim/2.0);
                 switch (nearest) {
                     case 0:
-                        [pos, d] = getNearest(z*k_zdim/zdim, y*k_ydim/ydim, x*k_xdim/xdim);
+                        [pos, d] = getNearest(nz, ny, nx);
                         break;
                     case 1:
-                        [pos, d] = getNeighbours(z*k_zdim/zdim, y*k_ydim/ydim, x*k_xdim/xdim);
+                        [pos, d] = getNeighbours(nz, ny, nx);
                         break;
                     default:
-                        [pos, d] = getVolumeVoxel(z*k_zdim/zdim, y*k_ydim/ydim, x*k_xdim/xdim, zdim, ydim, xdim);
+                        [pos, d] = getVolumeVoxel(nz, ny, nx, zdim, ydim, xdim);
                         break;
                 }
+
+                /*pos.map(function(p) {
+                    if(all_poss.has(p)) {
+                        double_poss.push(p);
+                    } else {
+                        all_poss.add(p);
+                    }
+                });*/
                 var ds = d.reduce(function(s, v) { return s+v;});
                 if(ds == 0) { ds = 1/8;}
                 var vals = pos.map(function(v) { return S(v, params) });
@@ -1108,6 +1132,14 @@ function simulateImage(params) {
     result.kSpace = kspace;
 
     [k_data_im_re, result] = addKSpaceNoise(k_data_im_re, result, params);
+    if (result == undefined) {
+        if(fft3d) {
+            [result, k_result, p] = inverseKSpace3d(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+        } else {
+            [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+        }
+        result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], result, k_result, params);
+    }
 
     var cs_result = undefined;
     var filt_result = undefined;
@@ -1193,14 +1225,20 @@ function simulateImage(params) {
             k_result = magnitude_image(k_data_im_re);
             break;
     }
-    if (result == undefined) {
-        if(fft3d) {
-            [result, k_result, p] = inverseKSpace3d(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
-        } else {
-            [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
+    console.log("sim voxel function calls:", call_count, "overlap:", call_count/(256*256*256));
+    /*var missing_pos = [];
+    for(var x=0;x<256;x++){
+        for(var y=0;y<256;y++){
+            for(var z=0;z<256;z++) {
+                if(!all_poss.has(z*256*256+y*256+x)) {
+                    missing_pos.push([x,y,z]);
+                }
+            }
         }
-        result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], result, k_result, params);
     }
+    console.log("missing:", missing_pos);
+    console.log("double:", double_poss);*/
+
     if(cs_result != undefined) {
         return [result, filt_result, cs_result];
     } else {
@@ -1228,16 +1266,30 @@ function simulateImageFast(params) {
     delete params["cs_callback"];
 
     var k_result = transformKSpace3d(kspace, fft3d, xdim, ydim, zdim);
-    result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], image, k_result, params);
+    result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], image, k_result, params, kspace);
     if(cs_image != undefined) {
         var cs_k_result = transformKSpace3d(cs_kspace, fft3d, xdim, ydim, zdim);
         var filt_k_result = transformKSpace3d(filt_kspace, fft3d, xdim, ydim, zdim);
-        cs_result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], cs_image, cs_k_result, params);
-        filt_result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], filt_image, filt_k_result, params);
+        cs_result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], cs_image, cs_k_result, params, cs_kspace);
+        filt_result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], filt_image, filt_k_result, params, filt_kspace);
         return [result, filt_result, cs_result];
     } else {
         return result;
     }
+}
+
+function profile(params) {
+    var times = [];
+    for(var i=0;i<params["count"];i++) {
+        var timer = performance.now();
+        if(params["compute"] == "WebASM") {
+            simulateImageFast(params);
+        } else {
+            simulateImage(params);
+        }
+        times.push((performance.now()-timer)/1000);
+    }
+    return [params, times];
 }
 
 var imageFunctions = {
@@ -1262,7 +1314,10 @@ var queryableFunctions = {
     simulateImageFast: function(params) {
         reply('result', simulateImageFast(params));
     },
-    reco: function (params) {
+    profile: function(params) {
+        reply('profile', profile(params));
+    },
+    reco: function(params) {
         reply('result', inverseKSpace3d(k_data_im_re, ...params));
     },
     loadData: async function (path) {

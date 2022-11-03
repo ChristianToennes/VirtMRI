@@ -226,6 +226,20 @@ const progressMessageHandler = function(progress) {
 };
 w.addListener('progress', progressMessageHandler);
 
+const profileMessageHandler = function(data) {
+    var [params, times] = data;
+
+    var n = times.length
+    var mean = times.reduce((a, b) => a + b) / n
+    var std = Math.sqrt(times.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
+
+    var spin = document.getElementById("scanningSpinner");
+    spin.classList.add("hidden");
+
+    console.log(`${params['sequence']}: ${params['xdim']}x${params['ydim']}x${params['zdim']} & ${params['nearest']==0?'Nearest':'Average'} & ${params['fft'].toUpperCase()} & ${params['img_noise_type']==0?'No':'Yes'}${params['cs']==0?'':'+CS'} & ${params['compute']} & $${mean.toFixed(2)}±${std.toFixed(2)}$\\\\`);
+};
+w.addListener('profile', profileMessageHandler);
+
 // Name, Label, T1, T2, T2*, PD
 const params = {
     0: ["Background", 0, 0, 0, 0, 0, "subject04_bck_v.bin"],
@@ -533,12 +547,12 @@ function displayAndWindow3DImage(which) {
     k_ctx.putImageData(kdata, 0, 0);
 }
 
-function downloadKSpace() {
-    downloadArray(kResult, "kspace.csv");
+function downloadKSpace(which) {
+    downloadArray(imgResultCache[which].raw_data, "kspace_"+which+".csv");
 }
 
-function downloadImage() {
-    downloadArray(imgResult["cur"].data, "image.csv");
+function downloadImage(which) {
+    downloadArray(imgResultCache[which].data, "image_"+which+".csv");
 }
 
 function downloadArray(array, name) {
@@ -704,6 +718,8 @@ function read_params(param_div, params) {
 }
 
 function startScan() {
+    resultTimer = performance.now();
+
     current_tab = selected_tab;
     r = document.getElementById("result");
     r.classList.add("hidden");
@@ -738,8 +754,49 @@ function startScan() {
     var spin = document.getElementById("scanningSpinner");
     spin.classList.remove("hidden");
     
-    resultTimer = performance.now();
-    w.sendQuery("simulateImageFast", params);
+    if(params["compute"] == "WebASM") {
+        w.sendQuery("simulateImageFast", params);
+    } else {
+        w.sendQuery("simulateImage", params);
+    }
+}
+
+function profile() {
+    current_tab = selected_tab;
+    r = document.getElementById("result");
+    r.classList.add("hidden");
+    
+    var params = {sequence: selectedSequence};
+    
+    var param_div = document.getElementById("params-general");
+    params = read_params(param_div, params);
+    params["xdim"] = Math.ceil(params["xdim"]/2)*2;
+    params["ydim"] = Math.ceil(params["ydim"]/2)*2;
+    params["zdim"] = Math.ceil(params["zdim"]/2)*2;
+    param_div = document.getElementById("params-noise");
+    params = read_params(param_div, params);
+    param_div = document.getElementById("params-cs");
+    params = read_params(param_div, params);
+    
+    param_div = document.getElementById("params-" + selectedSequence);
+    params = read_params(param_div, params);
+    
+    if(selectedSequence == "TQSQR") {
+        var param_div = document.getElementById("params-SQ");
+        var tq_params = {};
+        tq_params = read_params(param_div, tq_params);
+        var param_div = document.getElementById("params-TQ");
+        var sq_params = {};
+        sq_params = read_params(param_div, sq_params);
+        params["tq_params"] = tq_params;
+        params["sq_params"] = sq_params;
+    }
+    
+    var spin = document.getElementById("scanningSpinner");
+    spin.classList.remove("hidden");
+
+    params["count"] = 5;
+    w.sendQuery("profile", params);
 }
 
 function displayDataSet() {

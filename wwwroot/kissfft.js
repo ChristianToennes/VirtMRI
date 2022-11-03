@@ -11,16 +11,24 @@ function make_dataset(pd, t1, t2, t2s, na_mm, na_t1, na_ex_frac, na_t2s, na_t2f)
     t2_ptr = t2_buff.byteOffset;
     t2s_buff = allocFromArray(t2s);
     t2s_ptr = t2s_buff.byteOffset;
-    na_mm_buff = allocFromArray(na_mm);
-    na_mm_ptr = na_mm_buff.byteOffset;
-    na_t1_buff = allocFromArray(na_t1);
-    na_t1_ptr = na_t1_buff.byteOffset;
-    na_ex_frac_buff = allocFromArray(na_ex_frac);
-    na_ex_frac_ptr = na_ex_frac_buff.byteOffset;
-    na_t2s_buff = allocFromArray(na_t2s);
-    na_t2s_ptr = na_t2s_buff.byteOffset;
-    na_t2f_buff = allocFromArray(na_t2f);
-    na_t2f_ptr = na_t2f_buff.byteOffset;
+    if(na_mm != undefined) {
+        na_mm_buff = allocFromArray(na_mm);
+        na_mm_ptr = na_mm_buff.byteOffset;
+        na_t1_buff = allocFromArray(na_t1);
+        na_t1_ptr = na_t1_buff.byteOffset;
+        na_ex_frac_buff = allocFromArray(na_ex_frac);
+        na_ex_frac_ptr = na_ex_frac_buff.byteOffset;
+        na_t2s_buff = allocFromArray(na_t2s);
+        na_t2s_ptr = na_t2s_buff.byteOffset;
+        na_t2f_buff = allocFromArray(na_t2f);
+        na_t2f_ptr = na_t2f_buff.byteOffset;
+    } else {
+        na_mm_ptr = 0;
+        na_t1_ptr = 0;
+        na_ex_frac_ptr = 0;
+        na_t2s_ptr = 0;
+        na_t2f_ptr = 0;
+    }
     dataset = _make_dataset(256,256,256,pd_ptr, t1_ptr, t2_ptr, t2s_ptr, na_mm_ptr, na_t1_ptr, na_ex_frac_ptr, na_t2s_ptr, na_t2f_ptr);
     return dataset;
 }
