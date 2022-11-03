@@ -15,18 +15,6 @@
 
 #define NA_SCALE 140
 
-void free_dataset(struct Dataset *ds) {
-    free(ds->pd);
-    free(ds->t1);
-    free(ds->t2);
-    free(ds->t2s);
-    free(ds->na_mm);
-    free(ds->na_t1);
-    free(ds->na_ex_frac);
-    free(ds->na_t2s);
-    free(ds->na_t2f);
-    free(ds);
-}
 const float na_vol = 0.7;
 const float na_t2fr = 60;
 

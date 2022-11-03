@@ -18,6 +18,13 @@ struct Params* make_params(enum Sequence sequence, int n_params, float* s_params
     return p;
 }
 
+void free_params(struct Params* p) {
+    free_noise_params(p->noise_params);
+    free_cs_params(p->cs_params);
+    free(p->s_params);
+    free(p);
+}
+
 struct Dataset* make_dataset(int kxdim, int kydim, int kzdim, float* pd, float* t1, float* t2, float* t2s, float* na_mm, float* na_t1, float* na_ex_frac, float* na_t2s, float* na_t2f) {
     struct Dataset* ds = (struct Dataset*)malloc(sizeof(struct Dataset));
     ds->k_xdim = kxdim;
@@ -33,6 +40,19 @@ struct Dataset* make_dataset(int kxdim, int kydim, int kzdim, float* pd, float* 
     ds->na_t2s = na_t2s;
     ds->na_t2f = na_t2f;
     return ds;
+}
+
+void free_dataset(struct Dataset* ds) {
+    free(ds->pd);
+    free(ds->t1);
+    free(ds->t2);
+    free(ds->t2s);
+    free(ds->na_mm);
+    free(ds->na_t1);
+    free(ds->na_ex_frac);
+    free(ds->na_t2s);
+    free(ds->na_t2f);
+    free(ds);
 }
 
 struct CSParams* make_cs_params(bool filter_only, int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, enum FilterMode filter_mode, double filter_fraction, int callback) {
@@ -54,6 +74,10 @@ struct CSParams* make_cs_params(bool filter_only, int xdim, int ydim, int zdim, 
     return params;
 }
 
+void free_cs_params(struct CSParams* params) {
+    free(params);
+}
+
 struct NoiseParams* make_noise_params(enum NoiseType noise, double mean, double sigma) {
     struct NoiseParams *params = malloc(sizeof(struct NoiseParams));
     params->noise = noise;
@@ -61,4 +85,8 @@ struct NoiseParams* make_noise_params(enum NoiseType noise, double mean, double 
     params->sigma = sigma;
     //fprintf(stdout, "%i %f %f\n", noise, mean, sigma);
     return params;
+}
+
+void free_noise_params(struct NoiseParams* params) {
+    free(params);
 }

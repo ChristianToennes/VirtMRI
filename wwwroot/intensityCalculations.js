@@ -137,6 +137,12 @@ async function loadDataSet(path) {
         xhr.responseType = "arraybuffer";
         xhr.send();
     });
+    if (ds == undefined) {
+        ds = make_dataset(array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
+    } else {
+        free_dataset(ds);
+        ds = make_dataset(array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
+    }
     return [array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2f, array_na_t2s, zdim, ydim, xdim];
 }
 

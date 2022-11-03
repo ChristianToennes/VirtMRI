@@ -33,6 +33,10 @@ function make_dataset(pd, t1, t2, t2s, na_mm, na_t1, na_ex_frac, na_t2s, na_t2f)
     return dataset;
 }
 
+function free_dataset(dataset) {
+    _free_dataset(dataset);
+}
+
 function make_noise_params(params) {
     var mean = "img_noise_mean" in params ? parseFloat(params["img_noise_mean"]) : 0;
     var sigma = "img_noise_sigma" in params ? parseFloat(params["img_noise_sigma"]) : 0.001;
@@ -96,6 +100,10 @@ function make_params(params) {
     var noise_params = make_noise_params(params);
     c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["nearest"], use_cs, fft3d, cs_params, noise_params);
     return [c_params, callback_ptr];
+}
+
+function free_params(params) {
+    _free_params(params);
 }
 
 function simulate_fast(ds, params) {
@@ -166,7 +174,7 @@ function simulate_fast(ds, params) {
     }
 
     Module.removeFunction(callback_ptr);
-    free(p);
+    free_params(p);
     Module._free(image_ptr);
     Module._free(kspace_ptr);
     if(use_cs) { 

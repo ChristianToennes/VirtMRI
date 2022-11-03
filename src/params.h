@@ -20,6 +20,7 @@ typedef struct NoiseParams {
 } noise_params;
 
 struct NoiseParams* make_noise_params(enum NoiseType noise, double mean, double sigma);
+void free_noise_params(struct NoiseParams* params);
 
 typedef enum FilterMode {
     PseudoRandom = 0,
@@ -44,6 +45,7 @@ typedef struct CSParams {
 } cs_params;
 
 struct CSParams* make_cs_params(bool filter_only, int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, enum FilterMode filter_mode, double filter_fraction, int callback);
+void free_cs_params(struct CSParams* params);
 
 typedef struct Dataset {
     float* pd;
@@ -61,6 +63,7 @@ typedef struct Dataset {
 } dataset;
 
 struct Dataset* make_dataset(int kxdim, int kydim, int kzdim, float* pd, float* t1, float* t2, float* t2s, float* na_mm, float* na_t1, float* na_ex_frac, float* na_t2s, float* na_t2f);
+void free_dataset(struct Dataset* ds);
 
 typedef enum Sequence {
     SE, IR, bSSFP, FISP, PSIF, SGRE, Na, NaSQ, NaTQ, NaTQSQ, NaTQF, pcbSSFP
@@ -85,5 +88,6 @@ typedef struct Params {
 } params;
 
 struct Params* make_params(enum Sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, enum Nearest nearest, bool use_cs, bool use_fft3, struct CSParams* cs_params, struct NoiseParams* noise_params);
+void free_params(struct Params* params);
 
 #endif
