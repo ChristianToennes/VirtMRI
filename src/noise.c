@@ -20,8 +20,12 @@ void addGaussianNoise(kiss_fft_cpx* image, int image_len, struct NoiseParams *pa
     double u,v,s,x,y;
     kiss_fft_cpx r;
     for(int i=0;i<image_len;i++) {
-        u = (double)rand()/(double)RAND_MAX;
-        v = (double)rand()/(double)RAND_MAX;
+        do {
+            u = (double)rand()/(double)RAND_MAX;
+        } while(u == 0);
+        do {
+            v = (double)rand()/(double)RAND_MAX;
+        } while(v == 0);
         s = sqrt(-2.0*log(u));
         x = s * cos(2.0*M_PI*v);
         y = s * sin(2.0*M_PI*v);

@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #include "fft.h"
 #include "fft2.h"
@@ -17,6 +18,8 @@
 
 const float na_vol = 0.7;
 const float na_t2fr = 60;
+const float na_mm = 140;
+const float na_t1 = 39.2;
 
 static inline void normalizeImage(kiss_fft_cpx* image, struct Params *p) {
     double max = 0;
@@ -44,6 +47,10 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
     double pd, t1, t2, t2s, t2f, ex_frac;
     call_count += 1;
     s = 0;
+    if(pos >= ds->k_xdim*ds->k_ydim*ds->k_zdim) {
+        fprintf(stdout, "%i\n", pos);
+        return 0;
+    }
     switch(p->sequence) {
         case SE:
             te = p->s_params[0];
@@ -135,7 +142,7 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             t2s = ds->na_t2s[pos];
             t2f = ds->na_t2f[pos];
             pd = ds->na_mm[pos];
-            s = fabs((na_vol-ex_frac)*pd* (1-exp(-tr/t1)) * (0.6*exp(-te/t2f) + 0.4*exp(-te/t2s)) + ex_frac*pd* (1-exp(-tr/t1))*exp(-te/na_t2fr)) / NA_SCALE;
+            s = fabs((na_vol-ex_frac)*pd* (1-exp(-tr/t1)) * (0.6*exp(-te/t2f) + 0.4*exp(-te/t2s)) + ex_frac*na_mm* (1-exp(-tr/na_t1))*exp(-te/na_t2fr)) / NA_SCALE;
             break;
         case NaSQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -266,6 +273,9 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
     int xi,x_start,x_end,yi,y_start,y_end,zi,z_start,z_end;
     double xs,ys,zs;
     double s,d;
+
+    srand(time(0));
+
     call_count = 0;
     xs = (double)ds->k_xdim/(double)p->xdim/2.0;
     ys = (double)ds->k_ydim/(double)p->ydim/2.0;
@@ -294,7 +304,7 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
                 nx = (double)x*(double)ds->k_xdim/(double)p->xdim + xs;
                 switch (p->nearest) {
                     case Nearest:
-                        ds_pos = round(nz)*ds->k_xdim*ds->k_ydim+round(ny)*ds->k_xdim+round(nx);
+                        ds_pos = round(nz-0.5)*ds->k_xdim*ds->k_ydim+round(ny-0.5)*ds->k_xdim+round(nx-0.5);
                         s = simVoxel(p, ds_pos, ds);
                         break;
                     case KNearest:
@@ -394,13 +404,14 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
                 }
             }
             double s;
-            for(z=0;z<p->zdim;z++) {
+            /*for(z=0;z<p->zdim;z++) {
                 s = ssim(&image[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->xdim*p->ydim);
                 fprintf(stdout, "ssim %d: %f ", z, s);
             }
             s = ssim(image, cs_image, p->xdim*p->ydim);
             fprintf(stdout, "ssim: %f l1: %f l2: %f mu: %f gam: %f ninner: %d nreg: %d\n", s, p->cs_params->lambda, p->cs_params->lambda2, p->cs_params->mu, p->cs_params->gam, p->cs_params->ninner, p->cs_params->nbreg);
+            */
         }
     }
-    fprintf(stdout, "voxel sim call count: %d overlap: %f\n", call_count, (double)call_count/(256.0*256.0*256.0));
+    //fprintf(stdout, "voxel sim call count: %d overlap: %f\n", call_count, (double)call_count/(256.0*256.0*256.0));
 }

@@ -177,12 +177,11 @@ function simulate_fast(ds, params) {
     free_params(p);
     Module._free(image_ptr);
     Module._free(kspace_ptr);
-    if(use_cs) { 
-        Module._free(cs_ptr); 
-        Module._free(cs_kspace_ptr);
-        Module._free(filt_ptr);
-        Module._free(cs_kspace_ptr);
-    }
+    Module._free(cs_ptr); 
+    Module._free(cs_kspace_ptr);
+    Module._free(filt_ptr);
+    Module._free(filt_kspace_ptr);
+
 
     return [image, kspace, filt_image, filt_kspace, cs_image, cs_kspace];
 }

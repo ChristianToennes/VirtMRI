@@ -80,7 +80,7 @@ void apply_pseudo_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, 
             }
         }
     }
-    fprintf(stdout, "pseudo randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
+    //fprintf(stdout, "pseudo randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
 void apply_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
@@ -106,7 +106,7 @@ void apply_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct 
             }
         }
     }
-    fprintf(stdout, "randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
+    //fprintf(stdout, "randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
 void apply_regular_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
@@ -140,7 +140,7 @@ void apply_regular_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct
             }
         }
     }
-    fprintf(stdout, "regularly spaced sampled: %f discarded: %f frac: %f nth: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim), params->filter_fraction, nth);
+    //fprintf(stdout, "regularly spaced sampled: %f discarded: %f frac: %f nth: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim), params->filter_fraction, nth);
 }
 
 void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {

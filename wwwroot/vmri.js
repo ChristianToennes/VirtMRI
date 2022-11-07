@@ -233,12 +233,18 @@ const profileMessageHandler = function(data) {
     var mean = times.reduce((a, b) => a + b) / n
     var std = Math.sqrt(times.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
 
-    var spin = document.getElementById("scanningSpinner");
-    spin.classList.add("hidden");
+    /*var spin = document.getElementById("scanningSpinner");
+    spin.classList.add("hidden");*/
 
-    console.log(`${params['sequence']}: ${params['xdim']}x${params['ydim']}x${params['zdim']} & ${params['nearest']==0?'Nearest':'Average'} & ${params['fft'].toUpperCase()} & ${params['img_noise_type']==0?'No':'Yes'}${params['cs']==0?'':'+CS'} & ${params['compute']} & $${mean.toFixed(2)}±${std.toFixed(2)}$\\\\`);
+    console.log(`${params['sequence']}: ${params['xdim']}x${params['ydim']}x${params['zdim']} & ${params['nearest']==0?'Nearest':'Average'} & ${params['fft'].toUpperCase()} & ${params['img_noise_type']==0?'No':'Yes'}${params['cs']==0?'':'+CS'} & ${params['compute']} & $${mean.toFixed(2)} \\pm ${std.toFixed(2)}$\\\\`, n);
 };
 w.addListener('profile', profileMessageHandler);
+
+const endProfileMessageHandler = function() {
+    var spin = document.getElementById("scanningSpinner");
+    spin.classList.add("hidden");
+};
+w.addListener('endprofile', endProfileMessageHandler);
 
 // Name, Label, T1, T2, T2*, PD
 const params = {
@@ -766,7 +772,7 @@ function profile() {
     r = document.getElementById("result");
     r.classList.add("hidden");
     
-    var params = {sequence: selectedSequence};
+    var params = {sequence: "SE"};
     
     var param_div = document.getElementById("params-general");
     params = read_params(param_div, params);
@@ -778,25 +784,87 @@ function profile() {
     param_div = document.getElementById("params-cs");
     params = read_params(param_div, params);
     
-    param_div = document.getElementById("params-" + selectedSequence);
+    param_div = document.getElementById("params-SE");
     params = read_params(param_div, params);
-    
-    if(selectedSequence == "TQSQR") {
-        var param_div = document.getElementById("params-SQ");
-        var tq_params = {};
-        tq_params = read_params(param_div, tq_params);
-        var param_div = document.getElementById("params-TQ");
-        var sq_params = {};
-        sq_params = read_params(param_div, sq_params);
-        params["tq_params"] = tq_params;
-        params["sq_params"] = sq_params;
-    }
-    
+
     var spin = document.getElementById("scanningSpinner");
     spin.classList.remove("hidden");
 
-    params["count"] = 5;
-    w.sendQuery("profile", params);
+    params["count"] = 10;
+    params["xdim"] = "256";
+    params["ydim"] = "256";
+    params["zdim"] = "256";
+    params["nearest"] = "0";
+    params["fft"] = "3D";
+    params["sequence"] = "SE";
+    params["noise"] = "0";
+    params["cs"] = "0";
+
+    params["compute"] = "JS";
+    params_list = [{...params}];
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+    params["fft"] = "2D";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+    params["fft"] = "3D";
+    params["nearest"] = "2";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+    params["fft"] = "2D";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+    params["fft"] = "3D";
+    params["nearest"] = "0";
+
+    params["zdim"] = "64";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+    params["fft"] = "2D";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+    params["fft"] = "3D";
+    params["nearest"] = "2";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+    params["fft"] = "2D";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+
+    params["zdim"] = "256";
+    params["noise"] = "2";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+    params["zdim"] = "64";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+
+    params["cs"] = "2";
+    params_list.push({...params});
+    params["compute"] = "WebASM";
+    params_list.push({...params});
+    params["compute"] = "JS";
+
+    w.sendQuery("profile", params_list);
 }
 
 function displayDataSet() {

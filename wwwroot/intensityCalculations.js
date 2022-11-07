@@ -254,6 +254,7 @@ function calcKSpace3d(result) {
 
 function transformKSpace3d(k_data_im_re, fft3d, xdim, ydim, zdim) {
     var k_result = new Float32Array(xdim * ydim * zdim);
+    try {
     for (var z = 0; z < zdim; z++) {
         var slice_data = new Float32Array(xdim * ydim*2);
         for (var x = 0; x < xdim; x++) {
@@ -263,6 +264,12 @@ function transformKSpace3d(k_data_im_re, fft3d, xdim, ydim, zdim) {
                 if(slice_data[2*(x + y*xdim)] == NaN || slice_data[2*(x + y*xdim)] == undefined || slice_data[2*(x + y*xdim)+1] == undefined || slice_data[2*(x + y*xdim)+1] == NaN) {
                     console.log("fft output undefined", x,y,z);
                 }
+                if(slice_data[2*(x + y*xdim)] == Infinity || slice_data[2*(x + y*xdim)] == -Infinity) {
+                    slice_data[2*(x + y*xdim)] = 0;
+                }
+                if(slice_data[2*(x + y*xdim)+1] == Infinity || slice_data[2*(x + y*xdim)+1] == -Infinity) {
+                    slice_data[2*(x + y*xdim)+1] = 0;
+                }
             }
         }
         if(fft3d) {
@@ -271,8 +278,10 @@ function transformKSpace3d(k_data_im_re, fft3d, xdim, ydim, zdim) {
         } else {
             k_result.set(transformKSpace(slice_data, xdim, ydim), z * xdim * ydim);
         }
+    } } catch (e) {
+        console.log(e);
     }
-    var max = k_result.reduce((p,v) => Math.max(p,v));
+    var max = k_result.reduce((p,v,i) => Math.max(p,v));
     var min = k_result.reduce((p,v) => Math.min(p,v));
     for(var i=0;i<k_result.length;i++) {
         k_result[i] = 255*(k_result[i]-min) / (max-min);
@@ -556,9 +565,11 @@ function calcSGRE(pos, params) {
 }
 
 function calcNa(pos, params) {
+    call_count += 1;
     var te = params["te"];
     var tr = params["tr"];
     //Na: s(t) = VbCb (1-exp(-tr/t1))[0.6*exp(-t/T2s) + 0.4*exp(-t/T2L)] + VfrCfrafr(1-exp(-tr/t1))exp(-t/T2fr) + n(t). 
+    var t1 = array_na_t1[pos];
     var t2f = array_na_t2f[pos];
     var t2s = array_na_t2s[pos];
     var mm = array_na_mm[pos];
@@ -569,7 +580,7 @@ function calcNa(pos, params) {
     if (t2f == 0) {
         t2f = 1;
     }
-    var val = (na_vol-vol)*mm * (1-Math.exp(-tr/na_t1)) * (0.6*Math.exp(-te/t2f) + 0.4*Math.exp(-te/t2s)) + vol*na_mm * (1-Math.exp(-tr/na_t1))*Math.exp(-te/na_t2fr)
+    var val = (na_vol-vol)*mm * (1-Math.exp(-tr/t1)) * (0.6*Math.exp(-te/t2f) + 0.4*Math.exp(-te/t2s)) + vol*na_mm * (1-Math.exp(-tr/na_t1))*Math.exp(-te/na_t2fr)
     val = Math.abs(val) / 140;
     return val;
 }
@@ -936,7 +947,7 @@ function dist(z0,y0,x0,z1,y1,x1) {
 }
 
 function getNearest(z,y,x) {
-    return [[Math.round(z)*k_xdim*k_ydim+Math.round(y)*k_xdim+Math.round(x)], [1]];
+    return [[Math.round(z-0.5)*k_xdim*k_ydim+Math.round(y-0.5)*k_xdim+Math.round(x-0.5)], [1]];
     /*var [pos, d] = getNeighbours(z,y,x);
     var [max,mi] = d.reduce(function(o, v, i) { 
         if(o[0] < v) {
@@ -1122,8 +1133,8 @@ function simulateImage(params) {
                 var ds = d.reduce(function(s, v) { return s+v;});
                 if(ds == 0) { ds = 1/8;}
                 var vals = pos.map(function(v) { return S(v, params) });
-                var val = vals.reduce(function(s, v, i) { return s + v*d[i]/ds; });
-                result[ipos] = val;
+                var val = vals.reduce(function(s, v, i) { return s + v*d[i]; });
+                result[ipos] = val / ds;
             }
         }
     }
@@ -1231,7 +1242,7 @@ function simulateImage(params) {
             k_result = magnitude_image(k_data_im_re);
             break;
     }
-    console.log("sim voxel function calls:", call_count, "overlap:", call_count/(256*256*256));
+    //console.log("sim voxel function calls:", call_count, "overlap:", call_count/(256*256*256));
     /*var missing_pos = [];
     for(var x=0;x<256;x++){
         for(var y=0;y<256;y++){
@@ -1284,16 +1295,31 @@ function simulateImageFast(params) {
     }
 }
 
+function profile_list(params_list) {
+    for(var i=0;i<params_list.length;i++) {
+        reply('profile', profile(params_list[i]));
+    }
+    return 0;
+}
+
 function profile(params) {
     var times = [];
+    var res = 0;
     for(var i=0;i<params["count"];i++) {
         var timer = performance.now();
         if(params["compute"] == "WebASM") {
-            simulateImageFast(params);
+            res = simulateImageFast(params);
+            //console.debug(typeof(res));
         } else {
-            simulateImage(params);
+            res = simulateImage(params);
+            //console.debug(typeof(res));
         }
         times.push((performance.now()-timer)/1000);
+        if(params["cs"]=="2") {
+            console.debug(i, times[times.length-1], res[2].data.reduce((p, c) => p+c));
+        } else {
+            console.debug(i, times[times.length-1], res.data.reduce((p, c) => p+c));
+        }
     }
     return [params, times];
 }
@@ -1321,7 +1347,7 @@ var queryableFunctions = {
         reply('result', simulateImageFast(params));
     },
     profile: function(params) {
-        reply('profile', profile(params));
+        reply('endprofile', profile_list(params));
     },
     reco: function(params) {
         reply('result', inverseKSpace3d(k_data_im_re, ...params));
