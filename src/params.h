@@ -25,7 +25,9 @@ void free_noise_params(struct NoiseParams* params);
 typedef enum FilterMode {
     PseudoRandom = 0,
     Regular = 1,
-    Random = 2
+    Random = 2,
+    RandomLines = 3,
+    PseudoRandomPoints = 4
 } filter_mode;
 
 typedef struct CSParams {

@@ -1282,8 +1282,13 @@ function simulateImageFast(params) {
         var zdim = Math.round(params["zdim"]);
         zdim = zdim > 0 ? zdim : k_zdim;
         zdim = zdim > k_zdim ? k_zdim : zdim;
+        var nbreg = params["cs_nbreg"];
 
-        params["cs_callback"] = function (z) {reply('progress', 100*z/zdim)};
+        if (fft3d) {
+            params["cs_callback"] = function (outer) {reply('progress', 100*outer/nbreg)};
+        } else {
+            params["cs_callback"] = function (z) {reply('progress', 100*z/zdim)};
+        }
         [image, kspace, filt_image, filt_kspace, cs_image, cs_kspace] = simulate_fast(ds, params);
         delete params["cs_callback"];
 

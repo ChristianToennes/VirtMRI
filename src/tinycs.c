@@ -83,6 +83,73 @@ void apply_pseudo_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, 
     //fprintf(stdout, "pseudo randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
+void apply_pseudo_random_points_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
+    int x,y,z,pos;
+    double r,rn,a,b,c;
+    bool filter = false;
+    int xdim = params->xdim;
+    int ydim = params->ydim;
+    int zdim = params->zdim;
+    int count = 0;
+    int count2 = 0;
+    double in_frac = 0.1;
+    if((params->filter_fraction-in_frac) < 0.5) {
+        // p = b*(1-in_frac)*0.5
+        b = (params->filter_fraction-in_frac)/(0.5*(1.0-in_frac));
+        a = b/(1.0-in_frac);
+    } else {
+        // p = (c+b)*0.5*(1-in_frac)
+        b = 1.0;
+        c = (params->filter_fraction-in_frac)/((1.0-in_frac)*0.5) - 1.0;
+        a = (b-c)/(1.0-in_frac);
+    }
+    //fprintf(stderr, "%f %f %f\n", params->filter_fraction, a, b);
+    for(z=0;z<zdim;z++) {
+        for(y=0;y<ydim;y++) {
+            for(x=0;x<xdim;x++) {
+                if(y > 0.5*(double)params->ydim) {
+                    if(x > 0.5*(double)params->xdim) {
+                        r = sqrt(((double)params->ydim-(double)y)*((double)params->ydim-(double)y)+((double)params->xdim-(double)x)*((double)params->xdim-(double)x))/(double)params->ydim;
+                    } else {
+                        r = sqrt(((double)params->ydim-(double)y)*((double)params->ydim-(double)y)+(double)x*(double)x)/(double)params->ydim;
+                    }
+                } else {
+                    if(x > 0.5*(double)params->xdim) {
+                        r = sqrt((double)y*(double)y+((double)params->xdim-(double)x)*((double)params->xdim-(double)x))/(double)params->ydim;
+                    } else {
+                        r = sqrt((double)y*(double)y+(double)x*x)/(double)params->ydim;
+                    }
+                }
+                r *= 2;
+                if(r<in_frac) {
+                    filter = false;
+                } else {
+                    rn = (double)rand()/(double)RAND_MAX;
+                    //filter = pow((1.0-r), params->filter_fraction/0.9) > rn;
+                    // f(1) = 0
+                    // f(0.1) = 1
+                    // a = -1/0.9
+                    // params->filter_fraction-0.1 = 0.5 * 0.9 * a
+                    // a = (params->filter_fraction-0.1)/(0.5*0.9)
+                    // f(x) = -a*x + c
+                    // 0 = -a*1 + c
+                    // f(x) = -a*x + a
+                    filter = rn > (-a*(r-in_frac)+b);
+                }
+                pos = x+y*xdim+z*xdim*ydim;
+                if(filter) {
+                    count2++;
+                    ASSIGN(out_kspace[pos], 0, 0);
+                } else {
+                    count++;
+                    out_kspace[pos] = kspace[pos];
+                }
+            }
+        }
+    }
+    //fprintf(stdout, "pseudo randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
+}
+
 void apply_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
     int count = 0;
     int count2 = 0;
@@ -107,6 +174,32 @@ void apply_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct 
         }
     }
     //fprintf(stdout, "randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
+}
+
+void apply_random_lines_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
+    int count = 0;
+    int count2 = 0;
+    int x,y,z,pos;
+    int xdim = params->xdim;
+    int ydim = params->ydim;
+    int zdim = params->zdim;
+    double rn;
+    for(z=0;z<zdim;z++) {
+        for(y=0;y<ydim;y++) {
+            rn = (double)rand()/(double)RAND_MAX;
+            for(x=0;x<xdim;x++) {    
+                pos = x+y*xdim+z*xdim*ydim;
+                if(rn < params->filter_fraction == 0) {
+                    count2++;
+                    ASSIGN(out_kspace[pos], 0, 0);
+                } else {
+                    count++;
+                    out_kspace[pos] = kspace[pos];
+                }
+            }
+        }
+    }
+    //fprintf(stdout, "random lines sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
 void apply_regular_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSParams *params) {
@@ -153,6 +246,12 @@ void apply_cs_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct CSPa
             break;
         case Random:
             apply_random_filter(kspace, out_kspace, params);
+            break;
+        case RandomLines:
+            apply_random_lines_filter(kspace, out_kspace, params);
+            break;
+        case PseudoRandomPoints:
+            apply_pseudo_random_points_filter(kspace, out_kspace, params);
             break;
     }
 }
@@ -250,6 +349,9 @@ void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, struct CSParams
     kiss_fft_cpx d;
     int i, x, y, z;
     for(int outer = 0;outer < nbreg; outer++) {
+      if (!(data_ndims==2) && params->callback != 0) {
+        ((cs_callback*)params->callback)(outer+1);
+      }
       for(int i=0;i<data_length;i++) {
         ASSIGN(i_rhs[i], REAL(f_data[i]), IMAG(f_data[i]));
         C_MULBYSCALAR(i_rhs[i], mu*f_mask[i]);

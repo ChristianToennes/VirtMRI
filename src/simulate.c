@@ -396,7 +396,7 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
                 p->cs_params->zdim = 1;
                 for(z=0;z<p->zdim;z++) {
                     if (p->cs_params->callback != 0) {
-                        ((cs_callback*)p->cs_params->callback)(z);
+                        ((cs_callback*)p->cs_params->callback)(z+1);
                     } else {
                         fprintf(stderr, "%d\n", z);
                     }
