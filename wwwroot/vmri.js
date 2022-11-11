@@ -170,6 +170,13 @@ const resultMessageHandler = function (data) {
         windowing.classList.add("hidden");
         plot_colormap("cur_colorBar");
         colorBar.classList.remove("hidden");
+        if(imgResultCache["cur"] != undefined && (imgResultCache["cur"].params["sequence"] == "SQ" || imgResultCache["cur"].params["sequence"] == "Na")) {
+            colorBar.classList.remove("colorBarContainerTQ");
+            colorBar.classList.add("colorBarContainerSQ");
+        } else {
+            colorBar.classList.remove("colorBarContainerSQ");
+            colorBar.classList.add("colorBarContainerTQ");
+        }
     } else {
         windowing.classList.remove("hidden");
         colorBar.classList.add("hidden");
@@ -181,6 +188,13 @@ const resultMessageHandler = function (data) {
         windowing.classList.add("hidden");
         plot_colormap("pre_colorBar");
         colorBar.classList.remove("hidden");
+        if(imgResultCache["pre"] != undefined && (imgResultCache["pre"].params["sequence"] == "SQ" || imgResultCache["pre"].params["sequence"] == "Na")) {
+            colorBar.classList.remove("colorBarContainerTQ");
+            colorBar.classList.add("colorBarContainerSQ");
+        } else {
+            colorBar.classList.remove("colorBarContainerSQ");
+            colorBar.classList.add("colorBarContainerTQ");
+        }
     } else {
         windowing.classList.remove("hidden");
         colorBar.classList.add("hidden");
@@ -192,6 +206,13 @@ const resultMessageHandler = function (data) {
         windowing.classList.add("hidden");
         plot_colormap("cs_colorBar");
         colorBar.classList.remove("hidden");
+        if(imgResultCache["cs"] != undefined && (imgResultCache["cs"].params["sequence"] == "SQ" || imgResultCache["cs"].params["sequence"] == "Na")) {
+            colorBar.classList.remove("colorBarContainerTQ");
+            colorBar.classList.add("colorBarContainerSQ");
+        } else {
+            colorBar.classList.remove("colorBarContainerSQ");
+            colorBar.classList.add("colorBarContainerTQ");
+        }
     } else {
         windowing.classList.remove("hidden");
         colorBar.classList.add("hidden");

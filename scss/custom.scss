@@ -547,12 +547,21 @@ app {
     padding: 0;
 }
 
-.colorBarContainer::before {
+.colorBarContainerSQ::before {
     content: '0mM';
     padding-right: 0.5rem;
 }
-.colorBarContainer::after {
+.colorBarContainerSQ::after {
     content: '140mM';
+    padding-left: 0.5rem;
+}
+
+.colorBarContainerTQ::before {
+    content: '0aU';
+    padding-right: 0.5rem;
+}
+.colorBarContainerTQ::after {
+    content: '1aU';
     padding-left: 0.5rem;
 }
 
