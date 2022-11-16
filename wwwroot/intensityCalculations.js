@@ -1304,8 +1304,8 @@ function simulateImageFast(params) {
             return result;
         }
     } catch (e) {
-        console.log(e);
-        return e;
+        //console.log("error", e);
+        return e.message;
     }
 }
 

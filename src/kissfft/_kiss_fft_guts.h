@@ -116,6 +116,9 @@ struct kiss_fft_state{
 #   define C_MULBYSCALAR( c, s ) \
     do{ (c).r *= (s);\
         (c).i *= (s); }while(0)
+#   define C_DIVBYSCALAR( c, s ) \
+    do{ (c).r /= (s);\
+        (c).i /= (s); }while(0)
 #endif
 
 #define C_SQRT(m, a) \

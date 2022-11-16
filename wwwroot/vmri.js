@@ -71,7 +71,7 @@ const h_tabs = ["params-IR-tab", "params-SE-tab", "params-bSSFP-tab", "params-FI
 var current_tab = "params-IR-tab";
 var selected_tab = "params-IR-tab";
 
-var imgResultCache = {};
+var imgResultCache = {"cur": undefined, "pre": undefined, "cs": undefined};
 
 function sequenceParametersKeyDown(e) {
     if(e.code == "Enter") {
@@ -132,6 +132,8 @@ const resultMessageHandler = function (data) {
         imgResultCache["pre"] = data[0];
         imgResultCache["cur"] = data[1];
         imgResultCache["cs"] = data[2];
+    } else if(typeof(data) == "string") {
+        console.log("Error occured: ", data);
     } else {
         if ("cs" in imgResultCache) {
             imgResultCache["pre"] = imgResultCache["cs"];
@@ -141,8 +143,13 @@ const resultMessageHandler = function (data) {
         }
         imgResultCache["cur"] = data;
     }
-    document.getElementById("cur_slice").max = imgResultCache["cur"].zdim;
-    document.getElementById("cur_slice").value = Math.round(imgResultCache["cur"].zdim/2);
+
+    console.log((performance.now()-resultTimer) / 1000);
+
+    if(imgResultCache["cur"] != undefined) {
+        document.getElementById("cur_slice").max = imgResultCache["cur"].zdim;
+        document.getElementById("cur_slice").value = Math.round(imgResultCache["cur"].zdim/2);
+    }
     if(imgResultCache["pre"] != undefined) {
         document.getElementById("pre_slice").max = imgResultCache["pre"].zdim;
         document.getElementById("pre_slice").value = Math.round(imgResultCache["pre"].zdim/2);
@@ -229,7 +236,6 @@ const resultMessageHandler = function (data) {
 
     displayAndWindow3DImage();
     toggleImg();
-    console.log((performance.now()-resultTimer) / 1000);
 };
 w.addListener('result', resultMessageHandler);
 
@@ -761,6 +767,8 @@ function startScan() {
     params["zdim"] = Math.ceil(params["zdim"]/2)*2;
     param_div = document.getElementById("params-noise");
     params = read_params(param_div, params);
+    param_div = document.getElementById("params-kspace");
+    params = read_params(param_div, params);
     param_div = document.getElementById("params-cs");
     params = read_params(param_div, params);
     
@@ -801,6 +809,8 @@ function profile() {
     params["ydim"] = Math.ceil(params["ydim"]/2)*2;
     params["zdim"] = Math.ceil(params["zdim"]/2)*2;
     param_div = document.getElementById("params-noise");
+    params = read_params(param_div, params);
+    param_div = document.getElementById("params-kspace");
     params = read_params(param_div, params);
     param_div = document.getElementById("params-cs");
     params = read_params(param_div, params);

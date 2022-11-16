@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,6 +8,7 @@
 #include "fft.h"
 #include "fft2.h"
 #include "fft3.h"
+#include "kspace_filter.h"
 #include "tinycs.h"
 #include "noise.h"
 #include "stdbool.h"
@@ -43,7 +45,7 @@ static inline void normalizeImage(kiss_fft_cpx* image, struct Params *p) {
 
 int call_count = 0;
 static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
-    double te, tr, ti, fa, tau1, tau2, te_end, te_step, e_tr_t1, e_tr_t2, cfa, sfa, s, m, b;
+    double te, tr, ti, fa, tau1, tau2, te_end, te_step, e_tr_t1, e_tr_t2, cfa, sfa, s, m;
     double pd, t1, t2, t2s, t2f, ex_frac;
     call_count += 1;
     s = 0;
@@ -366,18 +368,9 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
     }
 
     bool modified = addKSpaceNoise(kspace, p);
-    if(modified) {
-        if(p->use_fft3) {
-            ifft3d(kspace, image, p->ydim, p->zdim, p->xdim);
-        } else {
-            for(z=0;z<p->zdim;z++) {
-                ifft2d(&kspace[z*p->xdim*p->ydim], &image[z*p->xdim*p->ydim], p->xdim, p->ydim);
-            }
-        }
-    }
-
+    
     if(p->use_cs && cs_image != NULL) {
-        apply_cs_filter(kspace, filt_kspace, p->cs_params);
+        apply_kspace_filter(kspace, filt_kspace, p);
         if(p->use_fft3) {
             ifft3d(filt_kspace, filt_image, p->ydim, p->zdim, p->xdim);
         } else {
@@ -389,29 +382,39 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
             cs_kspace[i] = filt_kspace[i];
             ASSIGN(cs_image[i], 0, 0);
         }
-        if(!p->cs_params->filter_only) {
-            if(p->use_fft3) {
-                compressed_sensing(cs_kspace, cs_image, p->cs_params);
-            } else {
-                p->cs_params->zdim = 1;
-                for(z=0;z<p->zdim;z++) {
-                    if (p->cs_params->callback != 0) {
-                        ((cs_callback*)p->cs_params->callback)(z+1);
-                    } else {
-                        fprintf(stderr, "%d\n", z);
-                    }
-                    compressed_sensing(&cs_kspace[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->cs_params);
+        if(p->use_fft3) {
+            compressed_sensing(cs_kspace, cs_image, p);
+        } else {
+            for(z=0;z<p->zdim;z++) {
+                if (p->cs_params->callback != 0) {
+                    ((cs_callback*)p->cs_params->callback)(z+1);
+                } else {
+                    fprintf(stderr, "%d\n", z);
                 }
+                compressed_sensing(&cs_kspace[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p);
             }
-            double s;
-            /*for(z=0;z<p->zdim;z++) {
-                s = ssim(&image[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->xdim*p->ydim);
-                fprintf(stdout, "ssim %d: %f ", z, s);
-            }
-            s = ssim(image, cs_image, p->xdim*p->ydim);
-            fprintf(stdout, "ssim: %f l1: %f l2: %f mu: %f gam: %f ninner: %d nreg: %d\n", s, p->cs_params->lambda, p->cs_params->lambda2, p->cs_params->mu, p->cs_params->gam, p->cs_params->ninner, p->cs_params->nbreg);
-            */
         }
+        /*double s;
+        for(z=0;z<p->zdim;z++) {
+            s = ssim(&image[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->xdim*p->ydim);
+            fprintf(stdout, "ssim %d: %f ", z, s);
+        }
+        s = ssim(image, cs_image, p->xdim*p->ydim);
+        fprintf(stdout, "ssim: %f l1: %f l2: %f mu: %f gam: %f ninner: %d nreg: %d\n", s, p->cs_params->lambda, p->cs_params->lambda2, p->cs_params->mu, p->cs_params->gam, p->cs_params->ninner, p->cs_params->nbreg);
+        */
+    } else {
+        modified = apply_kspace_filter(kspace, kspace, p) || modified;
+    }
+    
+    if(modified) {
+        if(p->use_fft3) {
+            ifft3d(kspace, image, p->ydim, p->zdim, p->xdim);
+        } else {
+            for(z=0;z<p->zdim;z++) {
+                ifft2d(&kspace[z*p->xdim*p->ydim], &image[z*p->xdim*p->ydim], p->xdim, p->ydim);
+            }
+        }
+        modified = 0;
     }
     //fprintf(stdout, "voxel sim call count: %d overlap: %f\n", call_count, (double)call_count/(256.0*256.0*256.0));
 }

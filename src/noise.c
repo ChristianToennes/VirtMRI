@@ -1,5 +1,7 @@
 #include "noise.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include "_kiss_fft_guts.h"
 #include "stdbool.h"
 

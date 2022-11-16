@@ -79,21 +79,21 @@
                                     </div>
                                     <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
                                 </div>
-                                <!--<div class="row form-row">
+                                <div class="row form-row">
                                     <div class="col-auto w-25">
-                                        <label class="mb-0 align-self-center">K-Space Dimensions:</label>
+                                        <label class="mb-0 align-self-center">Image Start:</label>
                                     </div>
                                     <div class="col-sm"><label class="mb-0 align-self-center">X:</label></div>
-                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="k_xdim" id="k_xdim" oninput="updateTime()" />
+                                    <input class="col-sm form-control" type="number" min="1" max="256" value="0" name="xstart" id="xstart" oninput="updateTime()" />
                                     <div class="col-sm">
                                         <label class="mb-0 align-self-center">Y:</label>
                                     </div>
-                                    <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="k_ydim" id="k_ydim" oninput="updateTime()" />
+                                    <input class="col-sm form-control" type="number" min="1", max="256" value="0" name="ystart" id="ystart" oninput="updateTime()" />
                                     <div class="col-sm">
                                         <label class="mb-0 align-self-center">Z:</label>
                                     </div>
-                                    <input class="col-sm form-control" type="number" min="1", max="256" value="256" name="k_zdim" id="k_zdim" oninput="updateTime()" />
-                                </div>-->
+                                    <input class="col-sm form-control" type="number" min="1", max="256" value="0" name="zstart" id="zstart" oninput="updateTime()" />
+                                </div>
                                 <div class="row form-row">
                                     <div class="col-auto w-25">
                                         <label class="mb-0 align-self-center">Interpolation Mode:</label>
@@ -153,6 +153,42 @@
                         </div>
                     </div>
                     <div class="accordion-item">
+                        <div class="accordion-header" id="acc-kspace-head" onclick="toggleAccordion('kspace')">
+                            <button class="accordion-button collapsed" type="button">K-Space Manipulation</button>
+                        </div>
+                        <div class="accordion-collapse collapse" id="acc-kspace-content">
+                            <div class="accordion-body" id="params-kspace">
+                                <div class="row form-row">
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">Filtering mode:</label>
+                                    </div>
+                                    <select class="col-sm form-select" type="select" id="kspace_filter_mode" name="kspace_filter_mode" oninput="updateTime()">
+                                        <option value="0" selected>Sample fully</option>
+                                        <option value="1">Pseudo Random lines</option>
+                                        <option value="2">Pseudo Random points</option>
+                                        <option value="3">Regulary spaced lines</option>
+                                        <option value="4">Random Lines</option>
+                                        <option value="5">Random Points</option>
+                                    </select>
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">K-Space sampled %:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="0" max="100" value="50" name="kspace_filter_fraction" id="kspace_filter_fraction" oninput="updateTime()" />
+                                </div>
+                                <div class="row form-row">
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">Drop lower % of frequency spectrum</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="0" max="100" value="0" name="kspace_filter_fmin" id="kspace_filter_fmin" oninput="updateTime()" />
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center">Drop high % of frequency spectrum</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="0" max="100" value="100" name="kspace_filter_fmax" id="kspace_filter_fmax" oninput="updateTime()" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
                         <div class="accordion-header" id="acc-cs-head" onclick="toggleAccordion('cs')">
                             <button class="accordion-button collapsed" type="button">Compressed Sensing</button>
                         </div>
@@ -164,25 +200,10 @@
                                     </div>
                                     <select class="col-sm form-select" type="select" id="cs" name="cs" oninput="updateTime()">
                                         <option value="0" selected>Disable</option>
-                                        <option value="1">Only K-Space Filter</option>
-                                        <option value="2">CS Enabled</option>
+                                        <option value="2">Enabled</option>
                                         <!--<option value="3">CS Enabled fast</option>-->
                                         <!--<option value="4">fft3 test</option>-->
                                     </select>
-                                    <div class="col-sm">
-                                        <label class="mb-0 align-self-center">Filtering mode:</label>
-                                    </div>
-                                    <select class="col-sm form-select" type="select" id="cs_filter_mode" name="cs_filter_mode" oninput="updateTime()">
-                                        <option value="0" selected>Pseudo Random lines</option>
-                                        <option value="4">Pseudo Random points</option>
-                                        <option value="1">Regulary spaced lines</option>
-                                        <option value="3">Random Lines</option>
-                                        <option value="2">Random Points</option>
-                                    </select>
-                                    <div class="col-sm">
-                                        <label class="mb-0 align-self-center">K-Space sampled %:</label>
-                                    </div>
-                                    <input class="col-sm form-control" type="number" min="0" max="100" value="50" name="cs_filter_fraction" id="cs_filter_fraction" oninput="updateTime()" />
                                 </div>
                                 <div class="row form-row">
                                     <div class="col-auto w-25">

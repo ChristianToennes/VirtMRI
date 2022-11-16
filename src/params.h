@@ -23,30 +23,35 @@ struct NoiseParams* make_noise_params(enum NoiseType noise, double mean, double 
 void free_noise_params(struct NoiseParams* params);
 
 typedef enum FilterMode {
-    PseudoRandom = 0,
-    Regular = 1,
-    Random = 2,
-    RandomLines = 3,
-    PseudoRandomPoints = 4
+    Full = 0,
+    PseudoRandomLines = 1,
+    PseudoRandomPoints = 2,
+    RegularLines = 3,
+    RandomLines = 4,
+    RandomPoints = 5
 } filter_mode;
 
+typedef struct FilterParams {
+    enum FilterMode filter_mode;
+    double filter_fraction;
+    double fmin;
+    double fmax;
+} filter_params;
+
+struct FilterParams* make_filter_params(enum FilterMode filter_mode, double filter_fraction, double fmin, double fmax);
+void free_filter_params(struct FilterParams* params);
+
 typedef struct CSParams {
-    bool filter_only;
-    int xdim;
-    int ydim;
-    int zdim;
     int ninner;
     int nbreg;
     double lambda;
     double lambda2;
     double mu;
     double gam;
-    enum FilterMode filter_mode;
-    double filter_fraction;
     int callback;
 } cs_params;
 
-struct CSParams* make_cs_params(bool filter_only, int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, enum FilterMode filter_mode, double filter_fraction, int callback);
+struct CSParams* make_cs_params(int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, int callback);
 void free_cs_params(struct CSParams* params);
 
 typedef struct Dataset {
@@ -87,9 +92,10 @@ typedef struct Params {
     bool use_fft3;
     struct CSParams* cs_params;
     struct NoiseParams* noise_params;
+    struct FilterParams* filter_params;
 } params;
 
-struct Params* make_params(enum Sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, enum Nearest nearest, bool use_cs, bool use_fft3, struct CSParams* cs_params, struct NoiseParams* noise_params);
+struct Params* make_params(enum Sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, enum Nearest nearest, bool use_cs, bool use_fft3, struct CSParams* cs_params, struct NoiseParams* noise_params, struct FilterParams* filter_params);
 void free_params(struct Params* params);
 
 #endif

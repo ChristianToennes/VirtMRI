@@ -1,7 +1,7 @@
 #include "params.h"
 #include "stdlib.h"
 
-struct Params* make_params(enum Sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, enum Nearest nearest, bool use_cs, bool use_fft3, struct CSParams* cs_params, struct NoiseParams* noise_params) {
+struct Params* make_params(enum Sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, enum Nearest nearest, bool use_cs, bool use_fft3, struct CSParams* cs_params, struct NoiseParams* noise_params, struct FilterParams* filter_params) {
     struct Params* p = (struct Params*)malloc(sizeof(struct Params));
     p->sequence = sequence;
     p->n_params = n_params;
@@ -14,12 +14,14 @@ struct Params* make_params(enum Sequence sequence, int n_params, float* s_params
     p->use_fft3 = use_fft3;
     p->cs_params = cs_params;
     p->noise_params = noise_params;
+    p->filter_params = filter_params;
     //fprintf(stdout, "%i %i %i %i %i %i %i %i %i %i %i\n", sequence, n_params, s_params, xdim, ydim, zdim, nearest, use_cs, use_fft3, cs_params, noise_params);
     return p;
 }
 
 void free_params(struct Params* p) {
     free_noise_params(p->noise_params);
+    free_filter_params(p->filter_params);
     free_cs_params(p->cs_params);
     free(p->s_params);
     free(p);
@@ -55,20 +57,14 @@ void free_dataset(struct Dataset* ds) {
     free(ds);
 }
 
-struct CSParams* make_cs_params(bool filter_only, int xdim, int ydim, int zdim, int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, enum FilterMode filter_mode, double filter_fraction, int callback) {
+struct CSParams* make_cs_params(int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, int callback) {
     struct CSParams* params = malloc(sizeof(struct CSParams));
-    params->filter_only = filter_only;
-    params->xdim = xdim;
-    params->ydim = ydim;
-    params->zdim = zdim;
     params->ninner = ninner;
     params->nbreg = nbreg;
     params->lambda = lambda;
     params->lambda2 = lambda2;
     params->mu = mu;
     params->gam = gam;
-    params->filter_mode = filter_mode;
-    params->filter_fraction = filter_fraction;
     params->callback = callback;
     //fprintf(stdout, "%i %i %i %i %i %f %f %f %f %i %f\n", xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam, filter_mode, filter_fraction);
     return params;
@@ -88,5 +84,18 @@ struct NoiseParams* make_noise_params(enum NoiseType noise, double mean, double 
 }
 
 void free_noise_params(struct NoiseParams* params) {
+    free(params);
+}
+
+struct FilterParams* make_filter_params(enum FilterMode filter_mode, double filter_fraction, double fmin, double fmax) {
+    struct FilterParams* params = malloc(sizeof(struct FilterParams));
+    params->filter_mode = filter_mode;
+    params->filter_fraction = filter_fraction;
+    params->fmin = fmin;
+    params->fmax = fmax;
+    return params;
+}
+
+void free_filter_params(struct FilterParams* params) {
     free(params);
 }

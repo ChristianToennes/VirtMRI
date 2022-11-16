@@ -98,7 +98,8 @@ function make_params(params) {
     var use_cs = "cs" in params ? params["cs"]>0 : false;
     var [cs_params, callback_ptr] = make_cs_params(params);
     var noise_params = make_noise_params(params);
-    c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["nearest"], use_cs, fft3d, cs_params, noise_params);
+    var filter_params = make_filter_params(params);
+    c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["nearest"], use_cs, fft3d, cs_params, noise_params, filter_params);
     return [c_params, callback_ptr];
 }
 
@@ -187,33 +188,29 @@ function simulate_fast(ds, params) {
 }
 
 function make_cs_params(params) {
-    
-    var xdim = Math.round(params["xdim"]);
-    xdim = xdim > 0 ? xdim : k_xdim;
-    xdim = xdim > k_xdim ? k_xdim : xdim;
-    var ydim = Math.round(params["ydim"]);
-    ydim = ydim > 0 ? ydim : k_ydim;
-    ydim = ydim > k_ydim ? k_ydim : ydim;
-    var zdim = Math.round(params["zdim"]);
-    zdim = zdim > 0 ? zdim : k_zdim;
-    zdim = zdim > k_zdim ? k_zdim : zdim;
-    
     var ninner = "cs_ninner" in params ? parseInt(params["cs_ninner"]) : 1;
     var nbreg = "cs_nbreg" in params ? parseInt(params["cs_nbreg"]) : 80;
     var lambda = "cs_lambda1" in params ? parseFloat(params["cs_lambda1"]):1.0;
     var lambda2 = "cs_lambda2" in params? parseFloat(params["cs_lambda2"]):0.15;
     var mu = "cs_mu" in params ? params["cs_mu"] : 1.0;
     var gam = "cs_gam" in params? parseFloat(params["cs_gam"]):1;
-    var filter_only = "cs" in params ? parseInt(params["cs"])==1 : true;
-    var filter_mode = "cs_filter_mode" in params? parseInt(params["cs_filter_mode"]):0;
-    var filter_fraction = "cs_filter_fraction" in params? parseFloat(params["cs_filter_fraction"])/100.0:0.5;
     var callback_ptr = 0;
     if ("cs_callback" in params) {
         callback_ptr = Module.addFunction(params["cs_callback"], "vi")
     }
     
-    var cs_params = _make_cs_params(filter_only, xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam, filter_mode, filter_fraction, callback_ptr)
+    var cs_params = _make_cs_params(ninner, nbreg, lambda, lambda2, mu, gam, callback_ptr)
     return [cs_params, callback_ptr];
+}
+
+function make_filter_params(params) {
+    var filter_mode = "kspace_filter_mode" in params? parseInt(params["kspace_filter_mode"]):0.0;
+    var filter_fraction = "kspace_filter_fraction" in params? parseFloat(params["kspace_filter_fraction"])/100.0:0.5;
+    var fmin = "kspace_filter_fmin" in params? parseFloat(params["kspace_filter_fmin"]):0.0;
+    var fmax = "kspace_filter_fmax" in params? parseFloat(params["kspace_filter_fmax"]):100.0;
+
+    var filter_params = _make_filter_params(filter_mode, filter_fraction, fmin, fmax);
+    return filter_params
 }
 
 function compressed_sensing_fast(data, params) {
