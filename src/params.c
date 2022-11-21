@@ -1,7 +1,7 @@
 #include "params.h"
 #include "stdlib.h"
 
-struct Params* make_params(enum Sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, enum Nearest nearest, bool use_cs, bool use_fft3, struct CSParams* cs_params, struct NoiseParams* noise_params, struct FilterParams* filter_params) {
+struct Params* make_params(enum Sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, int xstart, int ystart, int zstart, enum Nearest nearest, bool use_cs, bool use_fft3, struct CSParams* cs_params, struct NoiseParams* noise_params, struct FilterParams* filter_params) {
     struct Params* p = (struct Params*)malloc(sizeof(struct Params));
     p->sequence = sequence;
     p->n_params = n_params;
@@ -9,6 +9,9 @@ struct Params* make_params(enum Sequence sequence, int n_params, float* s_params
     p->xdim = xdim;
     p->ydim = ydim;
     p->zdim = zdim;
+    p->xstart = xstart;
+    p->ystart = ystart;
+    p->zstart = zstart;
     p->nearest = nearest;
     p->use_cs = use_cs;
     p->use_fft3 = use_fft3;

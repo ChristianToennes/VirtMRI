@@ -87,6 +87,9 @@ typedef struct Params {
     int xdim;
     int ydim;
     int zdim;
+    int xstart;
+    int ystart;
+    int zstart;
     enum Nearest nearest;
     bool use_cs;
     bool use_fft3;
@@ -95,7 +98,7 @@ typedef struct Params {
     struct FilterParams* filter_params;
 } params;
 
-struct Params* make_params(enum Sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, enum Nearest nearest, bool use_cs, bool use_fft3, struct CSParams* cs_params, struct NoiseParams* noise_params, struct FilterParams* filter_params);
+struct Params* make_params(enum Sequence sequence, int n_params, float* s_params, int xdim, int ydim, int zdim, int xstart, int ystart, int zstart, enum Nearest nearest, bool use_cs, bool use_fft3, struct CSParams* cs_params, struct NoiseParams* noise_params, struct FilterParams* filter_params);
 void free_params(struct Params* params);
 
 #endif

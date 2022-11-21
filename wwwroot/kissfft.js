@@ -99,7 +99,7 @@ function make_params(params) {
     var [cs_params, callback_ptr] = make_cs_params(params);
     var noise_params = make_noise_params(params);
     var filter_params = make_filter_params(params);
-    c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["nearest"], use_cs, fft3d, cs_params, noise_params, filter_params);
+    c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["xstart"], params["ystart"], params["zstart"], params["nearest"], use_cs, fft3d, cs_params, noise_params, filter_params);
     return [c_params, callback_ptr];
 }
 
