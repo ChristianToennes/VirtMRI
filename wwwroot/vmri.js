@@ -3,12 +3,16 @@ const jetmap = [ [0.0, 0.0, 0.5], [0.0, 0.0, 0.5178], [0.0, 0.0, 0.5357], [0.0, 
 const datasets = {
     //0: ["BrainWeb 05 - 3T", "./3t/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
     //1: ["BrainWeb 05 - 1.5T", "./1.5T/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    2: ["BrainWeb colin27 - 3T + Na", "./3t/bw_2", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
-    3: ["BrainWeb colin27 - 1.5T", "./1.5T/bw_2", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
-    4: ["BrainWeb 54 - 3T + Na", "./3t/54_2", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    5: ["BrainWeb 54 - 1.5T", "./1.5T/54_2", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    6: ["Phantomag - 1.5T", "./1.5T/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
-    7: ["Phantomag - 1T", "./1t/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
+    2: ["BrainWeb colin27 - 3T + Na", "./3t/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    3: ["BrainWeb colin27 - 1.5T", "./1.5T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    4: ["BrainWeb 54 - 3T + Na", "./3t/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    5: ["BrainWeb 54 - 1.5T", "./1.5T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    6: ["HighRes BrainWeb colin27 - 3T + Na", "./3t/bw_2", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    7: ["HighRes BrainWeb colin27 - 1.5T", "./1.5T/bw_2", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    8: ["HighRes BrainWeb 54 - 3T + Na", "./3t/54_2", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    9: ["HighRes BrainWeb 54 - 1.5T", "./1.5T/54_2", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    10: ["Phantomag - 1.5T", "./1.5T/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
+    11: ["Phantomag - 1T", "./1t/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
 }
 
 function QueryableWorker(url) {
