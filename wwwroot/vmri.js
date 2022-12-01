@@ -498,6 +498,13 @@ function displayAndWindow3DImage(which) {
     var xdim = imgResult.xdim;
     var ydim = imgResult.ydim;
     var zdim = imgResult.zdim;
+
+    var in_slice = document.getElementById(which+"_corslice");
+    var cor_slice = parseInt(in_slice.value);
+    in_slice = document.getElementById(which+"_sagslice");
+    var sag_slice = parseInt(in_slice.value);
+    in_slice = document.getElementById(which+"_traslice");
+    var tra_slice = parseInt(in_slice.value);
     
     var canvas = document.getElementById(which+"_corResult");
     ctx = canvas.getContext('2d');
@@ -506,13 +513,12 @@ function displayAndWindow3DImage(which) {
     idata = ctx.createImageData(xdim, zdim);
 
     var image_result = new Uint8ClampedArray(xdim * zdim * 4);
-    in_slice = document.getElementById(which+"_corslice");
-    slice = parseInt(in_slice.value);
+    
     
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < xdim; x++) {
             for (var z=0; z < zdim; z++) {
-                var val = Math.round(imgResult.data[x + slice * xdim + (zdim-z)*xdim*ydim] * 255);
+                var val = Math.round(imgResult.data[x + cor_slice * xdim + (zdim-z)*xdim*ydim] * 255);
                 if (val > 255) { val = 255; }
                 if (val < 0) {val = 0;}
                 var c = jetmap[val];
@@ -532,7 +538,7 @@ function displayAndWindow3DImage(which) {
         var wc = parseFloat(in_wc.value)
         for (var x = 0; x < xdim; x++) {
             for (var z=0; z < zdim; z++) {
-                val = imgResult.data[x + slice*xdim +(zdim-z)*xdim*ydim] * 4096
+                val = imgResult.data[x + cor_slice*xdim +(zdim-z)*xdim*ydim] * 4096
                 if (val <= (wc - ww)) {
                     val = 0
                 } else if (val >= (wc + ww)) {
@@ -547,6 +553,21 @@ function displayAndWindow3DImage(which) {
             }
         }
     }
+    for (var x = 0; x < xdim; x++) {
+        if(x>sag_slice-10 && x < sag_slice+10) {continue;}
+        image_result[4 * (x+(zdim-tra_slice)*xdim)] = 255
+        image_result[4 * (x+(zdim-tra_slice)*xdim) + 1] = 0
+        image_result[4 * (x+(zdim-tra_slice)*xdim) + 2] = 0
+        image_result[4 * (x+(zdim-tra_slice)*xdim) + 3] = 255
+    }
+    for (var z=0; z < zdim; z++) {
+        if(z>(zdim-tra_slice-10) && z < (zdim-tra_slice+10)) {continue;}
+        image_result[4 * (sag_slice+z*xdim)] = 0
+        image_result[4 * (sag_slice+z*xdim) + 1] = 255
+        image_result[4 * (sag_slice+z*xdim) + 2] = 0
+        image_result[4 * (sag_slice+z*xdim) + 3] = 255
+    }
+    
     idata.data.set(image_result);
     ctx.putImageData(idata, 0, 0);
 
@@ -557,13 +578,11 @@ function displayAndWindow3DImage(which) {
     idata = ctx.createImageData(ydim, zdim);
 
     var image_result = new Uint8ClampedArray(zdim * ydim * 4);
-    in_slice = document.getElementById(which+"_sagslice");
-    slice = parseInt(in_slice.value);
     
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < ydim; x++) {
             for(var z = 0; z < zdim; z++) {
-                var val = Math.round(imgResult.data[slice + y*xdim + (zdim-z)*xdim*ydim] * 255);
+                var val = Math.round(imgResult.data[sag_slice + y*xdim + (zdim-z)*xdim*ydim] * 255);
                 if (val > 255) { val = 255; }
                 if (val < 0) {val = 0;}
                 var c = jetmap[val];
@@ -583,7 +602,7 @@ function displayAndWindow3DImage(which) {
         var wc = parseFloat(in_wc.value)
         for (var y = 0; y < ydim; y++) {
             for(var z = 0; z < zdim; z++) {
-                val = imgResult.data[slice + y*xdim + (zdim-z)*xdim*ydim] * 4096
+                val = imgResult.data[sag_slice + y*xdim + (zdim-z)*xdim*ydim] * 4096
                 if (val <= (wc - ww)) {
                     val = 0
                 } else if (val >= (wc + ww)) {
@@ -598,6 +617,21 @@ function displayAndWindow3DImage(which) {
             }
         }
     }
+    for (var y = 0; y < ydim; y++) {
+        if(y>cor_slice-10 && y < cor_slice+10) {continue;}
+        image_result[4 * (y+(zdim-tra_slice)*ydim)] = 255
+        image_result[4 * (y+(zdim-tra_slice)*ydim) + 1] = 0
+        image_result[4 * (y+(zdim-tra_slice)*ydim) + 2] = 0
+        image_result[4 * (y+(zdim-tra_slice)*ydim) + 3] = 255
+    }
+    for (var z=0; z < zdim; z++) {
+        if(z>(zdim-tra_slice-10) && z<(zdim-tra_slice+10)) {continue;}
+        image_result[4 * (cor_slice+z*ydim)] = 0
+        image_result[4 * (cor_slice+z*ydim) + 1] = 0
+        image_result[4 * (cor_slice+z*ydim) + 2] = 255
+        image_result[4 * (cor_slice+z*ydim) + 3] = 255
+    }
+
     idata.data.set(image_result);
     ctx.putImageData(idata, 0, 0);
 
@@ -608,13 +642,11 @@ function displayAndWindow3DImage(which) {
     idata = ctx.createImageData(xdim, ydim);
 
     var image_result = new Uint8ClampedArray(xdim * ydim * 4);
-    in_slice = document.getElementById(which+"_traslice");
-    slice = parseInt(in_slice.value);
     
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < xdim; x++) {
             for (var y = 0; y < ydim; y++) {
-                var val = Math.round(imgResult.data[x + y*xdim + slice * xdim * ydim] * 255);
+                var val = Math.round(imgResult.data[x + y*xdim + tra_slice * xdim * ydim] * 255);
                 if (val > 255) { val = 255; }
                 if (val < 0) {val = 0;}
                 var c = jetmap[val];
@@ -634,7 +666,7 @@ function displayAndWindow3DImage(which) {
         var wc = parseFloat(in_wc.value)
         for (var x = 0; x < xdim; x++) {
             for(var y=0;y<ydim;y++) {
-                val = imgResult.data[x + y*xdim + slice * xdim * ydim] * 4096
+                val = imgResult.data[x + y*xdim + tra_slice * xdim * ydim] * 4096
                 if (val <= (wc - ww)) {
                     val = 0
                 } else if (val >= (wc + ww)) {
@@ -649,6 +681,21 @@ function displayAndWindow3DImage(which) {
             }
         }
     }
+    for (var x = 0; x < xdim; x++) {
+        if(x>sag_slice-10 && x < sag_slice+10) {continue;}
+        image_result[4 * (x+cor_slice*xdim)] = 0
+        image_result[4 * (x+cor_slice*xdim) + 1] = 0
+        image_result[4 * (x+cor_slice*xdim) + 2] = 255
+        image_result[4 * (x+cor_slice*xdim) + 3] = 255
+    }
+    for (var y=0; y < ydim; y++) {
+        if(y>cor_slice-10 && y < cor_slice+10) {continue;}
+        image_result[4 * (sag_slice+y*xdim)] = 0
+        image_result[4 * (sag_slice+y*xdim) + 1] = 255
+        image_result[4 * (sag_slice+y*xdim) + 2] = 0
+        image_result[4 * (sag_slice+y*xdim) + 3] = 255
+    }
+    
     idata.data.set(image_result);
     ctx.putImageData(idata, 0, 0);
 
