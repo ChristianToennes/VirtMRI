@@ -51,9 +51,9 @@ function onloadDataSet(xhr,resolve) {
             var resp = pako.inflate(xhr.response).buffer;
             var mm = new Float32Array(resp, 0, 2);
             var shape = new Uint16Array(resp, 8, 3);
-            zdim = shape[0];
-            ydim = shape[1];
-            xdim = shape[2];
+            k_zdim = shape[0];
+            k_ydim = shape[1];
+            k_xdim = shape[2];
             var a = new Uint8Array(resp, 14);
             var b = new Float32Array(a.length);
             for (var x = 0; x < a.length; x++) {
@@ -138,12 +138,12 @@ async function loadDataSet(path) {
         xhr.send();
     });
     if (ds == undefined) {
-        ds = make_dataset(array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
+        ds = make_dataset(k_xdim, k_ydim, k_zdim, array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
     } else {
         free_dataset(ds);
-        ds = make_dataset(array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
+        ds = make_dataset(k_xdim, k_ydim, k_zdim, array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
     }
-    return [array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2f, array_na_t2s, zdim, ydim, xdim];
+    return [array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_t2f, array_na_t2s, k_zdim, k_ydim, k_xdim];
 }
 
 function my_fft_stride(data, offset, stride, length) {
@@ -1270,7 +1270,7 @@ function simulateImage(params) {
 function simulateImageFast(params) {
     try{
         if (ds == undefined) {
-            ds = make_dataset(array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
+            ds = make_dataset(k_xdim, k_ydim, k_zdim, array_pd, array_t1, array_t2, array_t2s, array_na_mm, array_na_t1, array_na_ex_frac, array_na_t2s, array_na_t2f);
         }
         var fft3d = 'fft' in params ? params['fft'] == '3d' : true;
         var xdim = Math.round(params["xdim"]);

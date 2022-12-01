@@ -2,7 +2,7 @@ self.importScripts("a.out.js");
 
 const scalar_size = 4;
 
-function make_dataset(pd, t1, t2, t2s, na_mm, na_t1, na_ex_frac, na_t2s, na_t2f) {
+function make_dataset(k_xdim, k_ydim, k_zdim, pd, t1, t2, t2s, na_mm, na_t1, na_ex_frac, na_t2s, na_t2f) {
     pd_buff = allocFromArray(pd);
     pd_ptr = pd_buff.byteOffset;
     t1_buff = allocFromArray(t1);
@@ -29,7 +29,7 @@ function make_dataset(pd, t1, t2, t2s, na_mm, na_t1, na_ex_frac, na_t2s, na_t2f)
         na_t2s_ptr = 0;
         na_t2f_ptr = 0;
     }
-    dataset = _make_dataset(256,256,256,pd_ptr, t1_ptr, t2_ptr, t2s_ptr, na_mm_ptr, na_t1_ptr, na_ex_frac_ptr, na_t2s_ptr, na_t2f_ptr);
+    dataset = _make_dataset(k_xdim,k_ydim,k_zdim,pd_ptr, t1_ptr, t2_ptr, t2s_ptr, na_mm_ptr, na_t1_ptr, na_ex_frac_ptr, na_t2s_ptr, na_t2f_ptr);
     return dataset;
 }
 
@@ -141,48 +141,52 @@ function simulate_fast(ds, params) {
         filt_kspace_buff = alloc(xdim*ydim*zdim*scalar_size*2);
         filt_kspace_ptr = filt_kspace_buff.byteOffset;
     }
+    try {
 
-    [p, callback_ptr] = make_params(params)
-    _simulate(p, image_ptr, kspace_ptr, filt_ptr, filt_kspace_ptr, cs_ptr, cs_kspace_ptr, ds);
-    
-    var in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, image_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, image_ptr, xdim*ydim*zdim*2));
-    var image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
-    for(var i = 0;i<image.length;i++) {
-        image[i] = in_image[i*2];
-    }
-    var kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2));
-
-    var filt_image = undefined;
-    var filt_kspace = undefined;
-    if(use_cs) {
-        in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_ptr, xdim*ydim*zdim*2));
-        filt_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
-        for(var i = 0;i<filt_image.length;i++) {
-            filt_image[i] = in_image[i*2];
+        [p, callback_ptr] = make_params(params);
+        _simulate(p, image_ptr, kspace_ptr, filt_ptr, filt_kspace_ptr, cs_ptr, cs_kspace_ptr, ds);
+        
+        var in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, image_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, image_ptr, xdim*ydim*zdim*2));
+        var image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
+        for(var i = 0;i<image.length;i++) {
+            image[i] = in_image[i*2];
         }
-        filt_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2));
-    }
+        var kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2));
 
-    var cs_image = undefined;
-    var cs_kspace = undefined;
-    if(use_cs) {
-        in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2));
-        cs_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
-        for(var i = 0;i<cs_image.length;i++) {
-            cs_image[i] = in_image[i*2];
+        var filt_image = undefined;
+        var filt_kspace = undefined;
+        if(use_cs) {
+            in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_ptr, xdim*ydim*zdim*2));
+            filt_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
+            for(var i = 0;i<filt_image.length;i++) {
+                filt_image[i] = in_image[i*2];
+            }
+            filt_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2));
         }
-        cs_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2));
+
+        var cs_image = undefined;
+        var cs_kspace = undefined;
+        if(use_cs) {
+            in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2));
+            cs_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
+            for(var i = 0;i<cs_image.length;i++) {
+                cs_image[i] = in_image[i*2];
+            }
+            cs_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2));
+        }
+    } catch (e) {
+        console.log(e);
+    } finally {
+
+        Module.removeFunction(callback_ptr);
+        free_params(p);
+        Module._free(image_ptr);
+        Module._free(kspace_ptr);
+        Module._free(cs_ptr); 
+        Module._free(cs_kspace_ptr);
+        Module._free(filt_ptr);
+        Module._free(filt_kspace_ptr);
     }
-
-    Module.removeFunction(callback_ptr);
-    free_params(p);
-    Module._free(image_ptr);
-    Module._free(kspace_ptr);
-    Module._free(cs_ptr); 
-    Module._free(cs_kspace_ptr);
-    Module._free(filt_ptr);
-    Module._free(filt_kspace_ptr);
-
 
     return [image, kspace, filt_image, filt_kspace, cs_image, cs_kspace];
 }
@@ -407,7 +411,7 @@ function allocFromArray(ar) {
 
 /** Allocate a heap array to be passed to a compiled function. */
 function alloc(nbytes) {
-    var ptr = Module._malloc(nbytes);
+    var ptr = Module._malloc(nbytes)>>>0;
     return new Uint8Array(Module.HEAPU8.buffer, ptr, nbytes);
 }
 

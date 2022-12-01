@@ -68,16 +68,35 @@
                                     <div class="col-auto w-25">
                                         <label class="mb-0 align-self-center">Image Dimensions:</label>
                                     </div>
-                                    <div class="col-sm"><label class="mb-0 align-self-center">X:</label></div>
-                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="xdim" id="xdim" oninput="updateTime()" />
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">Y:</label>
+                                        <label class="mb-0 lign-self-center">Scale (%):</label>
                                     </div>
-                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="ydim" id="ydim" oninput="updateTime()" />
+                                    <input class="col-sm form-control" type="number" min="0" max="100" value="50" name="scale" id="scale" oninput="updateTime()" />
+                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xdim">X:</label></div>
+                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="xdim" id="xdim" oninput="" disabled />
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">Z:</label>
+                                        <label class="mb-0 align-self-center" for="ydim">Y:</label>
                                     </div>
-                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="zdim" id="zdim" oninput="updateTime()" />
+                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="ydim" id="ydim" oninput="" disabled />
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center" for="zdim">Z:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" min="1" max="256" value="256" name="zdim" id="zdim" oninput="" disabled />
+                                </div>
+                                <div class="row form-row">
+                                    <div class="col-auto w-25">
+                                        <label class="mb-0 align-self-center">Image Spacing:</label>
+                                    </div>
+                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xsize">X:</label></div>
+                                    <input class="col-sm form-control" type="number" name="xsize" id="xsize" oninput="" disabled />
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center" for="ysize">Y:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" name="ysize" id="ysize" oninput="" disabled />
+                                    <div class="col-sm">
+                                        <label class="mb-0 align-self-center" for="zsize">Z:</label>
+                                    </div>
+                                    <input class="col-sm form-control" type="number" name="zsize" id="zsize" oninput="" disabled />
                                 </div>
                                 <!--<div class="row form-row">
                                     <div class="col-auto w-25">
@@ -546,6 +565,20 @@
                     <label class="form-check-label" for="cs_visible">Show compressed sensing image</label>
                 </div>
             </div>
+            <div class="row">
+                <div class="col form-check form-switch">
+                    <input type="checkbox" class="form-check-input" name="cor" id="cor_visible" onchange="toggleImg()" checked />
+                    <label class="form-check-label" for="cor_visible">Show coronal slice</label>
+                </div>
+                <div class="col form-check form-switch">
+                    <input type="checkbox" class="form-check-input" name="sag" id="sag_visible" onchange="toggleImg()" checked />
+                    <label class="form-check-label" for="sag_visible">Show sagittal slice</label>
+                </div>
+                <div class="col form-check form-switch">
+                    <input type="checkbox" class="form-check-input" name="tra" id="tra_visible" onchange="toggleImg()" checked />
+                    <label class="form-check-label" for="tra_visible">Show transversal slice</label>
+                </div>
+            </div>
 
             <div class="row d-flex justify-content-center hidden" id="scanningSpinner">
                 <div class="spinner-border" role="status">
@@ -557,55 +590,19 @@
             </div>
 
             <div class="row pt-3 hidden align-items-start" id="result">
-                <div class="col-3 hidden" id="kspace_image">
-                    <figure class="row mb-2">
-                        <div class="figcaption mb-1">K-Space</div>
-                        <canvas class="border img-fluid w-100" onwheel="scrollResult(event, 'cur')" id="kspace_imgResult"></canvas>
-                    </figure>
-                    <fieldset id="kspace" class="row mb-2">
-                        <label for="slice">K-Space brighten:</label>
-                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="100"
-                            name="_kspacemult" id="_kspacemult" value="20" onchange="displayAndWindow3DImage();" />
-
-                        <label for="slice">K-Space y-lines:</label>
-                        <input type="number" id="k_yline_number" class="form-control" min="1" max="256" value="256"
-                            onchange="reco(true, true);" />
-                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
-                            name="k_yline" id="k_yline" value="256" onchange="reco(false, true);" />
-                        <label for="slice">K-Space x-lines:</label>
-                        <input type="number" id="k_xline_number" class="form-control" min="1" max="256" value="256"
-                            onchange="reco(true, true);" />
-                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="1" max="256"
-                            name="k_xline" id="k_xline" value="256" onchange="reco(false, true);" />
-
-                        <label for="slice">K-Space f min:</label>
-                        <input type="number" id="k_fmin_number" class="form-control" min="0" max="256" value="0"
-                            onchange="reco(true, true);" />
-                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="128"
-                            name="k_fmin" id="k_fmin" value="0" onchange="reco(false, true);" />
-                        <label for="slice">K-Space f max:</label>
-                        <input type="number" id="k_fmax_number" class="form-control" min="0" max="256" value="256"
-                            onchange="reco(true, true);" />
-                        <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="256"
-                            name="k_fmax" id="k_fmax" value="256" onchange="reco(false, true);" />
-
-                        <input class="btn btn-secondary w-100" type="button" name="reco" id="reco" onclick="reco()"
-                            value="Reconstruct image" />
-
-                    </fieldset>
-                    <div class="row mb-2">
-                        <input class="col btn btn-secondary" type="button" name="downloadImage" id="downloadImage" onclick="downloadImage()" value="Download Image" />
-                        <input class="col btn btn-secondary" type="button" name="downloadKSpace" id="downloadKSpace" onclick="downloadKSpace()" value="Download KSpace" />
-                        <a class="col hidden" id="downloadLink"></a>
-                    </div>
-                </div>
                 <div class="col ml-0 mr-0 p-1 mb-2 hidden" id="pre_image">
                     <div class="w-100 p-0 container-fluid justify-content-center">
                         <canvas class="border img-result w-100"
-                            onwheel="scrollResult(event, 'pre')" onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
-                            onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')" id="pre_imgResult"></canvas>
+                            onwheel="scrollResult(event, 'tra')" onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
+                            onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')" id="pre_traResult"></canvas>
                         <canvas class="border img-result w-100"
-                            onwheel="scrollResult(event, 'pre')" onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
+                            onwheel="scrollResult(event, 'sag')" onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
+                            onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')" id="pre_sagResult"></canvas>
+                        <canvas class="border img-result w-100"
+                            onwheel="scrollResult(event, 'cor')" onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
+                            onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')" id="pre_corResult"></canvas>
+                        <canvas class="border img-result w-100"
+                            onwheel="scrollResult(event, 'tra')" onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                             onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')" id="pre_kResult"></canvas>
                     </div>
                     <div class="row" id="pre_windowing">
@@ -634,19 +631,35 @@
                                         name="pre_kspacemult" id="pre_kspacemult" value="20" onchange="displayAndWindow3DImage();" />
                         </div>
                         <div class="col">
-                            <label for="pre_slice">Slice:</label>
+                            <label for="pre_traslice">Transversal Slice:</label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                                name="pre_slice" id="pre_slice" value="100" onchange="displayAndWindow3DImage();" />
+                                name="pre_traslice" id="pre_traslice" value="100" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="pre_sagslice">Sagittal Slice:</label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
+                                name="pre_sagslice" id="pre_sagslice" value="100" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="pre_corslice">Coronal Slice:</label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
+                                name="pre_corslice" id="pre_corslice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                     </div>
                 </div>
                 <div class="col ml-0 mr-0 p-1 mb-2" id="cur_image">
                     <div class="w-100 p-0 container-fluid justify-content-center">
                         <canvas class="border img-result w-100"
-                            onwheel="scrollResult(event, 'cur')" onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
-                            onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')" id="cur_imgResult"></canvas>
+                            onwheel="scrollResult(event, 'tra')" onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
+                            onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')" id="cur_traResult"></canvas>
                         <canvas class="border img-result w-100"
-                            onwheel="scrollResult(event, 'cur')" onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
+                            onwheel="scrollResult(event, 'sag')" onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
+                            onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')" id="cur_sagResult"></canvas>
+                        <canvas class="border img-result w-100"
+                            onwheel="scrollResult(event, 'cor')" onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
+                            onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')" id="cur_corResult"></canvas>
+                        <canvas class="border img-result w-100"
+                            onwheel="scrollResult(event, 'tra')" onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                             onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')" id="cur_kResult"></canvas>
                     </div>
                     <div class="row" id="cur_windowing">
@@ -675,19 +688,35 @@
                                         name="cur_kspacemult" id="cur_kspacemult" value="20" onchange="displayAndWindow3DImage();" />
                         </div>
                         <div class="col">
-                            <label for="cur_slice">Slice:</label>
+                            <label for="cur_traslice">Transversal Slice:</label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                                name="cur_slice" id="cur_slice" value="100" onchange="displayAndWindow3DImage();" />
+                                name="cur_traslice" id="cur_traslice" value="100" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="cur_sagslice">Sagittal Slice:</label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
+                                name="cur_sagslice" id="cur_sagslice" value="100" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="cur_corslice">Coronal Slice:</label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
+                                name="cur_corslice" id="cur_corslice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                     </div>
                 </div>
                 <div class="col ml-0 mr-0 p-1 mb-2 hidden" id="cs_image">
                     <div class="w-100 p-0 container-fluid justify-content-center">
                         <canvas class="border img-result w-100"
-                            onwheel="scrollResult(event, 'cs')" onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
-                            onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')" id="cs_imgResult"></canvas>
+                            onwheel="scrollResult(event, 'tra')" onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
+                            onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')" id="cs_traResult"></canvas>
                         <canvas class="border img-result w-100"
-                            onwheel="scrollResult(event, 'cs')" onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
+                            onwheel="scrollResult(event, 'sag')" onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
+                            onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')" id="cs_sagResult"></canvas>
+                        <canvas class="border img-result w-100"
+                            onwheel="scrollResult(event, 'cor')" onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
+                            onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')" id="cs_corResult"></canvas>
+                        <canvas class="border img-result w-100"
+                            onwheel="scrollResult(event, 'tra')" onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                             onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')" id="cs_kResult"></canvas>
                     </div>
                     <div class="row" id="cs_windowing">
@@ -716,9 +745,19 @@
                                         name="cs_kspacemult" id="cs_kspacemult" value="20" onchange="displayAndWindow3DImage();" />
                         </div>
                         <div class="col">
-                            <label for="cs_slice">Slice:</label>
+                            <label for="cs_traslice">Transversal Slice:</label>
                             <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
-                                name="cs_slice" id="cs_slice" value="100" onchange="displayAndWindow3DImage();" />
+                                name="cs_traslice" id="cs_traslice" value="100" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="cs_sagslice">Sagittal Slice:</label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
+                                name="cs_sagslice" id="cs_sagslice" value="100" onchange="displayAndWindow3DImage();" />
+                        </div>
+                        <div class="col">
+                            <label for="cs_corslice">Coronal Slice:</label>
+                            <input type="range" class="pl-0 pr-0 form-control form-control-range" min="0" max="zdim"
+                                name="cs_corslice" id="cs_corslice" value="100" onchange="displayAndWindow3DImage();" />
                         </div>
                     </div>
                 </div>

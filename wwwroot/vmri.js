@@ -3,10 +3,10 @@ const jetmap = [[0.0, 0.0, 0.5], [0.0, 0.0, 0.5178], [0.0, 0.0, 0.5357], [0.0, 0
 const datasets = {
     //0: ["BrainWeb 05 - 3T", "./3t/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
     //1: ["BrainWeb 05 - 1.5T", "./1.5T/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    2: ["BrainWeb colin27 - 3T + Na", "./3t/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
-    3: ["BrainWeb colin27 - 1.5T", "./1.5T/bw", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
-    4: ["BrainWeb 54 - 3T + Na", "./3t/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
-    5: ["BrainWeb 54 - 1.5T", "./1.5T/54", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    2: ["BrainWeb colin27 - 3T + Na", "./3t/bw_2", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    3: ["BrainWeb colin27 - 1.5T", "./1.5T/bw_2", "https://www.bic.mni.mcgill.ca/ServicesAtlases/Colin27Highres"],
+    4: ["BrainWeb 54 - 3T + Na", "./3t/54_2", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
+    5: ["BrainWeb 54 - 1.5T", "./1.5T/54_2", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
     6: ["Phantomag - 1.5T", "./1.5T/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
     7: ["Phantomag - 1T", "./1t/phantomag", "http://lab.ibb.cnr.it/Phantomag_Desc.htm"],
 }
@@ -95,13 +95,13 @@ const loadDataMessageHandler = function (data) {
     
     slice = document.getElementById("xdim")
     slice.max = xdim;
-    //slice.value = xdim;
+    slice.value = xdim;
     slice = document.getElementById("ydim")
     slice.max = ydim;
-    //slice.value = ydim;
+    slice.value = ydim;
     slice = document.getElementById("zdim")
     slice.max = zdim;
-    //slice.value = zdim;
+    slice.value = zdim;
 
     r = document.getElementById("content");
     r.classList.remove("hidden");
@@ -147,16 +147,28 @@ const resultMessageHandler = function (data) {
     console.log((performance.now()-resultTimer) / 1000);
 
     if(imgResultCache["cur"] != undefined) {
-        document.getElementById("cur_slice").max = imgResultCache["cur"].zdim;
-        document.getElementById("cur_slice").value = Math.round(imgResultCache["cur"].zdim/2);
+        document.getElementById("cur_traslice").max = imgResultCache["cur"].zdim;
+        document.getElementById("cur_traslice").value = Math.round(imgResultCache["cur"].zdim/2);
+        document.getElementById("cur_sagslice").max = imgResultCache["cur"].xdim;
+        document.getElementById("cur_sagslice").value = Math.round(imgResultCache["cur"].xdim/2);
+        document.getElementById("cur_corslice").max = imgResultCache["cur"].ydim;
+        document.getElementById("cur_corslice").value = Math.round(imgResultCache["cur"].ydim/2);
     }
     if(imgResultCache["pre"] != undefined) {
-        document.getElementById("pre_slice").max = imgResultCache["pre"].zdim;
-        document.getElementById("pre_slice").value = Math.round(imgResultCache["pre"].zdim/2);
+        document.getElementById("pre_traslice").max = imgResultCache["pre"].zdim;
+        document.getElementById("pre_traslice").value = Math.round(imgResultCache["pre"].zdim/2);
+        document.getElementById("pre_sagslice").max = imgResultCache["pre"].xdim;
+        document.getElementById("pre_sagslice").value = Math.round(imgResultCache["pre"].xdim/2);
+        document.getElementById("pre_corslice").max = imgResultCache["pre"].ydim;
+        document.getElementById("pre_corslice").value = Math.round(imgResultCache["pre"].ydim/2);
     }
     if(imgResultCache["cs"] != undefined) {
-        document.getElementById("cs_slice").max = imgResultCache["cs"].zdim;
-        document.getElementById("cs_slice").value = Math.round(imgResultCache["cs"].zdim/2);
+        document.getElementById("cs_traslice").max = imgResultCache["cs"].zdim;
+        document.getElementById("cs_traslice").value = Math.round(imgResultCache["cs"].zdim/2);
+        document.getElementById("cs_sagslice").max = imgResultCache["cs"].xdim;
+        document.getElementById("cs_sagslice").value = Math.round(imgResultCache["cs"].xdim/2);
+        document.getElementById("cs_corslice").max = imgResultCache["cs"].ydim;
+        document.getElementById("cs_corslice").value = Math.round(imgResultCache["cs"].ydim/2);
     }
 
     r = document.getElementById("result");
@@ -169,7 +181,6 @@ const resultMessageHandler = function (data) {
     if(!spin.classList.contains("hidden")) {
         spin.classList.add("hidden");
     }
-    document.getElementById("kspace").removeAttribute("disabled");
 
     var windowing = document.getElementById("cur_windowing");
     var colorBar = document.getElementById("cur_colorBarContainer");
@@ -225,14 +236,14 @@ const resultMessageHandler = function (data) {
         colorBar.classList.add("hidden");
     }
 
-    var zdim = imgResultCache["cur"].zdim;
+    //var zdim = imgResultCache["cur"].zdim;
 
-    for (var node in document.querySelectorAll('input[type="range"]')) {
+    /*for (var node in document.querySelectorAll('input[type="range"]')) {
         if(node != undefined && node.id != undefined && node.id.endsWith("slice")) {
             node.max = zdim;
             node.value = Math.round(zdim/2);
         }
-    }
+    }*/
 
     displayAndWindow3DImage();
     toggleImg();
@@ -372,11 +383,11 @@ function scrollDataset(event) {
     event.preventDefault();
 }
 
-function scrollResult(event) {
+function scrollResult(event, plane) {
     var keys = Object.getOwnPropertyNames(imgResultCache)
     for(var key in keys) {
         which = keys[key]
-        r_slice = document.getElementById(which+"_slice")
+        r_slice = document.getElementById(which+"_" + plane+"slice")
         r_slice.value = r_slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
         if ("createEvent" in document) {
             evt = new Event("change", {"bubbles": false, "cancelable": true});
@@ -421,7 +432,7 @@ function isCurrentTabNa(which) {
 function toggleImg() {
     var keys = ["pre", "cur", "cs"];
     var kspace = document.getElementById("kspace_visible");
-    for(key in keys) {
+    for(var key in keys) {
         var which = keys[key];
         var div = document.getElementById(which+"_image");
         var checkbox = document.getElementById(which+"_visible");
@@ -435,6 +446,23 @@ function toggleImg() {
             }
             var div = document.getElementById(which+"_kResult");
             if(kspace.checked) {
+                div.classList.remove("hidden");
+            } else {
+                div.classList.add("hidden");
+            }
+        }
+        var keys2 = ["cor", "tra", "sag"];
+        for(var key in keys2) {
+            var plane = keys2[key];
+            var checkbox = document.getElementById(plane+"_visible");
+            var div = document.getElementById(which+"_"+plane+"Result");
+            if(checkbox.checked) {
+                div.classList.remove("hidden");
+            } else {
+                div.classList.add("hidden");
+            }
+            var div = document.getElementById(which+"_"+plane+"slice").parentElement;
+            if(checkbox.checked) {
                 div.classList.remove("hidden");
             } else {
                 div.classList.add("hidden");
@@ -467,52 +495,158 @@ function displayAndWindow3DImage(which) {
     if(imgResult==undefined) {return;}
     //canvas = document.createElement('canvas');
     //res_element = document.getElementById("result");
-    var canvas = document.getElementById(which+"_imgResult");
     var xdim = imgResult.xdim;
     var ydim = imgResult.ydim;
     var zdim = imgResult.zdim;
-
+    
+    var canvas = document.getElementById(which+"_corResult");
     ctx = canvas.getContext('2d');
     canvas.width = xdim;
-    canvas.height = ydim;
-    idata = ctx.createImageData(xdim, ydim);
+    canvas.height = zdim;
+    idata = ctx.createImageData(xdim, zdim);
 
-    var image_result = new Uint8ClampedArray(xdim * ydim * 4);
-    in_slice = document.getElementById(which+"_slice");
+    var image_result = new Uint8ClampedArray(xdim * zdim * 4);
+    in_slice = document.getElementById(which+"_corslice");
     slice = parseInt(in_slice.value);
     
     if (isCurrentTabNa(which)) {
-        for (var x = 0; x < xdim * ydim; x++) {
-            var val = Math.round(imgResult.data[x + slice * xdim * ydim] * 255);
-            if (val > 255) { val = 255; }
-            if (val < 0) {val = 0;}
-            var c = jetmap[val];
-            if(c ==undefined) {
-                c = [0,0,0];
+        for (var x = 0; x < xdim; x++) {
+            for (var z=0; z < zdim; z++) {
+                var val = Math.round(imgResult.data[x + slice * xdim + (zdim-z)*xdim*ydim] * 255);
+                if (val > 255) { val = 255; }
+                if (val < 0) {val = 0;}
+                var c = jetmap[val];
+                if(c ==undefined) {
+                    c = [0,0,0];
+                }
+                image_result[4 * (x+z*xdim)] = c[0]*255
+                image_result[4 * (x+z*xdim) + 1] = c[1]*255
+                image_result[4 * (x+z*xdim) + 2] = c[2]*255
+                image_result[4 * (x+z*xdim) + 3] = 255
             }
-            image_result[4 * x] = c[0]*255
-            image_result[4 * x + 1] = c[1]*255
-            image_result[4 * x + 2] = c[2]*255
-            image_result[4 * x + 3] = 255
         }
     } else {
         in_ww = document.getElementById(which+"_ww");
         in_wc = document.getElementById(which+"_wc");
         var ww = parseFloat(in_ww.value) * 0.5
         var wc = parseFloat(in_wc.value)
-        for (var x = 0; x < xdim * ydim; x++) {
-            val = imgResult.data[x + slice * xdim * ydim] * 4096
-            if (val <= (wc - ww)) {
-                val = 0
-            } else if (val >= (wc + ww)) {
-                val = 255;
-            } else {
-                val = 255 * (val - (wc - ww)) / (ww)
+        for (var x = 0; x < xdim; x++) {
+            for (var z=0; z < zdim; z++) {
+                val = imgResult.data[x + slice*xdim +(zdim-z)*xdim*ydim] * 4096
+                if (val <= (wc - ww)) {
+                    val = 0
+                } else if (val >= (wc + ww)) {
+                    val = 255;
+                } else {
+                    val = 255 * (val - (wc - ww)) / (ww)
+                }
+                image_result[4 * (x+z*xdim)] = val
+                image_result[4 * (x+z*xdim) + 1] = val
+                image_result[4 * (x+z*xdim) + 2] = val
+                image_result[4 * (x+z*xdim) + 3] = 255
             }
-            image_result[4 * x] = val
-            image_result[4 * x + 1] = val
-            image_result[4 * x + 2] = val
-            image_result[4 * x + 3] = 255
+        }
+    }
+    idata.data.set(image_result);
+    ctx.putImageData(idata, 0, 0);
+
+    canvas = document.getElementById(which+"_sagResult");
+    ctx = canvas.getContext('2d');
+    canvas.width = ydim;
+    canvas.height = zdim;
+    idata = ctx.createImageData(ydim, zdim);
+
+    var image_result = new Uint8ClampedArray(zdim * ydim * 4);
+    in_slice = document.getElementById(which+"_sagslice");
+    slice = parseInt(in_slice.value);
+    
+    if (isCurrentTabNa(which)) {
+        for (var x = 0; x < ydim; x++) {
+            for(var z = 0; z < zdim; z++) {
+                var val = Math.round(imgResult.data[slice + y*xdim + (zdim-z)*xdim*ydim] * 255);
+                if (val > 255) { val = 255; }
+                if (val < 0) {val = 0;}
+                var c = jetmap[val];
+                if(c ==undefined) {
+                    c = [0,0,0];
+                }
+                image_result[4 * (y+z*ydim)] = c[0]*255
+                image_result[4 * (y+z*ydim) + 1] = c[1]*255
+                image_result[4 * (y+z*ydim) + 2] = c[2]*255
+                image_result[4 * (y+z*ydim) + 3] = 255
+            }
+        }
+    } else {
+        in_ww = document.getElementById(which+"_ww");
+        in_wc = document.getElementById(which+"_wc");
+        var ww = parseFloat(in_ww.value) * 0.5
+        var wc = parseFloat(in_wc.value)
+        for (var y = 0; y < ydim; y++) {
+            for(var z = 0; z < zdim; z++) {
+                val = imgResult.data[slice + y*xdim + (zdim-z)*xdim*ydim] * 4096
+                if (val <= (wc - ww)) {
+                    val = 0
+                } else if (val >= (wc + ww)) {
+                    val = 255;
+                } else {
+                    val = 255 * (val - (wc - ww)) / (ww)
+                }
+                image_result[4 * (y+z*ydim)] = val
+                image_result[4 * (y+z*ydim) + 1] = val
+                image_result[4 * (y+z*ydim) + 2] = val
+                image_result[4 * (y+z*ydim) + 3] = 255
+            }
+        }
+    }
+    idata.data.set(image_result);
+    ctx.putImageData(idata, 0, 0);
+
+    canvas = document.getElementById(which+"_traResult");
+    ctx = canvas.getContext('2d');
+    canvas.width = xdim;
+    canvas.height = ydim;
+    idata = ctx.createImageData(xdim, ydim);
+
+    var image_result = new Uint8ClampedArray(xdim * ydim * 4);
+    in_slice = document.getElementById(which+"_traslice");
+    slice = parseInt(in_slice.value);
+    
+    if (isCurrentTabNa(which)) {
+        for (var x = 0; x < xdim; x++) {
+            for (var y = 0; y < ydim; y++) {
+                var val = Math.round(imgResult.data[x + y*xdim + slice * xdim * ydim] * 255);
+                if (val > 255) { val = 255; }
+                if (val < 0) {val = 0;}
+                var c = jetmap[val];
+                if(c ==undefined) {
+                    c = [0,0,0];
+                }
+                image_result[4 * (x+y*xdim)] = c[0]*255
+                image_result[4 * (x+y*xdim) + 1] = c[1]*255
+                image_result[4 * (x+y*xdim) + 2] = c[2]*255
+                image_result[4 * (x+y*xdim) + 3] = 255
+            }
+        }
+    } else {
+        in_ww = document.getElementById(which+"_ww");
+        in_wc = document.getElementById(which+"_wc");
+        var ww = parseFloat(in_ww.value) * 0.5
+        var wc = parseFloat(in_wc.value)
+        for (var x = 0; x < xdim; x++) {
+            for(var y=0;y<ydim;y++) {
+                val = imgResult.data[x + y*xdim + slice * xdim * ydim] * 4096
+                if (val <= (wc - ww)) {
+                    val = 0
+                } else if (val >= (wc + ww)) {
+                    val = 255;
+                } else {
+                    val = 255 * (val - (wc - ww)) / (ww)
+                }
+                image_result[4 * (x+y*xdim)] = val
+                image_result[4 * (x+y*xdim) + 1] = val
+                image_result[4 * (x+y*xdim) + 2] = val
+                image_result[4 * (x+y*xdim) + 3] = 255
+            }
         }
     }
     idata.data.set(image_result);
@@ -527,45 +661,16 @@ function displayAndWindow3DImage(which) {
 
     var mult = document.getElementById(which+"_kspacemult").valueAsNumber;
     if(which=="cur") {
-        var xlines = document.getElementById("k_xline").valueAsNumber;
-        var ylines = document.getElementById("k_yline").valueAsNumber;
-        var fmin = document.getElementById("k_fmin").valueAsNumber;
-        var fmax = document.getElementById("k_fmax").valueAsNumber;
-        var dx = xdim / xlines;
-        var dy = ydim / ylines;
         k_result = new Uint8ClampedArray(xdim * ydim * 4);
-        var zend = Math.max(Math.floor(zdim/25), 1);
         for (var index = 0; index < xdim * ydim; index++) {
-            val = imgResult.kSpace[index + slice * xdim * ydim] * mult
-            var _fmax = fmax;
-            if (slice<zend) {
-                _fmax = (slice/zend)*(slice/zend) * fmax;
-            }
-            if (slice > zdim-zend) {
-                _fmax = (zdim-slice)/zend*(zdim-slice)/zend * fmax;
-            }
-            var y = Math.floor(index / xdim);
-            var x = index % xdim;
-            var f = Math.sqrt((x - xdim / 2) * (x - xdim / 2) + (y - ydim / 2) * (y - ydim / 2));
-            var res1 = f >= fmin && f <= fmax;
-            var res = res1 && ((Math.floor(x / dx) * dx - x) < 1 && (Math.floor(x / dx) * dx - x) > -1) && ((Math.floor(y / dy) * dy - y) < 1 && (Math.floor(y / dy) * dy - y) > -1);
-            if(val<0) val = 0;
-            if(val>255) val = 255;
-            if (!res) {
-                k_result[4 * index] = 255
-                k_result[4 * index + 1] = 0
-                k_result[4 * index + 2] = 0
-                k_result[4 * index + 3] = 255
-            } else {
-                k_result[4 * index] = val
-                k_result[4 * index + 1] = val
-                k_result[4 * index + 2] = val
-                k_result[4 * index + 3] = 255
-            }
+            val = imgResult.kSpace[index + slice * xdim * ydim] * mult      
+            k_result[4 * index] = val
+            k_result[4 * index + 1] = val
+            k_result[4 * index + 2] = val
+            k_result[4 * index + 3] = 255
         }
     } else {
         k_result = new Uint8ClampedArray(xdim * ydim * 4);
-        var zend = Math.max(Math.floor(zdim/25), 1);
         for (var index = 0; index < xdim * ydim; index++) {
             val = imgResult.kSpace[index + slice * xdim * ydim] * mult
             if(val<0) val = 0;
@@ -920,6 +1025,21 @@ function displayDataSet() {
 }
 
 function updateTime() {
+    var scale = parseFloat(document.getElementById("scale").value)*0.01;
+    var xdim = document.getElementById("xdim");
+    xdim.value = Math.round(scale * parseFloat(xdim.max));
+    var ydim = document.getElementById("ydim");
+    ydim.value = Math.round(scale * parseFloat(ydim.max));
+    var zdim = document.getElementById("zdim");
+    zdim.value = Math.round(scale * parseFloat(zdim.max));
+
+    var xsize = document.getElementById("xsize");
+    xsize.value = (0.5/scale).toFixed(2);
+    var ysize = document.getElementById("ysize");
+    ysize.value = (0.5/scale).toFixed(2);
+    var zsize = document.getElementById("zsize");
+    zsize.value = (0.5/scale).toFixed(2);
+
     var functionName = "update" + selectedSequence + "Time";
     if (this.hasOwnProperty(functionName)) {
         this[functionName]();

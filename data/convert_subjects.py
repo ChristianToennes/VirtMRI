@@ -109,13 +109,14 @@ def read_minc(params, names, in_dir, sub=(), trans=None, nib=False, na=False):
     
     #print(np.min(t1), np.max(t1), np.quantile(t1, 0.9999), np.count_nonzero(t1>np.quantile(t1, 0.9999)))
 
-    zoom = (2**8/xdim, 2**8/ydim, 2**8/zdim)
-    t1 = scipy.ndimage.zoom(t1, zoom, order=0)
-    pd = scipy.ndimage.zoom(pd, zoom, order=0)
-    t2 = scipy.ndimage.zoom(t2, zoom, order=0)
-    t2s = scipy.ndimage.zoom(t2s, zoom, order=0)
-    t2f = scipy.ndimage.zoom(t2f, zoom, order=0)
-    ex_frac = scipy.ndimage.zoom(ex_frac, zoom, order=0)
+    #zoom = (2**8/xdim, 2**8/ydim, 2**8/zdim)
+    #zoom = 2**8/ydim
+    #t1 = scipy.ndimage.zoom(t1, zoom, order=0)
+    #pd = scipy.ndimage.zoom(pd, zoom, order=0)
+    #t2 = scipy.ndimage.zoom(t2, zoom, order=0)
+    #t2s = scipy.ndimage.zoom(t2s, zoom, order=0)
+    #t2f = scipy.ndimage.zoom(t2f, zoom, order=0)
+    #ex_frac = scipy.ndimage.zoom(ex_frac, zoom, order=0)
 
     if na:
         return t1, t2, t2s, t2f, ex_frac, pd
@@ -159,11 +160,11 @@ def read_phantomag(in_dir, trans=None):
     t2cutoff = 329
     t2[t2>t2cutoff] = t2cutoff
 
-    zoom = (1, 2**8/t1.shape[1], 2**8/t1.shape[2])
-    t1 = scipy.ndimage.zoom(t1, zoom, order=0)
-    t2 = scipy.ndimage.zoom(t2, zoom, order=0)
+    #zoom = (1, 2**8/t1.shape[1], 2**8/t1.shape[2])
+    #t1 = scipy.ndimage.zoom(t1, zoom, order=0)
+    #t2 = scipy.ndimage.zoom(t2, zoom, order=0)
     t2s = np.zeros_like(t2)
-    pd = scipy.ndimage.zoom(pd, zoom, order=0)
+    #pd = scipy.ndimage.zoom(pd, zoom, order=0)
 
     return t1, t2, t2s, pd
 
@@ -180,9 +181,9 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None, ex_frac=None):
     with gzip.open(filename, "wb") as f:
         mi = np.min(t1)
         ma = np.max(t1)
-        print(np.min(t1), np.max(t1), np.mean(t1), np.median(t1))
+        #print(np.min(t1), np.max(t1), np.mean(t1), np.median(t1))
         ex = np.array(255 * (t1-mi) / (ma-mi), dtype=np.uint8)
-        print("t1", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (t1-mi) / (ma-mi)))
+        #print("t1", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (t1-mi) / (ma-mi)))
         er = (255 * (t1-mi) / (ma-mi)) - ex
         #print("er", np.min(er), np.max(er), np.mean(er), np.median(er))
         f.write(np.array([mi,ma], dtype=np.float32).tobytes())
@@ -196,9 +197,9 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None, ex_frac=None):
     with gzip.open(filename, "wb") as f:
         mi = np.min(t2)
         ma = np.max(t2)
-        print(np.min(t2), np.max(t2), np.mean(t2), np.median(t2))
+        #print(np.min(t2), np.max(t2), np.mean(t2), np.median(t2))
         ex = np.array(255 * (t2-mi) / (ma-mi), dtype=np.uint8)
-        print("t2", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (t2-mi) / (ma-mi)))
+        #print("t2", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (t2-mi) / (ma-mi)))
         er = (255 * (t2-mi) / (ma-mi)) - ex
         #print("er", np.min(er), np.max(er), np.mean(er), np.median(er))
         f.write(np.array([mi,ma], dtype=np.float32).tobytes())
@@ -212,9 +213,9 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None, ex_frac=None):
     with gzip.open(filename, "wb") as f:
         mi = np.min(t2s)
         ma = np.max(t2s)
-        print(np.min(t2s), np.max(t2s), np.mean(t2s), np.median(t2s))
+        #print(np.min(t2s), np.max(t2s), np.mean(t2s), np.median(t2s))
         ex = np.array(255 * (t2s-mi) / (ma-mi), dtype=np.uint8)
-        print("t2s", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (t2s-mi) / (ma-mi)))
+        #print("t2s", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (t2s-mi) / (ma-mi)))
         er = (255 * (t2s-mi) / (ma-mi)) - ex
         #print("er", np.min(er), np.max(er), np.mean(er), np.median(er))
         f.write(np.array([mi,ma], dtype=np.float32).tobytes())
@@ -228,9 +229,9 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None, ex_frac=None):
     with gzip.open(filename, "wb") as f:
         mi = np.min(pd)
         ma = np.max(pd)
-        print(np.min(pd), np.max(pd), np.mean(pd), np.median(pd))
+        #print(np.min(pd), np.max(pd), np.mean(pd), np.median(pd))
         ex = np.array(255 * (pd-mi) / (ma-mi), dtype=np.uint8)
-        print("pd", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (pd-mi) / (ma-mi)))
+        #print("pd", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (pd-mi) / (ma-mi)))
         er = (255 * (pd-mi) / (ma-mi)) - ex
         #print("er", np.min(er), np.max(er), np.mean(er), np.median(er))
         f.write(np.array([mi,ma], dtype=np.float32).tobytes())
@@ -241,9 +242,9 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None, ex_frac=None):
         with gzip.open(os.path.join(out_dir, sub[0], "na_t2f.bin.gz"), "wb") as f:
             mi = np.min(t2f)
             ma = np.max(t2f)
-            print(np.min(t2f), np.max(t2f), np.mean(t2f), np.median(t2f))
+            #print(np.min(t2f), np.max(t2f), np.mean(t2f), np.median(t2f))
             ex = np.array(255 * (t2f-mi) / (ma-mi), dtype=np.uint8)
-            print("t2f", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (t2f-mi) / (ma-mi)))
+            #print("t2f", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (t2f-mi) / (ma-mi)))
             er = (255 * (t2f-mi) / (ma-mi)) - ex
             #print("er", np.min(er), np.max(er), np.mean(er), np.median(er))
             f.write(np.array([mi,ma], dtype=np.float32).tobytes())
@@ -252,10 +253,10 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None, ex_frac=None):
         with gzip.open(os.path.join(out_dir, sub[0], "na_ex_frac.bin.gz"), "wb") as f:
             mi = np.min(ex_frac)
             ma = np.max(ex_frac)
-            print(np.min(ex_frac), np.max(ex_frac), np.mean(ex_frac), np.median(ex_frac))
+            #print(np.min(ex_frac), np.max(ex_frac), np.mean(ex_frac), np.median(ex_frac))
             ex = np.array(255 * ex_frac, dtype=np.uint8)
-            print("ex", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (ex_frac-mi) / (ma-mi)), np.min(ex), np.min(255 * (ex_frac-mi) / (ma-mi)))
-            print(ex[2,2,10], ex[10,2,2])
+            #print("ex", mi, ma, np.mean(ex), np.max(ex), np.max(255 * (ex_frac-mi) / (ma-mi)), np.min(ex), np.min(255 * (ex_frac-mi) / (ma-mi)))
+            #print(ex[2,2,10], ex[10,2,2])
             er = (255 * (ex_frac-mi) / (ma-mi)) - ex
             #print("er", np.min(er), np.max(er), np.mean(er), np.median(er))
             f.write(np.array([mi,ma], dtype=np.float32).tobytes())
@@ -263,35 +264,32 @@ def write_files(t1, t2, t2s, pd, sub, out_dir, t2f=None, ex_frac=None):
             f.write(ex.tobytes())
 
 
-#t1,t2,t2s,pd = read_minc(params_15, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
-#write_files(t1, t2, t2s, pd, ("bw",), "1.5T")
-#t1,t2,t2s,pd = read_minc(params_3, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
-#write_files(t1, t2, t2s, pd, ("bw",), "3t")
+t1,t2,t2s,pd = read_minc(params_15, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
+write_files(t1, t2, t2s, pd, ("bw_2",), "1.5T")
+t1,t2,t2s,pd = read_minc(params_3, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True)
+write_files(t1, t2, t2s, pd, ("bw_2",), "3t")
 t1,t2,t2s,t2f,ex_frac,pd = read_minc(params_na, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True, na=True)
-write_files(t1, t2, t2s, pd, ("bw",), "3t", t2f=t2f, ex_frac=ex_frac)
+write_files(t1, t2, t2s, pd, ("bw_2",), "3t", t2f=t2f, ex_frac=ex_frac)
 
-#t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
-#write_files(t1, t2, t2s, pd, ("05",), "1.5T")
-#t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
-#write_files(t1, t2, t2s, pd, ("05",), "3t")
+t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
+write_files(t1, t2, t2s, pd, ("05_2",), "1.5T")
+t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255)
+write_files(t1, t2, t2s, pd, ("05_2",), "3t")
 t1,t2,t2s,t2f,ex_frac,pd = read_minc(params_na, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255, na=True)
-write_files(t1, t2, t2s, pd, ("05",), "3t", t2f=t2f, ex_frac=ex_frac)
+write_files(t1, t2, t2s, pd, ("05_2",), "3t", t2f=t2f, ex_frac=ex_frac)
 
-#t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
-#x1 = t1
-#x2 = t2
-#xp = pd
-#write_files(t1, t2, t2s, pd, ("54",), "1.5T")
-#t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
-#write_files(t1, t2, t2s, pd, ("54",), "3t")
+t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
+write_files(t1, t2, t2s, pd, ("54_2",), "1.5T")
+t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255)
+write_files(t1, t2, t2s, pd, ("54_2",), "3t")
 t1,t2,t2s,t2f,ex_frac,pd = read_minc(params_na, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255, na=True)
-write_files(t1, t2, t2s, pd, ("54",), "3t", t2f=t2f, ex_frac=ex_frac)
+write_files(t1, t2, t2s, pd, ("54_2",), "3t", t2f=t2f, ex_frac=ex_frac)
 
 #t1,t2,t2s,pd = read_phantomag("NV_1_NV_1T/QMCI")
-#write_files(t1,t2,t2s, pd, ("phantomag",), "1T")
+#write_files(t1,t2,t2s, pd, ("phantomag_2",), "1T")
 
 #t1,t2,t2s,pd = read_phantomag("NV_1_NV_1_5T/QMCI")
-#write_files(t1,t2,t2s, pd, ("phantomag",), "1.5T")
+#write_files(t1,t2,t2s, pd, ("phantomag_2",), "1.5T")
 
 #fig, axs = plt.subplots(1, 2, sharey=False, tight_layout=True)
 #axs[0].hist(x1.flatten(), bins=256)
