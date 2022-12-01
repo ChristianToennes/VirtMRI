@@ -1,4 +1,4 @@
-const jetmap = [[0.0, 0.0, 0.5], [0.0, 0.0, 0.5178], [0.0, 0.0, 0.5357], [0.0, 0.0, 0.5535], [0.0, 0.0, 0.5713], [0.0, 0.0, 0.5891], [0.0, 0.0, 0.607], [0.0, 0.0, 0.6248], [0.0, 0.0, 0.6426], [0.0, 0.0, 0.6604], [0.0, 0.0, 0.6783], [0.0, 0.0, 0.6961], [0.0, 0.0, 0.7139], [0.0, 0.0, 0.7317], [0.0, 0.0, 0.7496], [0.0, 0.0, 0.7674], [0.0, 0.0, 0.7852], [0.0, 0.0, 0.803], [0.0, 0.0, 0.8209], [0.0, 0.0, 0.8387], [0.0, 0.0, 0.8565], [0.0, 0.0, 0.8743], [0.0, 0.0, 0.8922], [0.0, 0.0, 0.91], [0.0, 0.0, 0.9278], [0.0, 0.0, 0.9456], [0.0, 0.0, 0.9635], [0.0, 0.0, 0.9813], [0.0, 0.0, 0.9991], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.002, 1.0], [0.0, 0.0176, 1.0], [0.0, 0.0333, 1.0], [0.0, 0.049, 1.0], [0.0, 0.0647, 1.0], [0.0, 0.0804, 1.0], [0.0, 0.0961, 1.0], [0.0, 0.1118, 1.0], [0.0, 0.1275, 1.0], [0.0, 0.1431, 1.0], [0.0, 0.1588, 1.0], [0.0, 0.1745, 1.0], [0.0, 0.1902, 1.0], [0.0, 0.2059, 1.0], [0.0, 0.2216, 1.0], [0.0, 0.2373, 1.0], [0.0, 0.2529, 1.0], [0.0, 0.2686, 1.0], [0.0, 0.2843, 1.0], [0.0, 0.3, 1.0], [0.0, 0.3157, 1.0], [0.0, 0.3314, 1.0], [0.0, 0.3471, 1.0], [0.0, 0.3627, 1.0], [0.0, 0.3784, 1.0], [0.0, 0.3941, 1.0], [0.0, 0.4098, 1.0], [0.0, 0.4255, 1.0], [0.0, 0.4412, 1.0], [0.0, 0.4569, 1.0], [0.0, 0.4725, 1.0], [0.0, 0.4882, 1.0], [0.0, 0.5039, 1.0], [0.0, 0.5196, 1.0], [0.0, 0.5353, 1.0], [0.0, 0.551, 1.0], [0.0, 0.5667, 1.0], [0.0, 0.5824, 1.0], [0.0, 0.598, 1.0], [0.0, 0.6137, 1.0], [0.0, 0.6294, 1.0], [0.0, 0.6451, 1.0], [0.0, 0.6608, 1.0], [0.0, 0.6765, 1.0], [0.0, 0.6922, 1.0], [0.0, 0.7078, 1.0], [0.0, 0.7235, 1.0], [0.0, 0.7392, 1.0], [0.0, 0.7549, 1.0], [0.0, 0.7706, 1.0], [0.0, 0.7863, 1.0], [0.0, 0.802, 1.0], [0.0, 0.8176, 1.0], [0.0, 0.8333, 1.0], [0.0, 0.849, 1.0], [0.0, 0.8647, 0.9962], [0.0, 0.8804, 0.9836], [0.0, 0.8961, 0.9709], [0.0095, 0.9118, 0.9583], [0.0221, 0.9275, 0.9456], [0.0348, 0.9431, 0.933], [0.0474, 0.9588, 0.9203], [0.0601, 0.9745, 0.9077], [0.0727, 0.9902, 0.895], [0.0854, 1.0, 0.8824], [0.098, 1.0, 0.8697], [0.1107, 1.0, 0.8571], [0.1233, 1.0, 0.8444], [0.136, 1.0, 0.8318], [0.1486, 1.0, 0.8191], [0.1613, 1.0, 0.8065], [0.1739, 1.0, 0.7938], [0.1866, 1.0, 0.7812], [0.1992, 1.0, 0.7685], [0.2119, 1.0, 0.7559], [0.2245, 1.0, 0.7432], [0.2372, 1.0, 0.7306], [0.2498, 1.0, 0.7179], [0.2625, 1.0, 0.7052], [0.2751, 1.0, 0.6926], [0.2878, 1.0, 0.6799], [0.3004, 1.0, 0.6673], [0.3131, 1.0, 0.6546], [0.3257, 1.0, 0.642], [0.3384, 1.0, 0.6293], [0.351, 1.0, 0.6167], [0.3637, 1.0, 0.604], [0.3763, 1.0, 0.5914], [0.389, 1.0, 0.5787], [0.4016, 1.0, 0.5661], [0.4143, 1.0, 0.5534], [0.4269, 1.0, 0.5408], [0.4396, 1.0, 0.5281], [0.4522, 1.0, 0.5155], [0.4649, 1.0, 0.5028], [0.4775, 1.0, 0.4902], [0.4902, 1.0, 0.4775], [0.5028, 1.0, 0.4649], [0.5155, 1.0, 0.4522], [0.5281, 1.0, 0.4396], [0.5408, 1.0, 0.4269], [0.5534, 1.0, 0.4143], [0.5661, 1.0, 0.4016], [0.5787, 1.0, 0.389], [0.5914, 1.0, 0.3763], [0.604, 1.0, 0.3637], [0.6167, 1.0, 0.351], [0.6293, 1.0, 0.3384], [0.642, 1.0, 0.3257], [0.6546, 1.0, 0.3131], [0.6673, 1.0, 0.3004], [0.6799, 1.0, 0.2878], [0.6926, 1.0, 0.2751], [0.7052, 1.0, 0.2625], [0.7179, 1.0, 0.2498], [0.7306, 1.0, 0.2372], [0.7432, 1.0, 0.2245], [0.7559, 1.0, 0.2119], [0.7685, 1.0, 0.1992], [0.7812, 1.0, 0.1866], [0.7938, 1.0, 0.1739], [0.8065, 1.0, 0.1613], [0.8191, 1.0, 0.1486], [0.8318, 1.0, 0.136], [0.8444, 1.0, 0.1233], [0.8571, 1.0, 0.1107], [0.8697, 1.0, 0.098], [0.8824, 1.0, 0.0854], [0.895, 1.0, 0.0727], [0.9077, 1.0, 0.0601], [0.9203, 1.0, 0.0474], [0.933, 1.0, 0.0348], [0.9456, 0.9884, 0.0221], [0.9583, 0.9739, 0.0095], [0.9709, 0.9593, 0.0], [0.9836, 0.9448, 0.0], [0.9962, 0.9303, 0.0], [1.0, 0.9158, 0.0], [1.0, 0.9012, 0.0], [1.0, 0.8867, 0.0], [1.0, 0.8722, 0.0], [1.0, 0.8577, 0.0], [1.0, 0.8431, 0.0], [1.0, 0.8286, 0.0], [1.0, 0.8141, 0.0], [1.0, 0.7996, 0.0], [1.0, 0.785, 0.0], [1.0, 0.7705, 0.0], [1.0, 0.756, 0.0], [1.0, 0.7415, 0.0], [1.0, 0.7269, 0.0], [1.0, 0.7124, 0.0], [1.0, 0.6979, 0.0], [1.0, 0.6834, 0.0], [1.0, 0.6688, 0.0], [1.0, 0.6543, 0.0], [1.0, 0.6398, 0.0], [1.0, 0.6253, 0.0], [1.0, 0.6107, 0.0], [1.0, 0.5962, 0.0], [1.0, 0.5817, 0.0], [1.0, 0.5672, 0.0], [1.0, 0.5527, 0.0], [1.0, 0.5381, 0.0], [1.0, 0.5236, 0.0], [1.0, 0.5091, 0.0], [1.0, 0.4946, 0.0], [1.0, 0.48, 0.0], [1.0, 0.4655, 0.0], [1.0, 0.451, 0.0], [1.0, 0.4365, 0.0], [1.0, 0.4219, 0.0], [1.0, 0.4074, 0.0], [1.0, 0.3929, 0.0], [1.0, 0.3784, 0.0], [1.0, 0.3638, 0.0], [1.0, 0.3493, 0.0], [1.0, 0.3348, 0.0], [1.0, 0.3203, 0.0], [1.0, 0.3057, 0.0], [1.0, 0.2912, 0.0], [1.0, 0.2767, 0.0], [1.0, 0.2622, 0.0], [1.0, 0.2476, 0.0], [1.0, 0.2331, 0.0], [1.0, 0.2186, 0.0], [1.0, 0.2041, 0.0], [1.0, 0.1895, 0.0], [1.0, 0.175, 0.0], [1.0, 0.1605, 0.0], [1.0, 0.146, 0.0], [1.0, 0.1314, 0.0], [1.0, 0.1169, 0.0], [1.0, 0.1024, 0.0], [1.0, 0.0879, 0.0], [0.9991, 0.0733, 0.0], [0.9813, 0.0588, 0.0], [0.9635, 0.0443, 0.0], [0.9456, 0.0298, 0.0], [0.9278, 0.0153, 0.0], [0.91, 0.0007, 0.0], [0.8922, 0.0, 0.0], [0.8743, 0.0, 0.0], [0.8565, 0.0, 0.0], [0.8387, 0.0, 0.0], [0.8209, 0.0, 0.0], [0.803, 0.0, 0.0], [0.7852, 0.0, 0.0], [0.7674, 0.0, 0.0], [0.7496, 0.0, 0.0], [0.7317, 0.0, 0.0], [0.7139, 0.0, 0.0], [0.6961, 0.0, 0.0], [0.6783, 0.0, 0.0], [0.6604, 0.0, 0.0], [0.6426, 0.0, 0.0], [0.6248, 0.0, 0.0], [0.607, 0.0, 0.0], [0.5891, 0.0, 0.0], [0.5713, 0.0, 0.0], [0.5535, 0.0, 0.0], [0.5357, 0.0, 0.0], [0.5178, 0.0, 0.0], [0.5, 0.0, 0.0]];
+const jetmap = [ [0.0, 0.0, 0.5], [0.0, 0.0, 0.5178], [0.0, 0.0, 0.5357], [0.0, 0.0, 0.5535], [0.0, 0.0, 0.5713], [0.0, 0.0, 0.5891], [0.0, 0.0, 0.607], [0.0, 0.0, 0.6248], [0.0, 0.0, 0.6426], [0.0, 0.0, 0.6604], [0.0, 0.0, 0.6783], [0.0, 0.0, 0.6961], [0.0, 0.0, 0.7139], [0.0, 0.0, 0.7317], [0.0, 0.0, 0.7496], [0.0, 0.0, 0.7674], [0.0, 0.0, 0.7852], [0.0, 0.0, 0.803], [0.0, 0.0, 0.8209], [0.0, 0.0, 0.8387], [0.0, 0.0, 0.8565], [0.0, 0.0, 0.8743], [0.0, 0.0, 0.8922], [0.0, 0.0, 0.91], [0.0, 0.0, 0.9278], [0.0, 0.0, 0.9456], [0.0, 0.0, 0.9635], [0.0, 0.0, 0.9813], [0.0, 0.0, 0.9991], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.002, 1.0], [0.0, 0.0176, 1.0], [0.0, 0.0333, 1.0], [0.0, 0.049, 1.0], [0.0, 0.0647, 1.0], [0.0, 0.0804, 1.0], [0.0, 0.0961, 1.0], [0.0, 0.1118, 1.0], [0.0, 0.1275, 1.0], [0.0, 0.1431, 1.0], [0.0, 0.1588, 1.0], [0.0, 0.1745, 1.0], [0.0, 0.1902, 1.0], [0.0, 0.2059, 1.0], [0.0, 0.2216, 1.0], [0.0, 0.2373, 1.0], [0.0, 0.2529, 1.0], [0.0, 0.2686, 1.0], [0.0, 0.2843, 1.0], [0.0, 0.3, 1.0], [0.0, 0.3157, 1.0], [0.0, 0.3314, 1.0], [0.0, 0.3471, 1.0], [0.0, 0.3627, 1.0], [0.0, 0.3784, 1.0], [0.0, 0.3941, 1.0], [0.0, 0.4098, 1.0], [0.0, 0.4255, 1.0], [0.0, 0.4412, 1.0], [0.0, 0.4569, 1.0], [0.0, 0.4725, 1.0], [0.0, 0.4882, 1.0], [0.0, 0.5039, 1.0], [0.0, 0.5196, 1.0], [0.0, 0.5353, 1.0], [0.0, 0.551, 1.0], [0.0, 0.5667, 1.0], [0.0, 0.5824, 1.0], [0.0, 0.598, 1.0], [0.0, 0.6137, 1.0], [0.0, 0.6294, 1.0], [0.0, 0.6451, 1.0], [0.0, 0.6608, 1.0], [0.0, 0.6765, 1.0], [0.0, 0.6922, 1.0], [0.0, 0.7078, 1.0], [0.0, 0.7235, 1.0], [0.0, 0.7392, 1.0], [0.0, 0.7549, 1.0], [0.0, 0.7706, 1.0], [0.0, 0.7863, 1.0], [0.0, 0.802, 1.0], [0.0, 0.8176, 1.0], [0.0, 0.8333, 1.0], [0.0, 0.849, 1.0], [0.0, 0.8647, 0.9962], [0.0, 0.8804, 0.9836], [0.0, 0.8961, 0.9709], [0.0095, 0.9118, 0.9583], [0.0221, 0.9275, 0.9456], [0.0348, 0.9431, 0.933], [0.0474, 0.9588, 0.9203], [0.0601, 0.9745, 0.9077], [0.0727, 0.9902, 0.895], [0.0854, 1.0, 0.8824], [0.098, 1.0, 0.8697], [0.1107, 1.0, 0.8571], [0.1233, 1.0, 0.8444], [0.136, 1.0, 0.8318], [0.1486, 1.0, 0.8191], [0.1613, 1.0, 0.8065], [0.1739, 1.0, 0.7938], [0.1866, 1.0, 0.7812], [0.1992, 1.0, 0.7685], [0.2119, 1.0, 0.7559], [0.2245, 1.0, 0.7432], [0.2372, 1.0, 0.7306], [0.2498, 1.0, 0.7179], [0.2625, 1.0, 0.7052], [0.2751, 1.0, 0.6926], [0.2878, 1.0, 0.6799], [0.3004, 1.0, 0.6673], [0.3131, 1.0, 0.6546], [0.3257, 1.0, 0.642], [0.3384, 1.0, 0.6293], [0.351, 1.0, 0.6167], [0.3637, 1.0, 0.604], [0.3763, 1.0, 0.5914], [0.389, 1.0, 0.5787], [0.4016, 1.0, 0.5661], [0.4143, 1.0, 0.5534], [0.4269, 1.0, 0.5408], [0.4396, 1.0, 0.5281], [0.4522, 1.0, 0.5155], [0.4649, 1.0, 0.5028], [0.4775, 1.0, 0.4902], [0.4902, 1.0, 0.4775], [0.5028, 1.0, 0.4649], [0.5155, 1.0, 0.4522], [0.5281, 1.0, 0.4396], [0.5408, 1.0, 0.4269], [0.5534, 1.0, 0.4143], [0.5661, 1.0, 0.4016], [0.5787, 1.0, 0.389], [0.5914, 1.0, 0.3763], [0.604, 1.0, 0.3637], [0.6167, 1.0, 0.351], [0.6293, 1.0, 0.3384], [0.642, 1.0, 0.3257], [0.6546, 1.0, 0.3131], [0.6673, 1.0, 0.3004], [0.6799, 1.0, 0.2878], [0.6926, 1.0, 0.2751], [0.7052, 1.0, 0.2625], [0.7179, 1.0, 0.2498], [0.7306, 1.0, 0.2372], [0.7432, 1.0, 0.2245], [0.7559, 1.0, 0.2119], [0.7685, 1.0, 0.1992], [0.7812, 1.0, 0.1866], [0.7938, 1.0, 0.1739], [0.8065, 1.0, 0.1613], [0.8191, 1.0, 0.1486], [0.8318, 1.0, 0.136], [0.8444, 1.0, 0.1233], [0.8571, 1.0, 0.1107], [0.8697, 1.0, 0.098], [0.8824, 1.0, 0.0854], [0.895, 1.0, 0.0727], [0.9077, 1.0, 0.0601], [0.9203, 1.0, 0.0474], [0.933, 1.0, 0.0348], [0.9456, 0.9884, 0.0221], [0.9583, 0.9739, 0.0095], [0.9709, 0.9593, 0.0], [0.9836, 0.9448, 0.0], [0.9962, 0.9303, 0.0], [1.0, 0.9158, 0.0], [1.0, 0.9012, 0.0], [1.0, 0.8867, 0.0], [1.0, 0.8722, 0.0], [1.0, 0.8577, 0.0], [1.0, 0.8431, 0.0], [1.0, 0.8286, 0.0], [1.0, 0.8141, 0.0], [1.0, 0.7996, 0.0], [1.0, 0.785, 0.0], [1.0, 0.7705, 0.0], [1.0, 0.756, 0.0], [1.0, 0.7415, 0.0], [1.0, 0.7269, 0.0], [1.0, 0.7124, 0.0], [1.0, 0.6979, 0.0], [1.0, 0.6834, 0.0], [1.0, 0.6688, 0.0], [1.0, 0.6543, 0.0], [1.0, 0.6398, 0.0], [1.0, 0.6253, 0.0], [1.0, 0.6107, 0.0], [1.0, 0.5962, 0.0], [1.0, 0.5817, 0.0], [1.0, 0.5672, 0.0], [1.0, 0.5527, 0.0], [1.0, 0.5381, 0.0], [1.0, 0.5236, 0.0], [1.0, 0.5091, 0.0], [1.0, 0.4946, 0.0], [1.0, 0.48, 0.0], [1.0, 0.4655, 0.0], [1.0, 0.451, 0.0], [1.0, 0.4365, 0.0], [1.0, 0.4219, 0.0], [1.0, 0.4074, 0.0], [1.0, 0.3929, 0.0], [1.0, 0.3784, 0.0], [1.0, 0.3638, 0.0], [1.0, 0.3493, 0.0], [1.0, 0.3348, 0.0], [1.0, 0.3203, 0.0], [1.0, 0.3057, 0.0], [1.0, 0.2912, 0.0], [1.0, 0.2767, 0.0], [1.0, 0.2622, 0.0], [1.0, 0.2476, 0.0], [1.0, 0.2331, 0.0], [1.0, 0.2186, 0.0], [1.0, 0.2041, 0.0], [1.0, 0.1895, 0.0], [1.0, 0.175, 0.0], [1.0, 0.1605, 0.0], [1.0, 0.146, 0.0], [1.0, 0.1314, 0.0], [1.0, 0.1169, 0.0], [1.0, 0.1024, 0.0], [1.0, 0.0879, 0.0], [0.9991, 0.0733, 0.0], [0.9813, 0.0588, 0.0], [0.9635, 0.0443, 0.0], [0.9456, 0.0298, 0.0], [0.9278, 0.0153, 0.0], [0.91, 0.0007, 0.0], [0.8922, 0.0, 0.0], [0.8743, 0.0, 0.0], [0.8565, 0.0, 0.0], [0.8387, 0.0, 0.0], [0.8209, 0.0, 0.0], [0.803, 0.0, 0.0], [0.7852, 0.0, 0.0], [0.7674, 0.0, 0.0], [0.7496, 0.0, 0.0], [0.7317, 0.0, 0.0], [0.7139, 0.0, 0.0], [0.6961, 0.0, 0.0], [0.6783, 0.0, 0.0], [0.6604, 0.0, 0.0], [0.6426, 0.0, 0.0], [0.6248, 0.0, 0.0], [0.607, 0.0, 0.0], [0.5891, 0.0, 0.0], [0.5713, 0.0, 0.0], [0.5535, 0.0, 0.0], [0.5357, 0.0, 0.0], [0.5178, 0.0, 0.0], [0.5, 0.0, 0.0]];
 
 const datasets = {
     //0: ["BrainWeb 05 - 3T", "./3t/05", "https://brainweb.bic.mni.mcgill.ca/anatomic_normal_20.html"],
@@ -16,7 +16,7 @@ function QueryableWorker(url) {
         worker = new Worker(url //, {type: "module"}
         ),
         listeners = {};
-    
+
     worker.onerror = function (event) {
         console.log(event.message, event);
     };
@@ -71,10 +71,14 @@ const h_tabs = ["params-IR-tab", "params-SE-tab", "params-bSSFP-tab", "params-FI
 var current_tab = "params-IR-tab";
 var selected_tab = "params-IR-tab";
 
-var imgResultCache = {"cur": undefined, "pre": undefined, "cs": undefined};
+var imgResultCache = {
+    "cur": undefined,
+    "pre": undefined,
+    "cs": undefined
+};
 
 function sequenceParametersKeyDown(e) {
-    if(e.code == "Enter") {
+    if (e.code == "Enter") {
         startScan();
     }
 }
@@ -87,12 +91,12 @@ const loadDataMessageHandler = function (data) {
     var xdim = data[10];
 
     for (var node in document.querySelectorAll('input[type="range"]')) {
-        if(node != undefined && node.id != undefined && node.id.endsWith("slice")) {
+        if (node != undefined && node.id != undefined && node.id.endsWith("slice")) {
             node.max = zdim;
-            node.value = Math.round(zdim/2);
+            node.value = Math.round(zdim / 2);
         }
     }
-    
+
     slice = document.getElementById("xdim")
     slice.max = xdim;
     slice.value = xdim;
@@ -118,7 +122,7 @@ const loadDataMessageHandler = function (data) {
     } else {
         for (var tab in na_tabs) {
             t = document.getElementById(na_tabs[tab]);
-            if (t!=null) {
+            if (t != null) {
                 t.classList.remove("hidden");
             }
         }
@@ -128,67 +132,67 @@ w.addListener('loadData', loadDataMessageHandler);
 
 var resultTimer;
 const resultMessageHandler = function (data) {
-    if(Array.isArray(data)) {
+    if (Array.isArray(data)) {
         imgResultCache["pre"] = data[0];
         imgResultCache["cur"] = data[1];
         imgResultCache["cs"] = data[2];
-    } else if(typeof(data) == "string") {
+    } else if (typeof (data) == "string") {
         console.log("Error occured: ", data);
     } else {
         if ("cs" in imgResultCache) {
             imgResultCache["pre"] = imgResultCache["cs"];
             delete imgResultCache["cs"];
-        } else if("cur" in imgResultCache) {
+        } else if ("cur" in imgResultCache) {
             imgResultCache["pre"] = imgResultCache["cur"];
         }
         imgResultCache["cur"] = data;
     }
 
-    console.log((performance.now()-resultTimer) / 1000);
+    console.log((performance.now() - resultTimer) / 1000);
 
-    if(imgResultCache["cur"] != undefined) {
+    if (imgResultCache["cur"] != undefined) {
         document.getElementById("cur_traslice").max = imgResultCache["cur"].zdim;
-        document.getElementById("cur_traslice").value = Math.round(imgResultCache["cur"].zdim/2);
+        document.getElementById("cur_traslice").value = Math.round(imgResultCache["cur"].zdim / 2);
         document.getElementById("cur_sagslice").max = imgResultCache["cur"].xdim;
-        document.getElementById("cur_sagslice").value = Math.round(imgResultCache["cur"].xdim/2);
+        document.getElementById("cur_sagslice").value = Math.round(imgResultCache["cur"].xdim / 2);
         document.getElementById("cur_corslice").max = imgResultCache["cur"].ydim;
-        document.getElementById("cur_corslice").value = Math.round(imgResultCache["cur"].ydim/2);
+        document.getElementById("cur_corslice").value = Math.round(imgResultCache["cur"].ydim / 2);
     }
-    if(imgResultCache["pre"] != undefined) {
+    if (imgResultCache["pre"] != undefined) {
         document.getElementById("pre_traslice").max = imgResultCache["pre"].zdim;
-        document.getElementById("pre_traslice").value = Math.round(imgResultCache["pre"].zdim/2);
+        document.getElementById("pre_traslice").value = Math.round(imgResultCache["pre"].zdim / 2);
         document.getElementById("pre_sagslice").max = imgResultCache["pre"].xdim;
-        document.getElementById("pre_sagslice").value = Math.round(imgResultCache["pre"].xdim/2);
+        document.getElementById("pre_sagslice").value = Math.round(imgResultCache["pre"].xdim / 2);
         document.getElementById("pre_corslice").max = imgResultCache["pre"].ydim;
-        document.getElementById("pre_corslice").value = Math.round(imgResultCache["pre"].ydim/2);
+        document.getElementById("pre_corslice").value = Math.round(imgResultCache["pre"].ydim / 2);
     }
-    if(imgResultCache["cs"] != undefined) {
+    if (imgResultCache["cs"] != undefined) {
         document.getElementById("cs_traslice").max = imgResultCache["cs"].zdim;
-        document.getElementById("cs_traslice").value = Math.round(imgResultCache["cs"].zdim/2);
+        document.getElementById("cs_traslice").value = Math.round(imgResultCache["cs"].zdim / 2);
         document.getElementById("cs_sagslice").max = imgResultCache["cs"].xdim;
-        document.getElementById("cs_sagslice").value = Math.round(imgResultCache["cs"].xdim/2);
+        document.getElementById("cs_sagslice").value = Math.round(imgResultCache["cs"].xdim / 2);
         document.getElementById("cs_corslice").max = imgResultCache["cs"].ydim;
-        document.getElementById("cs_corslice").value = Math.round(imgResultCache["cs"].ydim/2);
+        document.getElementById("cs_corslice").value = Math.round(imgResultCache["cs"].ydim / 2);
     }
 
     r = document.getElementById("result");
     spin = document.getElementById("scanningSpinner");
     var progress = document.getElementById("cs_progress").parentElement;
-    if(!progress.classList.contains("hidden")) {
+    if (!progress.classList.contains("hidden")) {
         progress.classList.add("hidden");
     }
     r.classList.remove("hidden");
-    if(!spin.classList.contains("hidden")) {
+    if (!spin.classList.contains("hidden")) {
         spin.classList.add("hidden");
     }
 
     var windowing = document.getElementById("cur_windowing");
     var colorBar = document.getElementById("cur_colorBarContainer");
-    if(isCurrentTabNa("cur")) {
+    if (isCurrentTabNa("cur")) {
         windowing.classList.add("hidden");
         plot_colormap("cur_colorBar");
         colorBar.classList.remove("hidden");
-        if(imgResultCache["cur"] != undefined && (imgResultCache["cur"].params["sequence"] == "SQ" || imgResultCache["cur"].params["sequence"] == "Na")) {
+        if (imgResultCache["cur"] != undefined && (imgResultCache["cur"].params["sequence"] == "SQ" || imgResultCache["cur"].params["sequence"] == "Na")) {
             colorBar.classList.remove("colorBarContainerTQ");
             colorBar.classList.add("colorBarContainerSQ");
         } else {
@@ -202,11 +206,11 @@ const resultMessageHandler = function (data) {
 
     var windowing = document.getElementById("pre_windowing");
     var colorBar = document.getElementById("pre_colorBarContainer");
-    if(isCurrentTabNa("pre")) {
+    if (isCurrentTabNa("pre")) {
         windowing.classList.add("hidden");
         plot_colormap("pre_colorBar");
         colorBar.classList.remove("hidden");
-        if(imgResultCache["pre"] != undefined && (imgResultCache["pre"].params["sequence"] == "SQ" || imgResultCache["pre"].params["sequence"] == "Na")) {
+        if (imgResultCache["pre"] != undefined && (imgResultCache["pre"].params["sequence"] == "SQ" || imgResultCache["pre"].params["sequence"] == "Na")) {
             colorBar.classList.remove("colorBarContainerTQ");
             colorBar.classList.add("colorBarContainerSQ");
         } else {
@@ -220,11 +224,11 @@ const resultMessageHandler = function (data) {
 
     var windowing = document.getElementById("cs_windowing");
     var colorBar = document.getElementById("cs_colorBarContainer");
-    if(isCurrentTabNa("cs")) {
+    if (isCurrentTabNa("cs")) {
         windowing.classList.add("hidden");
         plot_colormap("cs_colorBar");
         colorBar.classList.remove("hidden");
-        if(imgResultCache["cs"] != undefined && (imgResultCache["cs"].params["sequence"] == "SQ" || imgResultCache["cs"].params["sequence"] == "Na")) {
+        if (imgResultCache["cs"] != undefined && (imgResultCache["cs"].params["sequence"] == "SQ" || imgResultCache["cs"].params["sequence"] == "Na")) {
             colorBar.classList.remove("colorBarContainerTQ");
             colorBar.classList.add("colorBarContainerSQ");
         } else {
@@ -250,21 +254,21 @@ const resultMessageHandler = function (data) {
 };
 w.addListener('result', resultMessageHandler);
 
-const kspaceMessageHandler = function(kspace) {
-    
+const kspaceMessageHandler = function (kspace) {
+
 };
 w.addListener('kspace', kspaceMessageHandler);
 
-const progressMessageHandler = function(progress) {
+const progressMessageHandler = function (progress) {
     var bar = document.getElementById("cs_progress");
-    if(bar.parentElement.classList.contains("hidden")) {
+    if (bar.parentElement.classList.contains("hidden")) {
         bar.parentElement.classList.remove("hidden");
     }
     bar.style.cssText = "width:" + progress + "%";
 };
 w.addListener('progress', progressMessageHandler);
 
-const profileMessageHandler = function(data) {
+const profileMessageHandler = function (data) {
     var [params, times] = data;
 
     var n = times.length
@@ -278,7 +282,7 @@ const profileMessageHandler = function(data) {
 };
 w.addListener('profile', profileMessageHandler);
 
-const endProfileMessageHandler = function() {
+const endProfileMessageHandler = function () {
     var spin = document.getElementById("scanningSpinner");
     spin.classList.add("hidden");
 };
@@ -367,8 +371,8 @@ function autoWindow(which) {
     var end = Math.min(histo.length, Math.ceil(wc + ww * 0.5));
     ww = end - start;
     wc = start + Math.floor(ww * 0.5);
-    document.getElementById(which+"_wc").value = (4096 / histo.length) * wc;
-    document.getElementById(which+"_ww").value = (4096 / histo.length) * ww;
+    document.getElementById(which + "_wc").value = (4096 / histo.length) * wc;
+    document.getElementById(which + "_ww").value = (4096 / histo.length) * ww;
     displayAndWindow3DImage(which);
 }
 
@@ -376,7 +380,10 @@ function scrollDataset(event) {
     slice = document.getElementById("slice")
     slice.value = slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
     if ("createEvent" in document) {
-        evt = new Event("change", {"bubbles": false, "canceable": true});
+        evt = new Event("change", {
+            "bubbles": false,
+            "canceable": true
+        });
         slice.dispatchEvent(evt);
     } else
         slice.fireEvent("onchange");
@@ -385,12 +392,15 @@ function scrollDataset(event) {
 
 function scrollResult(event, plane) {
     var keys = Object.getOwnPropertyNames(imgResultCache)
-    for(var key in keys) {
+    for (var key in keys) {
         which = keys[key]
-        r_slice = document.getElementById(which+"_" + plane+"slice")
+        r_slice = document.getElementById(which + "_" + plane + "slice")
         r_slice.value = r_slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
         if ("createEvent" in document) {
-            evt = new Event("change", {"bubbles": false, "cancelable": true});
+            evt = new Event("change", {
+                "bubbles": false,
+                "cancelable": true
+            });
             r_slice.dispatchEvent(evt);
         } else {
             r_slice.fireEvent("onchange");
@@ -399,7 +409,11 @@ function scrollResult(event, plane) {
     event.preventDefault();
 }
 
-var windowing = {"cur": false, "pre": false, "cs": false};
+var windowing = {
+    "cur": false,
+    "pre": false,
+    "cs": false
+};
 
 function startWindowing(which) {
     windowing[which] = true;
@@ -411,20 +425,23 @@ function endWindowing(which) {
 
 function windowResult(event, which) {
     if (windowing[which]) {
-        ww = document.getElementById(which+"_ww")
-        wc = document.getElementById(which+"_wc")
+        ww = document.getElementById(which + "_ww")
+        wc = document.getElementById(which + "_wc")
 
         ww.value = ww.valueAsNumber - event.movementY * 4
         wc.value = wc.valueAsNumber - event.movementX * 4
 
-        evt = new Event("change", {"bubbles": false, "canceable": true});
+        evt = new Event("change", {
+            "bubbles": false,
+            "canceable": true
+        });
         ww.dispatchEvent(evt);
     }
 }
 
 function isCurrentTabNa(which) {
-    if(imgResultCache[which] != undefined) {
-        return na_tabs.includes("params-"+imgResultCache[which].params["sequence"]+"-tab");
+    if (imgResultCache[which] != undefined) {
+        return na_tabs.includes("params-" + imgResultCache[which].params["sequence"] + "-tab");
     }
     return na_tabs.includes(current_tab);
 }
@@ -432,37 +449,38 @@ function isCurrentTabNa(which) {
 function toggleImg() {
     var keys = ["pre", "cur", "cs"];
     var kspace = document.getElementById("kspace_visible");
-    for(var key in keys) {
+    for (var key in keys) {
         var which = keys[key];
-        var div = document.getElementById(which+"_image");
-        var checkbox = document.getElementById(which+"_visible");
-        if(imgResultCache[which] == undefined) {
+        var div = document.getElementById(which + "_image");
+        var checkbox = document.getElementById(which + "_visible");
+        if (imgResultCache[which] == undefined) {
             div.classList.add("hidden");
         } else {
-            if(checkbox.checked) {
+            if (checkbox.checked) {
                 div.classList.remove("hidden");
             } else {
                 div.classList.add("hidden");
             }
-            var div = document.getElementById(which+"_kResult");
-            if(kspace.checked) {
+            var div = document.getElementById(which + "_kResult");
+            if (kspace != undefined && kspace.checked) {
                 div.classList.remove("hidden");
             } else {
                 div.classList.add("hidden");
             }
         }
         var keys2 = ["cor", "tra", "sag"];
-        for(var key in keys2) {
+        for (var key in keys2) {
             var plane = keys2[key];
-            var checkbox = document.getElementById(plane+"_visible");
-            var div = document.getElementById(which+"_"+plane+"Result");
-            if(checkbox.checked) {
+            var checkbox = document.getElementById(plane + "_visible");
+            if(checkbox == undefined) continue;
+            var div = document.getElementById(which + "_" + plane + "Result");
+            if (checkbox.checked) {
                 div.classList.remove("hidden");
             } else {
                 div.classList.add("hidden");
             }
-            var div = document.getElementById(which+"_"+plane+"slice").parentElement;
-            if(checkbox.checked) {
+            var div = document.getElementById(which + "_" + plane + "slice").parentElement;
+            if (checkbox.checked) {
                 div.classList.remove("hidden");
             } else {
                 div.classList.add("hidden");
@@ -472,8 +490,8 @@ function toggleImg() {
 }
 
 function toggleAccordion(which) {
-    var content = document.getElementById('acc-'+which+'-content');
-    var head = document.getElementById('acc-'+which+'-head').children[0];
+    var content = document.getElementById('acc-' + which + '-content');
+    var head = document.getElementById('acc-' + which + '-head').children[0];
     if (content.classList.contains("show")) {
         content.classList.remove("show");
         head.classList.add("collapsed");
@@ -484,61 +502,68 @@ function toggleAccordion(which) {
 }
 
 function displayAndWindow3DImage(which) {
-    if(which == undefined) {
+    if (which == undefined) {
         var keys = Object.getOwnPropertyNames(imgResultCache)
-        for(var key in keys) {
+        for (var key in keys) {
             displayAndWindow3DImage(keys[key]);
         }
         return;
     }
     var imgResult = imgResultCache[which];
-    if(imgResult==undefined) {return;}
-    //canvas = document.createElement('canvas');
-    //res_element = document.getElementById("result");
+    if (imgResult == undefined) {
+        return;
+    }
+
     var xdim = imgResult.xdim;
     var ydim = imgResult.ydim;
     var zdim = imgResult.zdim;
 
-    var in_slice = document.getElementById(which+"_corslice");
+    var in_slice = document.getElementById(which + "_corslice");
     var cor_slice = parseInt(in_slice.value);
-    in_slice = document.getElementById(which+"_sagslice");
+    in_slice = document.getElementById(which + "_sagslice");
     var sag_slice = parseInt(in_slice.value);
-    in_slice = document.getElementById(which+"_traslice");
+    in_slice = document.getElementById(which + "_traslice");
     var tra_slice = parseInt(in_slice.value);
-    
-    var canvas = document.getElementById(which+"_corResult");
+
+    var show_crosshair = document.getElementById("crosshair_visible").checked;
+
+    var canvas = document.getElementById(which + "_corResult");
     ctx = canvas.getContext('2d');
     canvas.width = xdim;
     canvas.height = zdim;
     idata = ctx.createImageData(xdim, zdim);
 
     var image_result = new Uint8ClampedArray(xdim * zdim * 4);
-    
-    
+
+
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < xdim; x++) {
-            for (var z=0; z < zdim; z++) {
-                var val = Math.round(imgResult.data[x + cor_slice * xdim + (zdim-z)*xdim*ydim] * 255);
-                if (val > 255) { val = 255; }
-                if (val < 0) {val = 0;}
-                var c = jetmap[val];
-                if(c ==undefined) {
-                    c = [0,0,0];
+            for (var z = 0; z < zdim; z++) {
+                var val = Math.round(imgResult.data[x + cor_slice * xdim + (zdim - z) * xdim * ydim] * 255);
+                if (val > 255) {
+                    val = 255;
                 }
-                image_result[4 * (x+z*xdim)] = c[0]*255
-                image_result[4 * (x+z*xdim) + 1] = c[1]*255
-                image_result[4 * (x+z*xdim) + 2] = c[2]*255
-                image_result[4 * (x+z*xdim) + 3] = 255
+                if (val < 0) {
+                    val = 0;
+                }
+                var c = jetmap[val];
+                if (c == undefined) {
+                    c = [0, 0, 0];
+                }
+                image_result[4 * (x + z * xdim)] = c[0] * 255
+                image_result[4 * (x + z * xdim) + 1] = c[1] * 255
+                image_result[4 * (x + z * xdim) + 2] = c[2] * 255
+                image_result[4 * (x + z * xdim) + 3] = 255
             }
         }
     } else {
-        in_ww = document.getElementById(which+"_ww");
-        in_wc = document.getElementById(which+"_wc");
+        in_ww = document.getElementById(which + "_ww");
+        in_wc = document.getElementById(which + "_wc");
         var ww = parseFloat(in_ww.value) * 0.5
         var wc = parseFloat(in_wc.value)
         for (var x = 0; x < xdim; x++) {
-            for (var z=0; z < zdim; z++) {
-                val = imgResult.data[x + cor_slice*xdim +(zdim-z)*xdim*ydim] * 4096
+            for (var z = 0; z < zdim; z++) {
+                val = imgResult.data[x + cor_slice * xdim + (zdim - z) * xdim * ydim] * 4096
                 if (val <= (wc - ww)) {
                     val = 0
                 } else if (val >= (wc + ww)) {
@@ -546,63 +571,73 @@ function displayAndWindow3DImage(which) {
                 } else {
                     val = 255 * (val - (wc - ww)) / (ww)
                 }
-                image_result[4 * (x+z*xdim)] = val
-                image_result[4 * (x+z*xdim) + 1] = val
-                image_result[4 * (x+z*xdim) + 2] = val
-                image_result[4 * (x+z*xdim) + 3] = 255
+                image_result[4 * (x + z * xdim)] = val
+                image_result[4 * (x + z * xdim) + 1] = val
+                image_result[4 * (x + z * xdim) + 2] = val
+                image_result[4 * (x + z * xdim) + 3] = 255
             }
         }
     }
-    for (var x = 0; x < xdim; x++) {
-        if(x>sag_slice-10 && x < sag_slice+10) {continue;}
-        image_result[4 * (x+(zdim-tra_slice)*xdim)] = 255
-        image_result[4 * (x+(zdim-tra_slice)*xdim) + 1] = 0
-        image_result[4 * (x+(zdim-tra_slice)*xdim) + 2] = 0
-        image_result[4 * (x+(zdim-tra_slice)*xdim) + 3] = 255
+    if (show_crosshair) {
+        for (var x = 0; x < xdim; x++) {
+            if (x > sag_slice - 10 && x < sag_slice + 10) {
+                continue;
+            }
+            image_result[4 * (x + (zdim - tra_slice) * xdim)] = 255
+            image_result[4 * (x + (zdim - tra_slice) * xdim) + 1] = 0
+            image_result[4 * (x + (zdim - tra_slice) * xdim) + 2] = 0
+            image_result[4 * (x + (zdim - tra_slice) * xdim) + 3] = 255
+        }
+        for (var z = 0; z < zdim; z++) {
+            if (z > (zdim - tra_slice - 10) && z < (zdim - tra_slice + 10)) {
+                continue;
+            }
+            image_result[4 * (sag_slice + z * xdim)] = 0
+            image_result[4 * (sag_slice + z * xdim) + 1] = 255
+            image_result[4 * (sag_slice + z * xdim) + 2] = 0
+            image_result[4 * (sag_slice + z * xdim) + 3] = 255
+        }
     }
-    for (var z=0; z < zdim; z++) {
-        if(z>(zdim-tra_slice-10) && z < (zdim-tra_slice+10)) {continue;}
-        image_result[4 * (sag_slice+z*xdim)] = 0
-        image_result[4 * (sag_slice+z*xdim) + 1] = 255
-        image_result[4 * (sag_slice+z*xdim) + 2] = 0
-        image_result[4 * (sag_slice+z*xdim) + 3] = 255
-    }
-    
+
     idata.data.set(image_result);
     ctx.putImageData(idata, 0, 0);
 
-    canvas = document.getElementById(which+"_sagResult");
+    canvas = document.getElementById(which + "_sagResult");
     ctx = canvas.getContext('2d');
     canvas.width = ydim;
     canvas.height = zdim;
     idata = ctx.createImageData(ydim, zdim);
 
     var image_result = new Uint8ClampedArray(zdim * ydim * 4);
-    
+
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < ydim; x++) {
-            for(var z = 0; z < zdim; z++) {
-                var val = Math.round(imgResult.data[sag_slice + y*xdim + (zdim-z)*xdim*ydim] * 255);
-                if (val > 255) { val = 255; }
-                if (val < 0) {val = 0;}
-                var c = jetmap[val];
-                if(c ==undefined) {
-                    c = [0,0,0];
+            for (var z = 0; z < zdim; z++) {
+                var val = Math.round(imgResult.data[sag_slice + y * xdim + (zdim - z) * xdim * ydim] * 255);
+                if (val > 255) {
+                    val = 255;
                 }
-                image_result[4 * (y+z*ydim)] = c[0]*255
-                image_result[4 * (y+z*ydim) + 1] = c[1]*255
-                image_result[4 * (y+z*ydim) + 2] = c[2]*255
-                image_result[4 * (y+z*ydim) + 3] = 255
+                if (val < 0) {
+                    val = 0;
+                }
+                var c = jetmap[val];
+                if (c == undefined) {
+                    c = [0, 0, 0];
+                }
+                image_result[4 * (y + z * ydim)] = c[0] * 255
+                image_result[4 * (y + z * ydim) + 1] = c[1] * 255
+                image_result[4 * (y + z * ydim) + 2] = c[2] * 255
+                image_result[4 * (y + z * ydim) + 3] = 255
             }
         }
     } else {
-        in_ww = document.getElementById(which+"_ww");
-        in_wc = document.getElementById(which+"_wc");
+        in_ww = document.getElementById(which + "_ww");
+        in_wc = document.getElementById(which + "_wc");
         var ww = parseFloat(in_ww.value) * 0.5
         var wc = parseFloat(in_wc.value)
         for (var y = 0; y < ydim; y++) {
-            for(var z = 0; z < zdim; z++) {
-                val = imgResult.data[sag_slice + y*xdim + (zdim-z)*xdim*ydim] * 4096
+            for (var z = 0; z < zdim; z++) {
+                val = imgResult.data[sag_slice + y * xdim + (zdim - z) * xdim * ydim] * 4096
                 if (val <= (wc - ww)) {
                     val = 0
                 } else if (val >= (wc + ww)) {
@@ -610,63 +645,73 @@ function displayAndWindow3DImage(which) {
                 } else {
                     val = 255 * (val - (wc - ww)) / (ww)
                 }
-                image_result[4 * (y+z*ydim)] = val
-                image_result[4 * (y+z*ydim) + 1] = val
-                image_result[4 * (y+z*ydim) + 2] = val
-                image_result[4 * (y+z*ydim) + 3] = 255
+                image_result[4 * (y + z * ydim)] = val
+                image_result[4 * (y + z * ydim) + 1] = val
+                image_result[4 * (y + z * ydim) + 2] = val
+                image_result[4 * (y + z * ydim) + 3] = 255
             }
         }
     }
-    for (var y = 0; y < ydim; y++) {
-        if(y>cor_slice-10 && y < cor_slice+10) {continue;}
-        image_result[4 * (y+(zdim-tra_slice)*ydim)] = 255
-        image_result[4 * (y+(zdim-tra_slice)*ydim) + 1] = 0
-        image_result[4 * (y+(zdim-tra_slice)*ydim) + 2] = 0
-        image_result[4 * (y+(zdim-tra_slice)*ydim) + 3] = 255
-    }
-    for (var z=0; z < zdim; z++) {
-        if(z>(zdim-tra_slice-10) && z<(zdim-tra_slice+10)) {continue;}
-        image_result[4 * (cor_slice+z*ydim)] = 0
-        image_result[4 * (cor_slice+z*ydim) + 1] = 0
-        image_result[4 * (cor_slice+z*ydim) + 2] = 255
-        image_result[4 * (cor_slice+z*ydim) + 3] = 255
+    if (show_crosshair) {
+        for (var y = 0; y < ydim; y++) {
+            if (y > cor_slice - 10 && y < cor_slice + 10) {
+                continue;
+            }
+            image_result[4 * (y + (zdim - tra_slice) * ydim)] = 255
+            image_result[4 * (y + (zdim - tra_slice) * ydim) + 1] = 0
+            image_result[4 * (y + (zdim - tra_slice) * ydim) + 2] = 0
+            image_result[4 * (y + (zdim - tra_slice) * ydim) + 3] = 255
+        }
+        for (var z = 0; z < zdim; z++) {
+            if (z > (zdim - tra_slice - 10) && z < (zdim - tra_slice + 10)) {
+                continue;
+            }
+            image_result[4 * (cor_slice + z * ydim)] = 0
+            image_result[4 * (cor_slice + z * ydim) + 1] = 0
+            image_result[4 * (cor_slice + z * ydim) + 2] = 255
+            image_result[4 * (cor_slice + z * ydim) + 3] = 255
+        }
     }
 
     idata.data.set(image_result);
     ctx.putImageData(idata, 0, 0);
 
-    canvas = document.getElementById(which+"_traResult");
+    canvas = document.getElementById(which + "_traResult");
     ctx = canvas.getContext('2d');
     canvas.width = xdim;
     canvas.height = ydim;
     idata = ctx.createImageData(xdim, ydim);
 
     var image_result = new Uint8ClampedArray(xdim * ydim * 4);
-    
+
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < xdim; x++) {
             for (var y = 0; y < ydim; y++) {
-                var val = Math.round(imgResult.data[x + y*xdim + tra_slice * xdim * ydim] * 255);
-                if (val > 255) { val = 255; }
-                if (val < 0) {val = 0;}
-                var c = jetmap[val];
-                if(c ==undefined) {
-                    c = [0,0,0];
+                var val = Math.round(imgResult.data[x + y * xdim + tra_slice * xdim * ydim] * 255);
+                if (val > 255) {
+                    val = 255;
                 }
-                image_result[4 * (x+y*xdim)] = c[0]*255
-                image_result[4 * (x+y*xdim) + 1] = c[1]*255
-                image_result[4 * (x+y*xdim) + 2] = c[2]*255
-                image_result[4 * (x+y*xdim) + 3] = 255
+                if (val < 0) {
+                    val = 0;
+                }
+                var c = jetmap[val];
+                if (c == undefined) {
+                    c = [0, 0, 0];
+                }
+                image_result[4 * (x + y * xdim)] = c[0] * 255
+                image_result[4 * (x + y * xdim) + 1] = c[1] * 255
+                image_result[4 * (x + y * xdim) + 2] = c[2] * 255
+                image_result[4 * (x + y * xdim) + 3] = 255
             }
         }
     } else {
-        in_ww = document.getElementById(which+"_ww");
-        in_wc = document.getElementById(which+"_wc");
+        in_ww = document.getElementById(which + "_ww");
+        in_wc = document.getElementById(which + "_wc");
         var ww = parseFloat(in_ww.value) * 0.5
         var wc = parseFloat(in_wc.value)
         for (var x = 0; x < xdim; x++) {
-            for(var y=0;y<ydim;y++) {
-                val = imgResult.data[x + y*xdim + tra_slice * xdim * ydim] * 4096
+            for (var y = 0; y < ydim; y++) {
+                val = imgResult.data[x + y * xdim + tra_slice * xdim * ydim] * 4096
                 if (val <= (wc - ww)) {
                     val = 0
                 } else if (val >= (wc + ww)) {
@@ -674,43 +719,49 @@ function displayAndWindow3DImage(which) {
                 } else {
                     val = 255 * (val - (wc - ww)) / (ww)
                 }
-                image_result[4 * (x+y*xdim)] = val
-                image_result[4 * (x+y*xdim) + 1] = val
-                image_result[4 * (x+y*xdim) + 2] = val
-                image_result[4 * (x+y*xdim) + 3] = 255
+                image_result[4 * (x + y * xdim)] = val
+                image_result[4 * (x + y * xdim) + 1] = val
+                image_result[4 * (x + y * xdim) + 2] = val
+                image_result[4 * (x + y * xdim) + 3] = 255
             }
         }
     }
-    for (var x = 0; x < xdim; x++) {
-        if(x>sag_slice-10 && x < sag_slice+10) {continue;}
-        image_result[4 * (x+cor_slice*xdim)] = 0
-        image_result[4 * (x+cor_slice*xdim) + 1] = 0
-        image_result[4 * (x+cor_slice*xdim) + 2] = 255
-        image_result[4 * (x+cor_slice*xdim) + 3] = 255
+    if (show_crosshair) {
+        for (var x = 0; x < xdim; x++) {
+            if (x > sag_slice - 10 && x < sag_slice + 10) {
+                continue;
+            }
+            image_result[4 * (x + cor_slice * xdim)] = 0
+            image_result[4 * (x + cor_slice * xdim) + 1] = 0
+            image_result[4 * (x + cor_slice * xdim) + 2] = 255
+            image_result[4 * (x + cor_slice * xdim) + 3] = 255
+        }
+        for (var y = 0; y < ydim; y++) {
+            if (y > cor_slice - 10 && y < cor_slice + 10) {
+                continue;
+            }
+            image_result[4 * (sag_slice + y * xdim)] = 0
+            image_result[4 * (sag_slice + y * xdim) + 1] = 255
+            image_result[4 * (sag_slice + y * xdim) + 2] = 0
+            image_result[4 * (sag_slice + y * xdim) + 3] = 255
+        }
     }
-    for (var y=0; y < ydim; y++) {
-        if(y>cor_slice-10 && y < cor_slice+10) {continue;}
-        image_result[4 * (sag_slice+y*xdim)] = 0
-        image_result[4 * (sag_slice+y*xdim) + 1] = 255
-        image_result[4 * (sag_slice+y*xdim) + 2] = 0
-        image_result[4 * (sag_slice+y*xdim) + 3] = 255
-    }
-    
+
     idata.data.set(image_result);
     ctx.putImageData(idata, 0, 0);
 
 
-    k_canvas = document.getElementById(which+"_kResult");
+    k_canvas = document.getElementById(which + "_kResult");
     k_ctx = k_canvas.getContext('2d');
     k_canvas.width = xdim;
     k_canvas.height = ydim
     kdata = k_ctx.createImageData(xdim, ydim);
 
-    var mult = document.getElementById(which+"_kspacemult").valueAsNumber;
-    if(which=="cur") {
+    var mult = document.getElementById(which + "_kspacemult").valueAsNumber;
+    if (which == "cur") {
         k_result = new Uint8ClampedArray(xdim * ydim * 4);
         for (var index = 0; index < xdim * ydim; index++) {
-            val = imgResult.kSpace[index + slice * xdim * ydim] * mult      
+            val = imgResult.kSpace[index + slice * xdim * ydim] * mult
             k_result[4 * index] = val
             k_result[4 * index + 1] = val
             k_result[4 * index + 2] = val
@@ -720,8 +771,8 @@ function displayAndWindow3DImage(which) {
         k_result = new Uint8ClampedArray(xdim * ydim * 4);
         for (var index = 0; index < xdim * ydim; index++) {
             val = imgResult.kSpace[index + slice * xdim * ydim] * mult
-            if(val<0) val = 0;
-            if(val>255) val = 255;
+            if (val < 0) val = 0;
+            if (val > 255) val = 255;
             k_result[4 * index] = val
             k_result[4 * index + 1] = val
             k_result[4 * index + 2] = val
@@ -733,17 +784,17 @@ function displayAndWindow3DImage(which) {
 }
 
 function downloadKSpace(which) {
-    downloadArray(imgResultCache[which].raw_data, "kspace_"+which+".csv");
+    downloadArray(imgResultCache[which].raw_data, "kspace_" + which + ".csv");
 }
 
 function downloadImage(which) {
-    downloadArray(imgResultCache[which].data, "image_"+which+".csv");
+    downloadArray(imgResultCache[which].data, "image_" + which + ".csv");
 }
 
 function downloadArray(array, name) {
     const csvContent = array.join(",");
     const blob = new Blob([csvContent], {
-    type: 'text/csv;charset=utf-8;'
+        type: 'text/csv;charset=utf-8;'
     });
     const url = URL.createObjectURL(blob);
 
@@ -757,7 +808,7 @@ function downloadArray(array, name) {
 
 function fillDatasets() {
     sel = document.getElementById("datasetPath");
-    for(var p in datasets) {
+    for (var p in datasets) {
         op = document.createElement("option");
         op.value = p;
         op.innerText = datasets[p][0];
@@ -794,13 +845,13 @@ function plot_colormap(canvas_id) {
     let canvas = document.getElementById(canvas_id);
     let ctx = canvas.getContext("2d");
     for (let x = 0; x < 256; x++) {
-      let color = jetmap[x];
-      let r = color[0]*256;
-      let g = color[1]*256;
-      let b = color[2]*256;
-      ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
-      //ctx.fillRect(0, x * canvas.height / 256, canvas.width, canvas.height / 256);
-      ctx.fillRect(Math.floor(x*(canvas.width/256)), 0, Math.ceil(canvas.width / 256), canvas.height);
+        let color = jetmap[x];
+        let r = color[0] * 256;
+        let g = color[1] * 256;
+        let b = color[2] * 256;
+        ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+        //ctx.fillRect(0, x * canvas.height / 256, canvas.width, canvas.height / 256);
+        ctx.fillRect(Math.floor(x * (canvas.width / 256)), 0, Math.ceil(canvas.width / 256), canvas.height);
     }
 }
 
@@ -809,19 +860,18 @@ function setTabs() {
     var tabHeadId = "params-" + selectedSequence + "-tab";
     selected_tab = tabHeadId;
     elems = document.getElementById("sequence").getElementsByClassName("nav-link")
-    for(var x=0;x<elems.length;x++) { 
-        if(elems[x].id == tabHeadId) {
+    for (var x = 0; x < elems.length; x++) {
+        if (elems[x].id == tabHeadId) {
             elems[x].classList.add("active");
         } else {
             elems[x].classList.remove("active");
         }
     }
     elems = document.getElementById("sequence").getElementsByClassName("tab-pane")
-    for(var x=0;x<elems.length;x++) { 
-        if(elems[x].id == tabId) {
+    for (var x = 0; x < elems.length; x++) {
+        if (elems[x].id == tabId) {
             elems[x].classList.add("active", "show");
-        }
-        else {
+        } else {
             elems[x].classList.remove("active", "show");
         }
     }
@@ -847,7 +897,7 @@ function setKSpaceFilt(xlines, ylines, fmin, fmax) {
 }
 
 function reco(update_slider, noIfft = false) {
-    document.getElementById("kspace").setAttribute("disabled","disabled");
+    document.getElementById("kspace").setAttribute("disabled", "disabled");
     var xlines, ylines, fmin, fmax;
     if (update_slider) {
         xlines = document.getElementById("k_xline_number").valueAsNumber;
@@ -885,8 +935,10 @@ function reco(update_slider, noIfft = false) {
 function read_params(param_div, params) {
     for (var child_id in param_div.children) {
         var child = param_div.children[child_id];
-        if (child.children == undefined) { continue;}
-        for(var input_id in child.children) {
+        if (child.children == undefined) {
+            continue;
+        }
+        for (var input_id in child.children) {
             var input = child.children[input_id];
             switch (input.type) {
                 case "number":
@@ -908,26 +960,28 @@ function startScan() {
     current_tab = selected_tab;
     r = document.getElementById("result");
     r.classList.add("hidden");
-    
-    
-    var params = {sequence: selectedSequence};
-    
+
+
+    var params = {
+        sequence: selectedSequence
+    };
+
     var param_div = document.getElementById("params-general");
     params = read_params(param_div, params);
-    params["xdim"] = Math.ceil(params["xdim"]/2)*2;
-    params["ydim"] = Math.ceil(params["ydim"]/2)*2;
-    params["zdim"] = Math.ceil(params["zdim"]/2)*2;
+    params["xdim"] = Math.ceil(params["xdim"] / 2) * 2;
+    params["ydim"] = Math.ceil(params["ydim"] / 2) * 2;
+    params["zdim"] = Math.ceil(params["zdim"] / 2) * 2;
     param_div = document.getElementById("params-noise");
     params = read_params(param_div, params);
     param_div = document.getElementById("params-kspace");
     params = read_params(param_div, params);
     param_div = document.getElementById("params-cs");
     params = read_params(param_div, params);
-    
+
     param_div = document.getElementById("params-" + selectedSequence);
     params = read_params(param_div, params);
-    
-    if(selectedSequence == "TQSQR") {
+
+    if (selectedSequence == "TQSQR") {
         var param_div = document.getElementById("params-SQ");
         var tq_params = {};
         tq_params = read_params(param_div, tq_params);
@@ -937,11 +991,11 @@ function startScan() {
         params["tq_params"] = tq_params;
         params["sq_params"] = sq_params;
     }
-    
+
     var spin = document.getElementById("scanningSpinner");
     spin.classList.remove("hidden");
-    
-    if(params["compute"] == "WebASM") {
+
+    if (params["compute"] == "WebASM") {
         w.sendQuery("simulateImageFast", params);
     } else {
         w.sendQuery("simulateImage", params);
@@ -952,21 +1006,23 @@ function profile() {
     current_tab = selected_tab;
     r = document.getElementById("result");
     r.classList.add("hidden");
-    
-    var params = {sequence: "SE"};
-    
+
+    var params = {
+        sequence: "SE"
+    };
+
     var param_div = document.getElementById("params-general");
     params = read_params(param_div, params);
-    params["xdim"] = Math.ceil(params["xdim"]/2)*2;
-    params["ydim"] = Math.ceil(params["ydim"]/2)*2;
-    params["zdim"] = Math.ceil(params["zdim"]/2)*2;
+    params["xdim"] = Math.ceil(params["xdim"] / 2) * 2;
+    params["ydim"] = Math.ceil(params["ydim"] / 2) * 2;
+    params["zdim"] = Math.ceil(params["zdim"] / 2) * 2;
     param_div = document.getElementById("params-noise");
     params = read_params(param_div, params);
     param_div = document.getElementById("params-kspace");
     params = read_params(param_div, params);
     param_div = document.getElementById("params-cs");
     params = read_params(param_div, params);
-    
+
     param_div = document.getElementById("params-SE");
     params = read_params(param_div, params);
 
@@ -985,80 +1041,132 @@ function profile() {
     params["cs"] = "0";
 
     params["compute"] = "JS";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["fft"] = "2D";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["fft"] = "3D";
     params["nearest"] = "2";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["fft"] = "2D";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["fft"] = "3D";
     params["nearest"] = "0";
 
     params["zdim"] = "64";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["fft"] = "2D";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["fft"] = "3D";
     params["nearest"] = "2";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["fft"] = "2D";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
 
     params["zdim"] = "256";
     params["img_noise_type"] = "2";
     params["nearest"] = "0";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["nearest"] = "2";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["zdim"] = "64";
     params["nearest"] = "0";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
     params["nearest"] = "2"
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
 
     params["cs"] = "2";
     params["nearest"] = "0";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "WebASM";
-    params_list.push({...params});
+    params_list.push({
+        ...params
+    });
     params["compute"] = "JS";
 
     w.sendQuery("profile", params_list);
@@ -1072,7 +1180,7 @@ function displayDataSet() {
 }
 
 function updateTime() {
-    var scale = parseFloat(document.getElementById("scale").value)*0.01;
+    var scale = parseFloat(document.getElementById("scale").value) * 0.01;
     var xdim = document.getElementById("xdim");
     xdim.value = Math.round(scale * parseFloat(xdim.max));
     var ydim = document.getElementById("ydim");
@@ -1081,11 +1189,11 @@ function updateTime() {
     zdim.value = Math.round(scale * parseFloat(zdim.max));
 
     var xsize = document.getElementById("xsize");
-    xsize.value = (0.5/scale).toFixed(2);
+    xsize.value = (0.5 / scale).toFixed(2);
     var ysize = document.getElementById("ysize");
-    ysize.value = (0.5/scale).toFixed(2);
+    ysize.value = (0.5 / scale).toFixed(2);
     var zsize = document.getElementById("zsize");
-    zsize.value = (0.5/scale).toFixed(2);
+    zsize.value = (0.5 / scale).toFixed(2);
 
     var functionName = "update" + selectedSequence + "Time";
     if (this.hasOwnProperty(functionName)) {
@@ -1101,10 +1209,10 @@ function updateIRTime() {
     var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("ir_time");
 
-    if(ti+te >= tr) {
+    if (ti + te >= tr) {
         time.innerText = "TE+TI has to be smaller than TR";
     } else {
-        time.innerText = formatTime(tr*ydim*zdim);
+        time.innerText = formatTime(tr * ydim * zdim);
     }
 }
 
@@ -1114,11 +1222,11 @@ function updateSETime() {
     var ydim = parseInt(document.getElementById("ydim").value)
     var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("se_time");
-    
-    if(te >= tr) {
+
+    if (te >= tr) {
         time.innerText = "TE has to be smaller than TR";
     } else {
-        time.innerText = formatTime(tr*ydim*zdim);
+        time.innerText = formatTime(tr * ydim * zdim);
     }
 }
 
@@ -1129,11 +1237,15 @@ function updatePSIFTime() {
     var ydim = parseInt(document.getElementById("ydim").value)
     var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("psif_time");
-    
-    if(fa>180) { document.getElementById("psif_fa").value = 180; }
-    if(fa<-180) { document.getElementById("psif_fa").value = -180; }
 
-    time.innerText = formatTime(tr*ydim*zdim);
+    if (fa > 180) {
+        document.getElementById("psif_fa").value = 180;
+    }
+    if (fa < -180) {
+        document.getElementById("psif_fa").value = -180;
+    }
+
+    time.innerText = formatTime(tr * ydim * zdim);
 }
 
 function updateFISPTime() {
@@ -1143,11 +1255,15 @@ function updateFISPTime() {
     var ydim = parseInt(document.getElementById("ydim").value)
     var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("fisp_time");
-        
-    if(fa>180) { document.getElementById("fisp_fa").value = 180; }
-    if(fa<-180) { document.getElementById("fisp_fa").value = -180; }
 
-    time.innerText = formatTime(te*2*ydim*zdim);
+    if (fa > 180) {
+        document.getElementById("fisp_fa").value = 180;
+    }
+    if (fa < -180) {
+        document.getElementById("fisp_fa").value = -180;
+    }
+
+    time.innerText = formatTime(te * 2 * ydim * zdim);
 }
 
 function updateSGRETime() {
@@ -1157,14 +1273,18 @@ function updateSGRETime() {
     var ydim = parseInt(document.getElementById("ydim").value)
     var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("sgre_time");
-        
-    if(fa>180) { document.getElementById("sgre_fa").value = 180; }
-    if(fa<-180) { document.getElementById("sgre_fa").value = -180; }
 
-    if(te >= tr) {
+    if (fa > 180) {
+        document.getElementById("sgre_fa").value = 180;
+    }
+    if (fa < -180) {
+        document.getElementById("sgre_fa").value = -180;
+    }
+
+    if (te >= tr) {
         time.innerText = "TE has to be smaller than TR";
     } else {
-        time.innerText = formatTime(tr*ydim*zdim);
+        time.innerText = formatTime(tr * ydim * zdim);
     }
 }
 
@@ -1174,13 +1294,17 @@ function updateBalancedSSFPTime() {
     var ydim = parseInt(document.getElementById("ydim").value)
     var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("bssfp_time");
-        
-    if(fa>180) { document.getElementById("bssfp_fa").value = 180; }
-    if(fa<-180) { document.getElementById("bssfp_fa").value = -180; }
 
-    document.getElementById("bssfp_tr").value = te*2;
+    if (fa > 180) {
+        document.getElementById("bssfp_fa").value = 180;
+    }
+    if (fa < -180) {
+        document.getElementById("bssfp_fa").value = -180;
+    }
 
-    time.innerText = formatTime(te*2*ydim*zdim);
+    document.getElementById("bssfp_tr").value = te * 2;
+
+    time.innerText = formatTime(te * 2 * ydim * zdim);
 }
 
 function updateNaTime() {
@@ -1189,11 +1313,11 @@ function updateNaTime() {
     var ydim = parseInt(document.getElementById("ydim").value)
     var zdim = parseInt(document.getElementById("zdim").value)
     var time = document.getElementById("na_time");
-    
-    if(te >= tr) {
+
+    if (te >= tr) {
         time.innerText = "TE has to be smaller than TR";
     } else {
-        time.innerText = formatTime(tr*ydim*zdim);
+        time.innerText = formatTime(tr * ydim * zdim);
     }
 }
 
@@ -1205,8 +1329,8 @@ function updateSQTime() {
     var zdim = parseInt(document.getElementById("zdim").value)
     var te = document.getElementById("sq_te");
 
-    var tes = ""+te_start;
-    for (var t=te_start+te_step;t<=te_end;t+=te_step) {
+    var tes = "" + te_start;
+    for (var t = te_start + te_step; t <= te_end; t += te_step) {
         tes += ", " + t;
     }
     te.innerText = tes;
@@ -1220,25 +1344,24 @@ function updateTQTime() {
     var zdim = parseInt(document.getElementById("zdim").value)
     var te = document.getElementById("tq_te");
 
-    var tes = ""+te_start;
-    for (var t=te_start+te_step;t<=te_end;t+=te_step) {
+    var tes = "" + te_start;
+    for (var t = te_start + te_step; t <= te_end; t += te_step) {
         tes += ", " + t;
     }
     te.innerText = tes;
 }
 
-function updateTQSQRTime() {
-}
+function updateTQSQRTime() {}
 
 function formatTime(time) {
     d = new Date(time);
     timeString = "";
-    if(d.getFullYear() > 1970) {
-        timeString += (d.getFullYear()-1970) + " years ";
+    if (d.getFullYear() > 1970) {
+        timeString += (d.getFullYear() - 1970) + " years ";
     }
-    if(d.getDate() > 1) {
-        timeString += (d.getDate()-1) + " days ";
+    if (d.getDate() > 1) {
+        timeString += (d.getDate() - 1) + " days ";
     }
-    timeString += (d.getHours()<11?"0":"") + (d.getHours()-1) + ":" + (d.getMinutes()<10?"0":"") + d.getMinutes() + ":" + (d.getSeconds()<10?"0":"") + d.getSeconds();
+    timeString += (d.getHours() < 11 ? "0" : "") + (d.getHours() - 1) + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "") + d.getSeconds();
     return timeString;
 }
