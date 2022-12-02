@@ -399,6 +399,7 @@ function scrollResult(event, plane) {
     for (var key in keys) {
         which = keys[key]
         r_slice = document.getElementById(which + "_" + plane + "slice")
+        if(r_slice == undefined) {continue;}
         r_slice.value = r_slice.valueAsNumber - Math.sign(event.deltaY) * Math.max(1, Math.abs(Math.round(event.deltaY / 100)))
         if ("createEvent" in document) {
             evt = new Event("change", {
@@ -440,6 +441,106 @@ function windowResult(event, which) {
             "canceable": true
         });
         ww.dispatchEvent(evt);
+    }
+}
+
+var rotation = {
+    "cur": false,
+    "pre": false,
+    "cs": false
+};
+var viewPort = {
+    "cur": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    "pre": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    "cs": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+}
+
+function rot(x, y, z, a) {
+    var pos = [a[0]*x+a[1]*y+a[2]*z+a[3], 
+                       a[4]*x+a[5]*y+a[6]*z+a[7], 
+                       a[8]*x+a[9]*y+a[10]*z+a[11],
+                       a[12]*x+a[13]*y+a[14]*z+a[15]];
+    if(pos[3]!=1) {
+        pos[0] = pos[0]/pos[3];
+        pos[1] = pos[1]/pos[3];
+        pos[2] = pos[2]/pos[3];
+        pos[3] = 1;
+    }
+    return pos;
+}
+
+function startRotation(event, which) {
+    rotation[which] = {x: event.x, y: event.y};
+}
+
+function endRotation(which) {
+    rotation[which] = false;
+}
+
+function rotateResult(event, which) {
+    if (rotation[which]) {
+        var dx = (rotation[which].x-event.x) / 100;
+        var dy = (rotation[which].y-event.y) / 100;
+        /*var dz = 0;
+        var h = event.target.clientHeight;
+        var w = event.target.clientWidth;
+        var y = event.pageY-event.target.offsetTop;
+        var x = event.pageX-event.target.offsetLeft;
+        var v = [(x-0.5*w)/w, (y-0.5*h)/w, 1];
+        v[2] = 1-Math.sqrt(v[1]*v[1]+v[0]*v[0]);
+        
+        var rz = [v[1], -v[0], 0];
+        var ry = [-v[2], 0, v[0]];
+        var rx = [0, -v[2], v[1]];
+        var l = Math.sqrt(rz[0]*rz[0]+rz[1]*rz[1]);
+        rz[0] = rz[0]/l;
+        rz[1] = rz[1]/l;
+        l = Math.sqrt(ry[0]*ry[0]+ry[2]*ry[2]);
+        ry[0] = ry[0]/l;
+        ry[2] = ry[2]/l;
+        l = Math.sqrt(rx[1]*rx[1]+rx[2]*rx[2]);
+        rx[1] = rx[1]/l;
+        rx[2] = rx[2]/l;
+        */
+
+        rotation[which] = {x: event.x, y: event.y};
+        viewPort[which][0] += dy;
+        while(viewPort[which][0] >= 2*Math.PI) {
+            viewPort[which][0] -= 2*Math.PI;
+        }
+        viewPort[which][1] += dx;
+        while(viewPort[which][1] >= 2*Math.PI) {
+            viewPort[which][1] -= 2*Math.PI;
+        }
+        //viewPort[which][0] += dy*ry[2];
+        /*
+        a0 a1 a2       1   0   0     a0  ca*a1+sa*a2  -sa*a1+ca*a2     cb  0   sb     cb*a0+sa*sb*a1-ca*sb*a2  ca*a1+sa*a2  sb*a0-sa*cb*a1+ca*cb*a2       cc  -sc 0   cb*cc*a0+sa*sb*cc*a1-ca*sb*cc*a2+ca*cc*a1+sa*cc*a2   -cb*sc*a0-sa*sb*sc*a1+ca*sb*sc*a2+ca*cc*a1+sa*cc*a2   sb*a0-sa*cb*a1+ca*cb*a2
+        a4 a5 a6    *  0   ca  -sa = a4  ca*a5+sa*a6  -sa*a5+ca*a6  *  0   1   0   =  cb*a4+sa*sb*a5-ca*sb*a6  ca*a5+sa*a6  sb*a4-sa*cb*a5+ca*cb*a6    *  sc  cc  0 = cb*cc*a4+sa*sb*cc*a5-ca*sb*cc*a6+ca*cc*a5+sa*cc*a6   -cb*sc*a4-sa*sb*sc*a5+ca*sb*sc*a6+ca*cc*a5+sa*cc*a6   sb*a4-sa*cb*a5+ca*cb*a6
+        a8 a9 a10      0   sa  ca    a8  ca*a9+sa*a10 -sa*a9+sa*a10    -sb 0   cb     cb*a8+sa*sb*a9-ca*sb*a10  ca*a9+sa*a10  sb*a8-sa*cb*a9+ca*cb*a10    0   0   1   cb*cc*a8+sa*sb*cc*a9-ca*sb*cc*a10+ca*cc*a9+sa*cc*a10   -cb*sc*a8-sa*sb*sc*a9+ca*sb*sc*a10+ca*cc*a9+sa*cc*a10   sb*a8-sa*cb*a9+ca*cb*a10
+        */
+        /*var sa = Math.sin(dx);
+        var ca = Math.cos(dx);
+        var sb = Math.sin(dy);
+        var cb = Math.cos(dy);
+        var sc = Math.sin(dz);
+        var cc = Math.cos(dz);
+        //console.log(dx, dy, dz, sa, ca, sb, cb, sc, cc, viewPort[which], which);
+        var a = [...viewPort[which]];
+        viewPort[which][0] = cb*cc*a[0]+sa*sb*cc*a[1]-ca*sb*cc*a[2]+ca*cc*a[1]+sa*cc*a[2];
+        viewPort[which][1] = -cb*sc*a[0]-sa*sb*sc*a[1]+ca*sb*sc*a[2]+ca*cc*a[1]+sa*cc*a[2];
+        viewPort[which][2] = sb*a[0]-sa*cb*a[1]+ca*cb*a[2];
+        viewPort[which][4] = cb*cc*a[4]+sa*sb*cc*a[5]-ca*sb*cc*a[6]+ca*cc*a[5]+sa*cc*a[6];
+        viewPort[which][5] = -cb*sc*a[4]-sa*sb*sc*a[5]+ca*sb*sc*a[6]+ca*cc*a[5]+sa*cc*a[6];
+        viewPort[which][6] = sb*a[4]-sa*cb*a[5]+ca*cb*a[6];
+        viewPort[which][8] = cb*cc*a[8]+sa*sb*cc*a[9]-ca*sb*cc*a[10]+ca*cc*a[9]+sa*cc*a[10];
+        viewPort[which][9] = -cb*sc*a[8]-sa*sb*sc*a[9]+ca*sb*sc*a[10]+ca*cc*a[9]+sa*cc*a[10];
+        viewPort[which][10] = sb*a[8]-sa*cb*a[9]+ca*cb*a[10];*/
+        /*evt = new Event("change", {
+            "bubbles": false,
+            "canceable": true
+        });
+        event.target.dispatchEvent(evt);*/
+        displayAndWindow3DImage(which);
     }
 }
 
@@ -537,8 +638,9 @@ function displayAndWindow3DImage(which) {
     canvas.height = zdim;
     idata = ctx.createImageData(xdim, zdim);
 
-    var image_result = new Uint8ClampedArray(xdim * zdim * 4);
-
+    var cor_result = new Uint8ClampedArray(xdim * zdim * 4);
+    var tra_result = new Uint8ClampedArray(xdim * ydim * 4);
+    var sag_result = new Uint8ClampedArray(ydim * zdim * 4);
 
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < xdim; x++) {
@@ -554,10 +656,10 @@ function displayAndWindow3DImage(which) {
                 if (c == undefined) {
                     c = [0, 0, 0];
                 }
-                image_result[4 * (x + z * xdim)] = c[0] * 255
-                image_result[4 * (x + z * xdim) + 1] = c[1] * 255
-                image_result[4 * (x + z * xdim) + 2] = c[2] * 255
-                image_result[4 * (x + z * xdim) + 3] = 255
+                cor_result[4 * (x + z * xdim)] = c[0] * 255
+                cor_result[4 * (x + z * xdim) + 1] = c[1] * 255
+                cor_result[4 * (x + z * xdim) + 2] = c[2] * 255
+                cor_result[4 * (x + z * xdim) + 3] = 255
             }
         }
     } else {
@@ -575,10 +677,10 @@ function displayAndWindow3DImage(which) {
                 } else {
                     val = 255 * (val - (wc - ww)) / (ww)
                 }
-                image_result[4 * (x + z * xdim)] = val
-                image_result[4 * (x + z * xdim) + 1] = val
-                image_result[4 * (x + z * xdim) + 2] = val
-                image_result[4 * (x + z * xdim) + 3] = 255
+                cor_result[4 * (x + z * xdim)] = val
+                cor_result[4 * (x + z * xdim) + 1] = val
+                cor_result[4 * (x + z * xdim) + 2] = val
+                cor_result[4 * (x + z * xdim) + 3] = 255
             }
         }
     }
@@ -587,23 +689,23 @@ function displayAndWindow3DImage(which) {
             if (x > sag_slice - 10 && x < sag_slice + 10) {
                 continue;
             }
-            image_result[4 * (x + (zdim - tra_slice) * xdim)] = 255
-            image_result[4 * (x + (zdim - tra_slice) * xdim) + 1] = 0
-            image_result[4 * (x + (zdim - tra_slice) * xdim) + 2] = 0
-            image_result[4 * (x + (zdim - tra_slice) * xdim) + 3] = 255
+            cor_result[4 * (x + (zdim - tra_slice) * xdim)] = 255
+            cor_result[4 * (x + (zdim - tra_slice) * xdim) + 1] = 0
+            cor_result[4 * (x + (zdim - tra_slice) * xdim) + 2] = 0
+            cor_result[4 * (x + (zdim - tra_slice) * xdim) + 3] = 255
         }
         for (var z = 0; z < zdim; z++) {
             if (z > (zdim - tra_slice - 10) && z < (zdim - tra_slice + 10)) {
                 continue;
             }
-            image_result[4 * (sag_slice + z * xdim)] = 0
-            image_result[4 * (sag_slice + z * xdim) + 1] = 255
-            image_result[4 * (sag_slice + z * xdim) + 2] = 0
-            image_result[4 * (sag_slice + z * xdim) + 3] = 255
+            cor_result[4 * (sag_slice + z * xdim)] = 0
+            cor_result[4 * (sag_slice + z * xdim) + 1] = 255
+            cor_result[4 * (sag_slice + z * xdim) + 2] = 0
+            cor_result[4 * (sag_slice + z * xdim) + 3] = 255
         }
     }
 
-    idata.data.set(image_result);
+    idata.data.set(cor_result);
     ctx.putImageData(idata, 0, 0);
 
     canvas = document.getElementById(which + "_sagResult");
@@ -611,8 +713,6 @@ function displayAndWindow3DImage(which) {
     canvas.width = ydim;
     canvas.height = zdim;
     idata = ctx.createImageData(ydim, zdim);
-
-    var image_result = new Uint8ClampedArray(zdim * ydim * 4);
 
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < ydim; x++) {
@@ -628,10 +728,10 @@ function displayAndWindow3DImage(which) {
                 if (c == undefined) {
                     c = [0, 0, 0];
                 }
-                image_result[4 * (y + z * ydim)] = c[0] * 255
-                image_result[4 * (y + z * ydim) + 1] = c[1] * 255
-                image_result[4 * (y + z * ydim) + 2] = c[2] * 255
-                image_result[4 * (y + z * ydim) + 3] = 255
+                sag_result[4 * (y + z * ydim)] = c[0] * 255
+                sag_result[4 * (y + z * ydim) + 1] = c[1] * 255
+                sag_result[4 * (y + z * ydim) + 2] = c[2] * 255
+                sag_result[4 * (y + z * ydim) + 3] = 255
             }
         }
     } else {
@@ -649,10 +749,10 @@ function displayAndWindow3DImage(which) {
                 } else {
                     val = 255 * (val - (wc - ww)) / (ww)
                 }
-                image_result[4 * (y + z * ydim)] = val
-                image_result[4 * (y + z * ydim) + 1] = val
-                image_result[4 * (y + z * ydim) + 2] = val
-                image_result[4 * (y + z * ydim) + 3] = 255
+                sag_result[4 * (y + z * ydim)] = val
+                sag_result[4 * (y + z * ydim) + 1] = val
+                sag_result[4 * (y + z * ydim) + 2] = val
+                sag_result[4 * (y + z * ydim) + 3] = 255
             }
         }
     }
@@ -661,23 +761,23 @@ function displayAndWindow3DImage(which) {
             if (y > cor_slice - 10 && y < cor_slice + 10) {
                 continue;
             }
-            image_result[4 * (y + (zdim - tra_slice) * ydim)] = 255
-            image_result[4 * (y + (zdim - tra_slice) * ydim) + 1] = 0
-            image_result[4 * (y + (zdim - tra_slice) * ydim) + 2] = 0
-            image_result[4 * (y + (zdim - tra_slice) * ydim) + 3] = 255
+            sag_result[4 * (y + (zdim - tra_slice) * ydim)] = 255
+            sag_result[4 * (y + (zdim - tra_slice) * ydim) + 1] = 0
+            sag_result[4 * (y + (zdim - tra_slice) * ydim) + 2] = 0
+            sag_result[4 * (y + (zdim - tra_slice) * ydim) + 3] = 255
         }
         for (var z = 0; z < zdim; z++) {
             if (z > (zdim - tra_slice - 10) && z < (zdim - tra_slice + 10)) {
                 continue;
             }
-            image_result[4 * (cor_slice + z * ydim)] = 0
-            image_result[4 * (cor_slice + z * ydim) + 1] = 0
-            image_result[4 * (cor_slice + z * ydim) + 2] = 255
-            image_result[4 * (cor_slice + z * ydim) + 3] = 255
+            sag_result[4 * (cor_slice + z * ydim)] = 0
+            sag_result[4 * (cor_slice + z * ydim) + 1] = 0
+            sag_result[4 * (cor_slice + z * ydim) + 2] = 255
+            sag_result[4 * (cor_slice + z * ydim) + 3] = 255
         }
     }
 
-    idata.data.set(image_result);
+    idata.data.set(sag_result);
     ctx.putImageData(idata, 0, 0);
 
     canvas = document.getElementById(which + "_traResult");
@@ -685,8 +785,6 @@ function displayAndWindow3DImage(which) {
     canvas.width = xdim;
     canvas.height = ydim;
     idata = ctx.createImageData(xdim, ydim);
-
-    var image_result = new Uint8ClampedArray(xdim * ydim * 4);
 
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < xdim; x++) {
@@ -702,10 +800,10 @@ function displayAndWindow3DImage(which) {
                 if (c == undefined) {
                     c = [0, 0, 0];
                 }
-                image_result[4 * (x + y * xdim)] = c[0] * 255
-                image_result[4 * (x + y * xdim) + 1] = c[1] * 255
-                image_result[4 * (x + y * xdim) + 2] = c[2] * 255
-                image_result[4 * (x + y * xdim) + 3] = 255
+                tra_result[4 * (x + y * xdim)] = c[0] * 255
+                tra_result[4 * (x + y * xdim) + 1] = c[1] * 255
+                tra_result[4 * (x + y * xdim) + 2] = c[2] * 255
+                tra_result[4 * (x + y * xdim) + 3] = 255
             }
         }
     } else {
@@ -723,10 +821,10 @@ function displayAndWindow3DImage(which) {
                 } else {
                     val = 255 * (val - (wc - ww)) / (ww)
                 }
-                image_result[4 * (x + y * xdim)] = val
-                image_result[4 * (x + y * xdim) + 1] = val
-                image_result[4 * (x + y * xdim) + 2] = val
-                image_result[4 * (x + y * xdim) + 3] = 255
+                tra_result[4 * (x + y * xdim)] = val
+                tra_result[4 * (x + y * xdim) + 1] = val
+                tra_result[4 * (x + y * xdim) + 2] = val
+                tra_result[4 * (x + y * xdim) + 3] = 255
             }
         }
     }
@@ -735,23 +833,135 @@ function displayAndWindow3DImage(which) {
             if (x > sag_slice - 10 && x < sag_slice + 10) {
                 continue;
             }
-            image_result[4 * (x + cor_slice * xdim)] = 0
-            image_result[4 * (x + cor_slice * xdim) + 1] = 0
-            image_result[4 * (x + cor_slice * xdim) + 2] = 255
-            image_result[4 * (x + cor_slice * xdim) + 3] = 255
+            tra_result[4 * (x + cor_slice * xdim)] = 0
+            tra_result[4 * (x + cor_slice * xdim) + 1] = 0
+            tra_result[4 * (x + cor_slice * xdim) + 2] = 255
+            tra_result[4 * (x + cor_slice * xdim) + 3] = 255
         }
         for (var y = 0; y < ydim; y++) {
             if (y > cor_slice - 10 && y < cor_slice + 10) {
                 continue;
             }
-            image_result[4 * (sag_slice + y * xdim)] = 0
-            image_result[4 * (sag_slice + y * xdim) + 1] = 255
-            image_result[4 * (sag_slice + y * xdim) + 2] = 0
-            image_result[4 * (sag_slice + y * xdim) + 3] = 255
+            tra_result[4 * (sag_slice + y * xdim)] = 0
+            tra_result[4 * (sag_slice + y * xdim) + 1] = 255
+            tra_result[4 * (sag_slice + y * xdim) + 2] = 0
+            tra_result[4 * (sag_slice + y * xdim) + 3] = 255
         }
     }
 
-    idata.data.set(image_result);
+    idata.data.set(tra_result);
+    ctx.putImageData(idata, 0, 0);
+
+    canvas = document.getElementById(which + "_3dResult");
+    ctx = canvas.getContext('2d');
+    var size = Math.max(xdim,ydim,zdim);
+    var result = new Uint8ClampedArray(size * size * 4);
+    var zindex = new Array(size*size);
+    canvas.width = size;
+    canvas.height = size;
+    idata = ctx.createImageData(size, size);
+
+
+    var angles = viewPort[which];
+    var sa = Math.sin(angles[0]);
+    var ca = Math.cos(angles[0]);
+    var sb = Math.sin(angles[1]);
+    var cb = Math.cos(angles[1]);
+    var sc = Math.sin(angles[2]);
+    var cc = Math.cos(angles[2]);
+    //console.log(dx, dy, dz, sa, ca, sb, cb, sc, cc, viewPort[which], which);
+    var a = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+    /*a[0] = ca*cb;
+    a[1] = ca*sb*sc-sa*cc;
+    a[2] = ca*sb*cc+sa*sc;
+    a[4] = sa*cb;
+    a[5] = sa*sb*sc+ca*cc;
+    a[6] = sa*sb*cc-ca*sc;
+    a[8] = -sb;
+    a[9] = cb*sc;
+    a[10] = cb*cc;*/
+    a[0] = cb;
+    a[1] = -cc*sb;
+    a[2] = sb*sc;
+    a[4] = ca*sb;
+    a[5] = ca*cb*cc-sa*sc;
+    a[6] = -cc*sa-ca*cb*sc;
+    a[8] = sa*sb;
+    a[9] = ca*sc+cb*cc*sa;
+    a[10] = ca*cc-cb*sa*sc;
+
+    for(var x=0;x<xdim;x++) {
+        for(var y=0;y<ydim;y++) {
+            var z = zdim-tra_slice;
+            var pos = rot(x-0.5*xdim, y-0.5*ydim, z-0.5*zdim, a);
+            var nx = Math.round(pos[0]+0.5*xdim);
+            var ny = Math.round(pos[1]+0.5*ydim);
+            if(nx<0 || nx>=size || ny<0 || ny>=size) {continue;}
+            if (zindex[nx+ny*size]==undefined || pos[2] > zindex[nx+ny*size]) {
+                zindex[nx+ny*size] = pos[2];
+                if(x==0 || y==0 || x==xdim-1 || y==ydim-1) {
+                    result[4*(nx+ny*size)] = 255;
+                    result[4*(nx+ny*size)+1] = 0;
+                    result[4*(nx+ny*size)+2] = 0;
+                    result[4*(nx+ny*size)+3] = 255;
+                } else {
+                    result[4*(nx+ny*size)] = tra_result[4*(x+y*xdim)];
+                    result[4*(nx+ny*size)+1] = tra_result[4*(x+y*xdim)+1];
+                    result[4*(nx+ny*size)+2] = tra_result[4*(x+y*xdim)+2];
+                    result[4*(nx+ny*size)+3] = tra_result[4*(x+y*xdim)+3];
+                }
+            }
+        }
+    }
+    for(var x=0;x<xdim;x++) {
+        for(var z=0;z<zdim;z++) {
+            var y = cor_slice;
+            var pos = rot(x-0.5*xdim, y-0.5*ydim, z-0.5*zdim, a);
+            var nx = Math.round(pos[0]+0.5*xdim);
+            var ny = Math.round(pos[1]+0.5*ydim);
+            if(nx<0 || nx>=size || ny<0 || ny>=size) {continue;}
+            if (zindex[nx+ny*size]==undefined || pos[2] > zindex[nx+ny*size]) {
+                zindex[nx+ny*size] = pos[2];
+                if(x==0 || z==0 || x==xdim-1 || z==zdim-1) {
+                    result[4*(nx+ny*size)] = 0;
+                    result[4*(nx+ny*size)+1] = 0;
+                    result[4*(nx+ny*size)+2] = 255;
+                    result[4*(nx+ny*size)+3] = 255;
+                } else {
+                    result[4*(nx+ny*size)] = cor_result[4*(x+z*xdim)];
+                    result[4*(nx+ny*size)+1] = cor_result[4*(x+z*xdim)+1];
+                    result[4*(nx+ny*size)+2] = cor_result[4*(x+z*xdim)+2];
+                    result[4*(nx+ny*size)+3] = cor_result[4*(x+z*xdim)+3];
+                }
+            }
+        }
+    }
+    for(var z=0;z<zdim;z++) {
+        for(var y=0;y<ydim;y++) {
+            var x = sag_slice;
+            var pos = rot(x-0.5*xdim, y-0.5*ydim, z-0.5*zdim, a);
+            var nx = Math.round(pos[0]+0.5*xdim);
+            var ny = Math.round(pos[1]+0.5*ydim);
+            if(nx<0 || nx>=size || ny<0 || ny>=size) {continue;}
+            if (zindex[nx+ny*size]==undefined || pos[2] > zindex[nx+ny*size]) {
+                zindex[nx+ny*size] = pos[2];
+                if(z==0 || y==0 || z==zdim-1 || y==ydim-1) {
+                    result[4*(nx+ny*size)] = 0;
+                    result[4*(nx+ny*size)+1] = 255;
+                    result[4*(nx+ny*size)+2] = 0;
+                    result[4*(nx+ny*size)+3] = 255;
+                }
+                else {
+                    result[4*(nx+ny*size)] = sag_result[4*(y+z*ydim)];
+                    result[4*(nx+ny*size)+1] = sag_result[4*(y+z*ydim)+1];
+                    result[4*(nx+ny*size)+2] = sag_result[4*(y+z*ydim)+2];
+                    result[4*(nx+ny*size)+3] = sag_result[4*(y+z*ydim)+3];
+                }
+            }
+        }
+    }
+
+    idata.data.set(result);
     ctx.putImageData(idata, 0, 0);
 
 

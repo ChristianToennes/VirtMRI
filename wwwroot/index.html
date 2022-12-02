@@ -694,6 +694,14 @@
                         </div>
                         <div class="col">
                             <div class="h-100 w-100 d-flex border" style="background-color: black;">
+                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, '3d')"
+                                    onmousedown="startRotation(event, 'pre')" onmouseup="endRotation('pre')"
+                                    onmouseout="endRotation('pre')" onmousemove="rotateResult(event, 'pre')"
+                                    id="pre_3dResult"></canvas>
+                            </div>
+                        </div>
+                        <div class="col hidden">
+                            <div class="h-100 w-100 d-flex border" style="background-color: black;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                                     onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')"
@@ -778,6 +786,14 @@
                             </div>
                         </div>
                         <div class="col">
+                            <div class="h-100 w-100 d-flex border" style="background-color: black;">
+                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, '3d')"
+                                    onmousedown="startRotation(event, 'cur')" onmouseup="endRotation('cur')"
+                                    onmouseout="endRotation('cur')" onmousemove="rotateResult(event, 'cur')"
+                                    id="cur_3dResult"></canvas>
+                            </div>
+                        </div>
+                        <div class="hidden col">
                             <div class="border h-100 w-100 d-flex" style="background-color: black;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
@@ -863,6 +879,14 @@
                             </div>
                         </div>
                         <div class="col">
+                            <div class="h-100 w-100 d-flex border" style="background-color: black;">
+                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, '3d')"
+                                    onmousedown="startRotation(event, 'cs')" onmouseup="endRotation('cs')"
+                                    onmouseout="endRotation('cs')" onmousemove="rotateResult(event, 'cs')"
+                                    id="cs_3dResult"></canvas>
+                            </div>
+                        </div>
+                        <div class="hidden col">
                             <div class="border h-100 w-100 d-flex" style="background-color: black;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
