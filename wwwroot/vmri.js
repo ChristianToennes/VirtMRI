@@ -450,12 +450,12 @@ var rotation = {
     "cs": false
 };
 var viewPort = {
-    "cur": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    "pre": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    "cs": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    "cur": [4.22, -4.27, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    "pre": [4.22, -4.27, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    "cs": [4.22, -4.27, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 }
 
-function rot(x, y, z, a) {
+function rot(x, y, z, a, t) {
     var pos = [a[0]*x+a[1]*y+a[2]*z+a[3], 
                        a[4]*x+a[5]*y+a[6]*z+a[7], 
                        a[8]*x+a[9]*y+a[10]*z+a[11],
@@ -466,6 +466,9 @@ function rot(x, y, z, a) {
         pos[2] = pos[2]/pos[3];
         pos[3] = 1;
     }
+    pos[0] += t[0];
+    pos[1] += t[1];
+    pos[2] += t[2];
     return pos;
 }
 
@@ -566,11 +569,14 @@ function toggleImg() {
             } else {
                 div.classList.add("hidden");
             }
-            var div = document.getElementById(which + "_kResult");
+            var div = document.getElementById(which + "_kResult").parentElement.parentElement;
+            var div2 = document.getElementById(which + "_3dResult").parentElement.parentElement;
             if (kspace != undefined && kspace.checked) {
                 div.classList.remove("hidden");
+                div2.classList.add("hidden");
             } else {
                 div.classList.add("hidden");
+                div2.classList.remove("hidden");
             }
         }
         var keys2 = ["cor", "tra", "sag"];
@@ -623,6 +629,11 @@ function displayAndWindow3DImage(which) {
     var ydim = imgResult.ydim;
     var zdim = imgResult.zdim;
 
+    var size = Math.max(xdim,ydim,zdim);
+    var xoff = Math.round((size-xdim)/2);
+    var yoff = Math.round((size-ydim)/2);
+    var zoff = Math.round((size-zdim)/2);
+
     var in_slice = document.getElementById(which + "_corslice");
     var cor_slice = parseInt(in_slice.value);
     in_slice = document.getElementById(which + "_sagslice");
@@ -634,13 +645,13 @@ function displayAndWindow3DImage(which) {
 
     var canvas = document.getElementById(which + "_corResult");
     ctx = canvas.getContext('2d');
-    canvas.width = xdim;
-    canvas.height = zdim;
-    idata = ctx.createImageData(xdim, zdim);
+    canvas.width = size;
+    canvas.height = size;
+    idata = ctx.createImageData(size, size);
 
-    var cor_result = new Uint8ClampedArray(xdim * zdim * 4);
-    var tra_result = new Uint8ClampedArray(xdim * ydim * 4);
-    var sag_result = new Uint8ClampedArray(ydim * zdim * 4);
+    var cor_result = new Uint8ClampedArray(size * size * 4);
+    var tra_result = new Uint8ClampedArray(size * size * 4);
+    var sag_result = new Uint8ClampedArray(size * size * 4);
 
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < xdim; x++) {
@@ -656,10 +667,10 @@ function displayAndWindow3DImage(which) {
                 if (c == undefined) {
                     c = [0, 0, 0];
                 }
-                cor_result[4 * (x + z * xdim)] = c[0] * 255
-                cor_result[4 * (x + z * xdim) + 1] = c[1] * 255
-                cor_result[4 * (x + z * xdim) + 2] = c[2] * 255
-                cor_result[4 * (x + z * xdim) + 3] = 255
+                cor_result[4 * (x+xoff + (z+zoff) * size)] = c[0] * 255
+                cor_result[4 * (x+xoff + (z+zoff) * size) + 1] = c[1] * 255
+                cor_result[4 * (x+xoff + (z+zoff) * size) + 2] = c[2] * 255
+                cor_result[4 * (x+xoff + (z+zoff) * size) + 3] = 255
             }
         }
     } else {
@@ -677,10 +688,10 @@ function displayAndWindow3DImage(which) {
                 } else {
                     val = 255 * (val - (wc - ww)) / (ww)
                 }
-                cor_result[4 * (x + z * xdim)] = val
-                cor_result[4 * (x + z * xdim) + 1] = val
-                cor_result[4 * (x + z * xdim) + 2] = val
-                cor_result[4 * (x + z * xdim) + 3] = 255
+                cor_result[4 * (x+xoff + (z+zoff) * size)] = val
+                cor_result[4 * (x+xoff + (z+zoff) * size) + 1] = val
+                cor_result[4 * (x+xoff + (z+zoff) * size) + 2] = val
+                cor_result[4 * (x+xoff + (z+zoff) * size) + 3] = 255
             }
         }
     }
@@ -689,19 +700,19 @@ function displayAndWindow3DImage(which) {
             if (x > sag_slice - 10 && x < sag_slice + 10) {
                 continue;
             }
-            cor_result[4 * (x + (zdim - tra_slice) * xdim)] = 255
-            cor_result[4 * (x + (zdim - tra_slice) * xdim) + 1] = 0
-            cor_result[4 * (x + (zdim - tra_slice) * xdim) + 2] = 0
-            cor_result[4 * (x + (zdim - tra_slice) * xdim) + 3] = 255
+            cor_result[4 * (x+xoff + (zdim - tra_slice+zoff) * size)] = 255
+            cor_result[4 * (x+xoff + (zdim - tra_slice+zoff) * size) + 1] = 0
+            cor_result[4 * (x+xoff + (zdim - tra_slice+zoff) * size) + 2] = 0
+            cor_result[4 * (x+xoff + (zdim - tra_slice+zoff) * size) + 3] = 255
         }
         for (var z = 0; z < zdim; z++) {
             if (z > (zdim - tra_slice - 10) && z < (zdim - tra_slice + 10)) {
                 continue;
             }
-            cor_result[4 * (sag_slice + z * xdim)] = 0
-            cor_result[4 * (sag_slice + z * xdim) + 1] = 255
-            cor_result[4 * (sag_slice + z * xdim) + 2] = 0
-            cor_result[4 * (sag_slice + z * xdim) + 3] = 255
+            cor_result[4 * (sag_slice+ + (z+zoff) * size)] = 0
+            cor_result[4 * (sag_slice+xoff + (z+zoff) * size) + 1] = 255
+            cor_result[4 * (sag_slice+xoff + (z+zoff) * size) + 2] = 0
+            cor_result[4 * (sag_slice+xoff + (z+zoff) * size) + 3] = 255
         }
     }
 
@@ -710,9 +721,9 @@ function displayAndWindow3DImage(which) {
 
     canvas = document.getElementById(which + "_sagResult");
     ctx = canvas.getContext('2d');
-    canvas.width = ydim;
-    canvas.height = zdim;
-    idata = ctx.createImageData(ydim, zdim);
+    canvas.width = size;
+    canvas.height = size;
+    idata = ctx.createImageData(size, size);
 
     if (isCurrentTabNa(which)) {
         for (var y = 0; y < ydim; y++) {
@@ -728,10 +739,10 @@ function displayAndWindow3DImage(which) {
                 if (c == undefined) {
                     c = [0, 0, 0];
                 }
-                sag_result[4 * (y + z * ydim)] = c[0] * 255
-                sag_result[4 * (y + z * ydim) + 1] = c[1] * 255
-                sag_result[4 * (y + z * ydim) + 2] = c[2] * 255
-                sag_result[4 * (y + z * ydim) + 3] = 255
+                sag_result[4 * (y+yoff + (z+zoff) * size)] = c[0] * 255
+                sag_result[4 * (y+yoff + (z+zoff) * size) + 1] = c[1] * 255
+                sag_result[4 * (y+yoff + (z+zoff) * size) + 2] = c[2] * 255
+                sag_result[4 * (y+yoff + (z+zoff) * size) + 3] = 255
             }
         }
     } else {
@@ -749,10 +760,10 @@ function displayAndWindow3DImage(which) {
                 } else {
                     val = 255 * (val - (wc - ww)) / (ww)
                 }
-                sag_result[4 * (y + z * ydim)] = val
-                sag_result[4 * (y + z * ydim) + 1] = val
-                sag_result[4 * (y + z * ydim) + 2] = val
-                sag_result[4 * (y + z * ydim) + 3] = 255
+                sag_result[4 * (y+yoff + (z+zoff) * size)] = val
+                sag_result[4 * (y+yoff + (z+zoff) * size) + 1] = val
+                sag_result[4 * (y+yoff + (z+zoff) * size) + 2] = val
+                sag_result[4 * (y+yoff + (z+zoff) * size) + 3] = 255
             }
         }
     }
@@ -761,19 +772,19 @@ function displayAndWindow3DImage(which) {
             if (y > cor_slice - 10 && y < cor_slice + 10) {
                 continue;
             }
-            sag_result[4 * (y + (zdim - tra_slice) * ydim)] = 255
-            sag_result[4 * (y + (zdim - tra_slice) * ydim) + 1] = 0
-            sag_result[4 * (y + (zdim - tra_slice) * ydim) + 2] = 0
-            sag_result[4 * (y + (zdim - tra_slice) * ydim) + 3] = 255
+            sag_result[4 * (y+yoff + (zdim - tra_slice+zoff) * size)] = 255
+            sag_result[4 * (y+yoff + (zdim - tra_slice+zoff) * size) + 1] = 0
+            sag_result[4 * (y+yoff + (zdim - tra_slice+zoff) * size) + 2] = 0
+            sag_result[4 * (y+yoff + (zdim - tra_slice+zoff) * size) + 3] = 255
         }
         for (var z = 0; z < zdim; z++) {
             if (z > (zdim - tra_slice - 10) && z < (zdim - tra_slice + 10)) {
                 continue;
             }
-            sag_result[4 * (cor_slice + z * ydim)] = 0
-            sag_result[4 * (cor_slice + z * ydim) + 1] = 0
-            sag_result[4 * (cor_slice + z * ydim) + 2] = 255
-            sag_result[4 * (cor_slice + z * ydim) + 3] = 255
+            sag_result[4 * (cor_slice+yoff + (z+zoff) * size)] = 0
+            sag_result[4 * (cor_slice+yoff + (z+zoff) * size) + 1] = 0
+            sag_result[4 * (cor_slice+yoff + (z+zoff) * size) + 2] = 255
+            sag_result[4 * (cor_slice+yoff + (z+zoff) * size) + 3] = 255
         }
     }
 
@@ -782,9 +793,9 @@ function displayAndWindow3DImage(which) {
 
     canvas = document.getElementById(which + "_traResult");
     ctx = canvas.getContext('2d');
-    canvas.width = xdim;
-    canvas.height = ydim;
-    idata = ctx.createImageData(xdim, ydim);
+    canvas.width = size;
+    canvas.height = size;
+    idata = ctx.createImageData(size, size);
 
     if (isCurrentTabNa(which)) {
         for (var x = 0; x < xdim; x++) {
@@ -800,10 +811,10 @@ function displayAndWindow3DImage(which) {
                 if (c == undefined) {
                     c = [0, 0, 0];
                 }
-                tra_result[4 * (x + y * xdim)] = c[0] * 255
-                tra_result[4 * (x + y * xdim) + 1] = c[1] * 255
-                tra_result[4 * (x + y * xdim) + 2] = c[2] * 255
-                tra_result[4 * (x + y * xdim) + 3] = 255
+                tra_result[4 * (x+xoff + (y+yoff) * size)] = c[0] * 255
+                tra_result[4 * (x+xoff + (y+yoff) * size) + 1] = c[1] * 255
+                tra_result[4 * (x+xoff + (y+yoff) * size) + 2] = c[2] * 255
+                tra_result[4 * (x+xoff + (y+yoff) * size) + 3] = 255
             }
         }
     } else {
@@ -821,10 +832,10 @@ function displayAndWindow3DImage(which) {
                 } else {
                     val = 255 * (val - (wc - ww)) / (ww)
                 }
-                tra_result[4 * (x + y * xdim)] = val
-                tra_result[4 * (x + y * xdim) + 1] = val
-                tra_result[4 * (x + y * xdim) + 2] = val
-                tra_result[4 * (x + y * xdim) + 3] = 255
+                tra_result[4 * (x+xoff + (y+yoff) * size)] = val
+                tra_result[4 * (x+xoff + (y+yoff) * size) + 1] = val
+                tra_result[4 * (x+xoff + (y+yoff) * size) + 2] = val
+                tra_result[4 * (x+xoff + (y+yoff) * size) + 3] = 255
             }
         }
     }
@@ -833,19 +844,19 @@ function displayAndWindow3DImage(which) {
             if (x > sag_slice - 10 && x < sag_slice + 10) {
                 continue;
             }
-            tra_result[4 * (x + cor_slice * xdim)] = 0
-            tra_result[4 * (x + cor_slice * xdim) + 1] = 0
-            tra_result[4 * (x + cor_slice * xdim) + 2] = 255
-            tra_result[4 * (x + cor_slice * xdim) + 3] = 255
+            tra_result[4 * (x+xoff + (cor_slice+yoff) * size)] = 0
+            tra_result[4 * (x+xoff + (cor_slice+yoff) * size) + 1] = 0
+            tra_result[4 * (x+xoff + (cor_slice+yoff) * size) + 2] = 255
+            tra_result[4 * (x+xoff + (cor_slice+yoff) * size) + 3] = 255
         }
         for (var y = 0; y < ydim; y++) {
             if (y > cor_slice - 10 && y < cor_slice + 10) {
                 continue;
             }
-            tra_result[4 * (sag_slice + y * xdim)] = 0
-            tra_result[4 * (sag_slice + y * xdim) + 1] = 255
-            tra_result[4 * (sag_slice + y * xdim) + 2] = 0
-            tra_result[4 * (sag_slice + y * xdim) + 3] = 255
+            tra_result[4 * (sag_slice+xoff + (y+yoff) * size)] = 0
+            tra_result[4 * (sag_slice+xoff + (y+yoff) * size) + 1] = 255
+            tra_result[4 * (sag_slice+xoff + (y+yoff) * size) + 2] = 0
+            tra_result[4 * (sag_slice+xoff + (y+yoff) * size) + 3] = 255
         }
     }
 
@@ -854,7 +865,7 @@ function displayAndWindow3DImage(which) {
 
     canvas = document.getElementById(which + "_3dResult");
     ctx = canvas.getContext('2d');
-    var size = Math.max(xdim,ydim,zdim);
+
     var result = new Uint8ClampedArray(size * size * 4);
     var zindex = new Array(size*size);
     canvas.width = size;
@@ -890,10 +901,12 @@ function displayAndWindow3DImage(which) {
     a[9] = ca*sc+cb*cc*sa;
     a[10] = ca*cc-cb*sa*sc;
 
+    var t = [xoff, 0, 0];
+
     for(var x=0;x<xdim;x++) {
         for(var y=0;y<ydim;y++) {
             var z = zdim-tra_slice;
-            var pos = rot(x-0.5*xdim, y-0.5*ydim, z-0.5*zdim, a);
+            var pos = rot(x-0.5*xdim, y-0.5*ydim, z-0.5*zdim, a, t);
             var nx = Math.round(pos[0]+0.5*xdim);
             var ny = Math.round(pos[1]+0.5*ydim);
             if(nx<0 || nx>=size || ny<0 || ny>=size) {continue;}
@@ -905,10 +918,10 @@ function displayAndWindow3DImage(which) {
                     result[4*(nx+ny*size)+2] = 0;
                     result[4*(nx+ny*size)+3] = 255;
                 } else {
-                    result[4*(nx+ny*size)] = tra_result[4*(x+y*xdim)];
-                    result[4*(nx+ny*size)+1] = tra_result[4*(x+y*xdim)+1];
-                    result[4*(nx+ny*size)+2] = tra_result[4*(x+y*xdim)+2];
-                    result[4*(nx+ny*size)+3] = tra_result[4*(x+y*xdim)+3];
+                    result[4*(nx+ny*size)] = tra_result[4*(x+xoff+(y+yoff)*size)];
+                    result[4*(nx+ny*size)+1] = tra_result[4*(x+xoff+(y+yoff)*size)+1];
+                    result[4*(nx+ny*size)+2] = tra_result[4*(x+xoff+(y+yoff)*size)+2];
+                    result[4*(nx+ny*size)+3] = tra_result[4*(x+xoff+(y+yoff)*size)+3];
                 }
             }
         }
@@ -916,7 +929,7 @@ function displayAndWindow3DImage(which) {
     for(var x=0;x<xdim;x++) {
         for(var z=0;z<zdim;z++) {
             var y = cor_slice;
-            var pos = rot(x-0.5*xdim, y-0.5*ydim, z-0.5*zdim, a);
+            var pos = rot(x-0.5*xdim, y-0.5*ydim, z-0.5*zdim, a, t);
             var nx = Math.round(pos[0]+0.5*xdim);
             var ny = Math.round(pos[1]+0.5*ydim);
             if(nx<0 || nx>=size || ny<0 || ny>=size) {continue;}
@@ -928,10 +941,10 @@ function displayAndWindow3DImage(which) {
                     result[4*(nx+ny*size)+2] = 255;
                     result[4*(nx+ny*size)+3] = 255;
                 } else {
-                    result[4*(nx+ny*size)] = cor_result[4*(x+z*xdim)];
-                    result[4*(nx+ny*size)+1] = cor_result[4*(x+z*xdim)+1];
-                    result[4*(nx+ny*size)+2] = cor_result[4*(x+z*xdim)+2];
-                    result[4*(nx+ny*size)+3] = cor_result[4*(x+z*xdim)+3];
+                    result[4*(nx+ny*size)] = cor_result[4*(x+xoff+(z+zoff)*size)];
+                    result[4*(nx+ny*size)+1] = cor_result[4*(x+xoff+(z+zoff)*size)+1];
+                    result[4*(nx+ny*size)+2] = cor_result[4*(x+xoff+(z+zoff)*size)+2];
+                    result[4*(nx+ny*size)+3] = cor_result[4*(x+xoff+(z+zoff)*size)+3];
                 }
             }
         }
@@ -939,7 +952,7 @@ function displayAndWindow3DImage(which) {
     for(var z=0;z<zdim;z++) {
         for(var y=0;y<ydim;y++) {
             var x = sag_slice;
-            var pos = rot(x-0.5*xdim, y-0.5*ydim, z-0.5*zdim, a);
+            var pos = rot(x-0.5*xdim, y-0.5*ydim, z-0.5*zdim, a, t);
             var nx = Math.round(pos[0]+0.5*xdim);
             var ny = Math.round(pos[1]+0.5*ydim);
             if(nx<0 || nx>=size || ny<0 || ny>=size) {continue;}
@@ -952,10 +965,10 @@ function displayAndWindow3DImage(which) {
                     result[4*(nx+ny*size)+3] = 255;
                 }
                 else {
-                    result[4*(nx+ny*size)] = sag_result[4*(y+z*ydim)];
-                    result[4*(nx+ny*size)+1] = sag_result[4*(y+z*ydim)+1];
-                    result[4*(nx+ny*size)+2] = sag_result[4*(y+z*ydim)+2];
-                    result[4*(nx+ny*size)+3] = sag_result[4*(y+z*ydim)+3];
+                    result[4*(nx+ny*size)] = sag_result[4*(y+yoff+(z+zoff)*size)];
+                    result[4*(nx+ny*size)+1] = sag_result[4*(y+yoff+(z+zoff)*size)+1];
+                    result[4*(nx+ny*size)+2] = sag_result[4*(y+yoff+(z+zoff)*size)+2];
+                    result[4*(nx+ny*size)+3] = sag_result[4*(y+yoff+(z+zoff)*size)+3];
                 }
             }
         }
@@ -967,30 +980,21 @@ function displayAndWindow3DImage(which) {
 
     k_canvas = document.getElementById(which + "_kResult");
     k_ctx = k_canvas.getContext('2d');
-    k_canvas.width = xdim;
-    k_canvas.height = ydim
-    kdata = k_ctx.createImageData(xdim, ydim);
+    k_canvas.width = size;
+    k_canvas.height = size;
+    kdata = k_ctx.createImageData(size, size);
 
     var mult = document.getElementById(which + "_kspacemult").valueAsNumber;
-    if (which == "cur") {
-        k_result = new Uint8ClampedArray(xdim * ydim * 4);
-        for (var index = 0; index < xdim * ydim; index++) {
-            val = imgResult.kSpace[index + slice * xdim * ydim] * mult
-            k_result[4 * index] = val
-            k_result[4 * index + 1] = val
-            k_result[4 * index + 2] = val
-            k_result[4 * index + 3] = 255
-        }
-    } else {
-        k_result = new Uint8ClampedArray(xdim * ydim * 4);
-        for (var index = 0; index < xdim * ydim; index++) {
-            val = imgResult.kSpace[index + slice * xdim * ydim] * mult
+    k_result = new Uint8ClampedArray(size * size * 4);
+    for (var x = 0; x < xdim; x++) {
+        for (var y = 0; y < ydim; y++) {
+            val = imgResult.kSpace[x + y*xdim + tra_slice * xdim * ydim] * mult
             if (val < 0) val = 0;
             if (val > 255) val = 255;
-            k_result[4 * index] = val
-            k_result[4 * index + 1] = val
-            k_result[4 * index + 2] = val
-            k_result[4 * index + 3] = 255
+            k_result[4 * (x+xoff+(y+yoff)*size)] = val
+            k_result[4 * (x+xoff+(y+yoff)*size) + 1] = val
+            k_result[4 * (x+xoff+(y+yoff)*size) + 2] = val
+            k_result[4 * (x+xoff+(y+yoff)*size) + 3] = 255
         }
     }
     kdata.data.set(k_result);
