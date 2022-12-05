@@ -715,7 +715,7 @@ function displayAndWindow3DImage(which) {
     idata = ctx.createImageData(ydim, zdim);
 
     if (isCurrentTabNa(which)) {
-        for (var x = 0; x < ydim; x++) {
+        for (var y = 0; y < ydim; y++) {
             for (var z = 0; z < zdim; z++) {
                 var val = Math.round(imgResult.data[sag_slice + y * xdim + (zdim - z) * xdim * ydim] * 255);
                 if (val > 255) {
@@ -1402,6 +1402,7 @@ function updateTime() {
     var zdim = document.getElementById("zdim");
     zdim.value = Math.round(scale * parseFloat(zdim.max));
 
+    scale = ydim.value/434.0;
     var xsize = document.getElementById("xsize");
     xsize.value = (0.5 / scale).toFixed(2);
     var ysize = document.getElementById("ysize");
