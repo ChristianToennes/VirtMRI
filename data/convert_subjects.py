@@ -41,7 +41,7 @@ params_3 = { # 3T params
 #Name label t1 t2 t2s t2f ex_frac nm filename
 params_na = {
     0: ["Background", 0, 0, 0, 0, 0, 0, 0, "subject{}_bck_v{}"],
-    1: ["CSF", 1, 50, 0.1, 60, 60, 1, 140, "subject{}_csf_v{}"],
+    1: ["CSF", 1, 50, 0.1, 60, 0, 1, 140, "subject{}_csf_v{}"],
     2: ["Grey Matter", 2, 30, 0.1, 60, 3, 0.22, 55, "subject{}_gm_v{}"],
     3: ["White Matter", 3, 30, 0.1, 60, 3, 0.18, 45, "subject{}_wm_v{}"],
     4: ["Fat", 4, 10, 0.1, 50, 4, 0.2, 0, "subject{}_fat_v{}"],
@@ -63,7 +63,7 @@ ydim = 434
 zdim = 362
 shape = (zdim,ydim,xdim)
 
-def read_minc(params, names, in_dir, sub=(), trans=None, nib=False, na=False):
+def read_minc(params, names, in_dir, sub=(), trans=None, nib=False, na=False, small=False):
     print(in_dir)
 
     t1 = np.zeros(shape, dtype=np.float32)
@@ -109,14 +109,15 @@ def read_minc(params, names, in_dir, sub=(), trans=None, nib=False, na=False):
     
     #print(np.min(t1), np.max(t1), np.quantile(t1, 0.9999), np.count_nonzero(t1>np.quantile(t1, 0.9999)))
 
-    #zoom = (2**8/xdim, 2**8/ydim, 2**8/zdim)
-    #zoom = 2**8/ydim
-    #t1 = scipy.ndimage.zoom(t1, zoom, order=0)
-    #pd = scipy.ndimage.zoom(pd, zoom, order=0)
-    #t2 = scipy.ndimage.zoom(t2, zoom, order=0)
-    #t2s = scipy.ndimage.zoom(t2s, zoom, order=0)
-    #t2f = scipy.ndimage.zoom(t2f, zoom, order=0)
-    #ex_frac = scipy.ndimage.zoom(ex_frac, zoom, order=0)
+    if(small):
+        zoom = (2**8/xdim, 2**8/ydim, 2**8/zdim)
+        #zoom = 2**8/ydim
+        t1 = scipy.ndimage.zoom(t1, zoom, order=0)
+        pd = scipy.ndimage.zoom(pd, zoom, order=0)
+        t2 = scipy.ndimage.zoom(t2, zoom, order=0)
+        t2s = scipy.ndimage.zoom(t2s, zoom, order=0)
+        t2f = scipy.ndimage.zoom(t2f, zoom, order=0)
+        ex_frac = scipy.ndimage.zoom(ex_frac, zoom, order=0)
 
     if na:
         return t1, t2, t2s, t2f, ex_frac, pd
@@ -284,6 +285,28 @@ t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("54",), trans=lambda a: 
 write_files(t1, t2, t2s, pd, ("54_2",), "3t")
 t1,t2,t2s,t2f,ex_frac,pd = read_minc(params_na, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255, na=True)
 write_files(t1, t2, t2s, pd, ("54_2",), "3t", t2f=t2f, ex_frac=ex_frac)
+
+
+t1,t2,t2s,pd = read_minc(params_15, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True, small=True)
+write_files(t1, t2, t2s, pd, ("bw",), "1.5T")
+t1,t2,t2s,pd = read_minc(params_3, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True, small=True)
+write_files(t1, t2, t2s, pd, ("bw",), "3t")
+t1,t2,t2s,t2f,ex_frac,pd = read_minc(params_na, nii_names, "mni_colin27_2008_fuzzy_minc2", nib=True, na=True, small=True)
+write_files(t1, t2, t2s, pd, ("bw",), "3t", t2f=t2f, ex_frac=ex_frac)
+
+t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255, small=True)
+write_files(t1, t2, t2s, pd, ("05",), "1.5T")
+t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255, small=True)
+write_files(t1, t2, t2s, pd, ("05",), "3t")
+t1,t2,t2s,t2f,ex_frac,pd = read_minc(params_na, brainWeb_names, "", ("05",), trans=lambda a: (a+128)/255, na=True, small=True)
+write_files(t1, t2, t2s, pd, ("05",), "3t", t2f=t2f, ex_frac=ex_frac)
+
+t1,t2,t2s,pd = read_minc(params_15, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255, small=True)
+write_files(t1, t2, t2s, pd, ("54",), "1.5T")
+t1,t2,t2s,pd = read_minc(params_3, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255, small=True)
+write_files(t1, t2, t2s, pd, ("54",), "3t")
+t1,t2,t2s,t2f,ex_frac,pd = read_minc(params_na, brainWeb_names, "", ("54",), trans=lambda a: (a+128)/255, na=True, small=True)
+write_files(t1, t2, t2s, pd, ("54",), "3t", t2f=t2f, ex_frac=ex_frac)
 
 #t1,t2,t2s,pd = read_phantomag("NV_1_NV_1T/QMCI")
 #write_files(t1,t2,t2s, pd, ("phantomag_2",), "1T")

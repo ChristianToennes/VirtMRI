@@ -26,6 +26,7 @@ const float na_t1 = 39.2;
 static inline void normalizeImage(kiss_fft_cpx* image, struct Params *p) {
     double max = 0;
     switch(p->sequence) {
+        case Na:
         case NaTQ:
         case NaSQ:
             max = REAL(image[0]);
@@ -144,7 +145,11 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             t2s = ds->na_t2s[pos];
             t2f = ds->na_t2f[pos];
             pd = ds->na_mm[pos];
+            if(t2f==0) {
+                s = fabs((na_vol-ex_frac)*pd* (1-exp(-tr/t1)) * (0.6 + 0.4*exp(-te/t2s)) + ex_frac*na_mm* (1-exp(-tr/na_t1))*exp(-te/na_t2fr)) / NA_SCALE;
+            } else {
             s = fabs((na_vol-ex_frac)*pd* (1-exp(-tr/t1)) * (0.6*exp(-te/t2f) + 0.4*exp(-te/t2s)) + ex_frac*na_mm* (1-exp(-tr/na_t1))*exp(-te/na_t2fr)) / NA_SCALE;
+            }
             break;
         case NaSQ:
             fa = p->s_params[0] * M_PI / 180;
@@ -160,7 +165,11 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             m = 0;
             for(;te<=te_end;te+=te_step) {
                 m++;
-                s += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa);
+                if(t2f == 0) {
+                    s += fabs(pd*(exp(-(te+tau1)/t2s) + 1)*sfa);
+                } else {
+                    s += fabs(pd*(exp(-(te+tau1)/t2s) + exp(-(te+tau1)/t2f))*sfa);
+                }
             }
             s /= m;
             break;
@@ -179,7 +188,11 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             m = 0;
             for(;te<=te_end;te+=te_step) {
                 m++;
-                s += fabs(pd*( (exp(-te/t2s) - exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa) ));
+                if(t2f==0) {
+                    s += fabs(pd*( (exp(-te/t2s) - 1) * (exp(-tau1/t2s)-1) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa) ));
+                } else {
+                    s += fabs(pd*( (exp(-te/t2s) - exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa) ));
+                }
             }
             s /= m;
             break;
@@ -198,7 +211,11 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             m = 0;
             for(;te<=te_end;te+=te_step) {
                 m++;
-                e_tr_t1 += fabs(pd*( (exp(-te/t2s)-exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) ));
+                if(t2f==0) {
+                    e_tr_t1 += fabs(pd*( (exp(-te/t2s) - 1) * (exp(-tau1/t2s)-1) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa) ));
+                } else {
+                    e_tr_t1 += fabs(pd*( (exp(-te/t2s) - exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa) ));
+                }
             }
             e_tr_t1 /= m*NA_SCALE;
             fa = p->s_params[6] * M_PI / 180;
@@ -211,7 +228,11 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             m = 0;
             for(;te<=te_end;te+=te_step) {
                 m++;
-                e_tr_t2 += fabs(pd*(exp(-(te+tau1)/t2s) * exp(-(te+tau1)/t2f))*sfa);
+                if(t2f == 0) {
+                    e_tr_t2 += fabs(pd*(exp(-(te+tau1)/t2s) + 1)*sfa);
+                } else {
+                    e_tr_t2 += fabs(pd*(exp(-(te+tau1)/t2s) + exp(-(te+tau1)/t2f))*sfa);
+                }
             }
             e_tr_t2 /= m*NA_SCALE;
             s = e_tr_t1 / e_tr_t2;
@@ -226,7 +247,11 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             pd = ds->na_mm[pos];
             sfa = sin(fa);
             cfa = cos(fa);
-            s = fabs(pd*(exp(-te/t2s)-exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa));
+            if(t2f==0) {
+                s = fabs(pd*(exp(-te/t2s)-1) * (exp(-tau1/t2s)-1) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa));
+            } else {
+                s = fabs(pd*(exp(-te/t2s)-exp(-te/t2f)) * (exp(-tau1/t2s)-exp(-tau1/t2f)) * exp(-tau2/t2s) * (sfa*sfa*sfa*sfa*sfa));
+            }
             break;
     }
     return s;

@@ -577,10 +577,12 @@ function calcNa(pos, params) {
     if (t2s == 0) {
         t2s = 1;
     }
+    var val = 0;
     if (t2f == 0) {
-        t2f = 1;
+        val = (na_vol-vol)*mm * (1-Math.exp(-tr/t1)) * (0.6 + 0.4*Math.exp(-te/t2s)) + vol*na_mm * (1-Math.exp(-tr/na_t1))*Math.exp(-te/na_t2fr)
+    } else {
+        val = (na_vol-vol)*mm * (1-Math.exp(-tr/t1)) * (0.6*Math.exp(-te/t2f) + 0.4*Math.exp(-te/t2s)) + vol*na_mm * (1-Math.exp(-tr/na_t1))*Math.exp(-te/na_t2fr)
     }
-    var val = (na_vol-vol)*mm * (1-Math.exp(-tr/t1)) * (0.6*Math.exp(-te/t2f) + 0.4*Math.exp(-te/t2s)) + vol*na_mm * (1-Math.exp(-tr/na_t1))*Math.exp(-te/na_t2fr)
     val = Math.abs(val) / 140;
     return val;
 }
@@ -602,10 +604,12 @@ function calcSQ(pos, params) {
         if (t2s == 0) {
             t2s = 1;
         }
-        if (t2f == 0) {
-            t2f = 1;
+        var val = 0;
+        if (t2f==0) {
+            val = mm * ( Math.exp(-(te+tau1)/t2s) + 1 ) * Math.sin(fa);
+        } else {
+            val = mm * ( Math.exp(-(te+tau1)/t2s) + Math.exp(-(te+tau1)/t2f) ) * Math.sin(fa);
         }
-        var val = mm * ( Math.exp(-(te+tau1)/t2s) + Math.exp(-(te+tau1)/t2f) ) * Math.sin(fa);
         result += Math.abs(val);
     }
     result /= (te_count*140);
@@ -628,10 +632,12 @@ function calcTQ(pos, params) {
         if (t2s == 0) {
             t2s = 1;
         }
+        var val = 0;
         if (t2f == 0) {
-            t2f = 1;
+            val = mm * ( (Math.exp(-te/t2s) - 1) * (Math.exp(-tau1/t2s)-1) * Math.exp(-tau2/t2s) );
+        } else {
+            val = mm * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) );
         }
-        var val = mm * ( (Math.exp(-te/t2s) - Math.exp(-te/t2f)) * (Math.exp(-tau1/t2s)-Math.exp(-tau1/t2f)) * Math.exp(-tau2/t2s) );
 
         result += Math.abs(val);
     }
