@@ -508,10 +508,16 @@ function rotateResult(event, which) {
 
         rotation[which] = {x: event.x, y: event.y};
         viewPort[which][0] += dy;
+        while(viewPort[which][0] < 0) {
+            viewPort[which][0] = 2*Math.PI + viewPort[which][0];
+        }
         while(viewPort[which][0] >= 2*Math.PI) {
             viewPort[which][0] -= 2*Math.PI;
         }
-        viewPort[which][1] += dx;
+        viewPort[which][1] -= dx;
+        while(viewPort[which][1] < 0) {
+            viewPort[which][1] = 2*Math.PI + viewPort[which][1];
+        }
         while(viewPort[which][1] >= 2*Math.PI) {
             viewPort[which][1] -= 2*Math.PI;
         }

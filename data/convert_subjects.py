@@ -110,8 +110,8 @@ def read_minc(params, names, in_dir, sub=(), trans=None, nib=False, na=False, sm
     #print(np.min(t1), np.max(t1), np.quantile(t1, 0.9999), np.count_nonzero(t1>np.quantile(t1, 0.9999)))
 
     if(small):
-        zoom = (2**8/xdim, 2**8/ydim, 2**8/zdim)
-        #zoom = 2**8/ydim
+        #zoom = (2**8/xdim, 2**8/ydim, 2**8/zdim)
+        zoom = 2**8/ydim
         t1 = scipy.ndimage.zoom(t1, zoom, order=0)
         pd = scipy.ndimage.zoom(pd, zoom, order=0)
         t2 = scipy.ndimage.zoom(t2, zoom, order=0)
