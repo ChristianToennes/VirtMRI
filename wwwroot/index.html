@@ -71,40 +71,40 @@
                                         <label class="mb-0 align-self-center">Image Dimensions:</label>
                                     </div>
                                     <div class="col-sm">
-                                        <label class="mb-0 lign-self-center">Scale (%):</label>
+                                        <label class="mb-0 align-self-center">Scale (%):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" min="0" max="100" value="100"
-                                        name="scale" id="scale" oninput="updateTime()" />
-                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xdim">X:</label>
+                                        name="scale" id="scale" oninput="updateScale()" />
+                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xdim">X (&numero; Voxels):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" min="1" max="256" value="256"
-                                        name="xdim" id="xdim" oninput="" disabled />
+                                        name="xdim" id="xdim" oninput="updateRes()" />
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center" for="ydim">Y:</label>
+                                        <label class="mb-0 align-self-center" for="ydim">Y (&numero; Voxels):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" min="1" max="256" value="256"
-                                        name="ydim" id="ydim" oninput="" disabled />
+                                        name="ydim" id="ydim" oninput="updateRes()" />
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center" for="zdim">Z:</label>
+                                        <label class="mb-0 align-self-center" for="zdim">Z (&numero; Voxels):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" min="1" max="256" value="256"
-                                        name="zdim" id="zdim" oninput="" disabled />
+                                        name="zdim" id="zdim" oninput="updateRes()" />
                                 </div>
                                 <div class="row form-row">
                                     <div class="col-auto w-25">
-                                        <label class="mb-0 align-self-center">Image Spacing:</label>
+                                        <label class="mb-0 align-self-center">Image Resolution:</label>
                                     </div>
-                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xsize">X:</label>
+                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xsize">X (mm):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" name="xsize" id="xsize" oninput=""
                                         disabled />
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center" for="ysize">Y:</label>
+                                        <label class="mb-0 align-self-center" for="ysize">Y (mm):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" name="ysize" id="ysize" oninput=""
                                         disabled />
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center" for="zsize">Z:</label>
+                                        <label class="mb-0 align-self-center" for="zsize">Z (mm):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" name="zsize" id="zsize" oninput=""
                                         disabled />
@@ -208,7 +208,7 @@
                                         <option value="5">Random Points</option>
                                     </select>
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">K-Space sampled %:</label>
+                                        <label class="mb-0 align-self-center">K-Space sampled (%):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" min="0" max="100" value="50"
                                         name="kspace_filter_fraction" id="kspace_filter_fraction"
@@ -252,12 +252,12 @@
                                         <label class="mb-0 align-self-center">Compressed Sensing Parameters:</label>
                                     </div>
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">Ninner:</label>
+                                        <label class="mb-0 align-self-center">&numero; inner loops:</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" name="cs_ninner" id="cs_ninner"
                                         value="1" oninput="updateTime()" />
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">Nreg:</label>
+                                        <label class="mb-0 align-self-center">&numero; outer loops:</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" name="cs_nbreg" id="cs_nbreg"
                                         value="80" oninput="updateTime()" />
@@ -282,7 +282,7 @@
                                     <input class="col-sm form-control" type="number" name="cs_mu" id="cs_mu" value="1"
                                         oninput="updateTime()" />
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">gam:</label>
+                                        <label class="mb-0 align-self-center">gamma:</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" name="cs_gam" id="cs_gam" value="1"
                                         oninput="updateTime()" />
@@ -315,21 +315,21 @@
                         <div class="col tab-pane active" id="params-IR">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TI:</label>
+                                    <label class="mb-0 align-self-center">TI (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="420" name="ti" id="ir_ti"
                                     oninput="updateTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE:</label>
+                                    <label class="mb-0 align-self-center">TE (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="23" name="te" id="ir_te"
                                     oninput="updateTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TR:</label>
+                                    <label class="mb-0 align-self-center">TR (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="6666" name="tr" id="ir_tr"
                                     oninput="updateTime()" />
@@ -344,14 +344,14 @@
                         <div class="col tab-pane" id="params-SE">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE:</label>
+                                    <label class="mb-0 align-self-center">TE (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="13" name="te" id="se_te"
                                     oninput="updateSETime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TR:</label>
+                                    <label class="mb-0 align-self-center">TR (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="666" name="tr" id="se_tr"
                                     oninput="updateSETime()" />
@@ -366,21 +366,21 @@
                         <div class="col tab-pane" id="params-bSSFP">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE:</label>
+                                    <label class="mb-0 align-self-center">TE (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="42" name="te" id="bssfp_te"
                                     oninput="updateBalancedSSFPTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TR:</label>
+                                    <label class="mb-0 align-self-center">TR (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="84" name="tr" id="bssfp_tr"
                                     disabled />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">FA:</label>
+                                    <label class="mb-0 align-self-center">FA (°):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="23" min="-180" max="180"
                                     name="fa" id="bssfp_fa" oninput="updateBalancedSSFPTime()" />
@@ -395,21 +395,21 @@
                         <div class="col tab-pane" id="params-FISP">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE:</label>
+                                    <label class="mb-0 align-self-center">TE (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="15" name="te" id="fisp_te"
                                     oninput="updateFISPTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TR:</label>
+                                    <label class="mb-0 align-self-center">TR (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="50" name="tr" id="fisp_tr"
                                     oninput="updateFISPTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">FA:</label>
+                                    <label class="mb-0 align-self-center">FA (°):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="70" min="-180" max="180"
                                     name="fa" id="fisp_fa" oninput="updateFISPTime()" />
@@ -424,21 +424,21 @@
                         <div class="col tab-pane" id="params-PSIF">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE:</label>
+                                    <label class="mb-0 align-self-center">TE (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="42" name="te" id="psif_te"
                                     oninput="updatePSIFTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TR:</label>
+                                    <label class="mb-0 align-self-center">TR (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="84" name="tr" id="psif_tr"
                                     oninput="updatePSIFTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">FA:</label>
+                                    <label class="mb-0 align-self-center">FA (°):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="23" min="-180" max="180"
                                     name="fa" id="psif_fa" oninput="updatePSIFTime()" />
@@ -453,21 +453,21 @@
                         <div class="col tab-pane" id="params-SGRE">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE:</label>
+                                    <label class="mb-0 align-self-center">TE (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="42" name="te" id="sgre_te"
                                     oninput="updateSGRETime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TR:</label>
+                                    <label class="mb-0 align-self-center">TR (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="666" name="tr" id="sgre_tr"
                                     oninput="updateSGRETime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">FA:</label>
+                                    <label class="mb-0 align-self-center">FA (°):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="23" min="-180" max="180"
                                     name="fa" id="sgre_fa" oninput="updateSGRETime()" />
@@ -482,14 +482,14 @@
                         <div class="col tab-pane" id="params-Na">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE:</label>
+                                    <label class="mb-0 align-self-center">TE (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="1" name="te" id="na_te"
                                     oninput="updateNaTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TR:</label>
+                                    <label class="mb-0 align-self-center">TR (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="666" name="tr" id="na_tr"
                                     oninput="updateNaTime()" />
@@ -504,7 +504,7 @@
                         <div class="col tab-pane" id="params-SQ">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">FA (Default 90):</label>
+                                    <label class="mb-0 align-self-center">FA (Default 90°):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="90" name="fa" id="sq_fa"
                                     oninput="updateSQTime()" />
@@ -518,28 +518,28 @@
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE Start:</label>
+                                    <label class="mb-0 align-self-center">TE Start (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="1" name="te_start"
                                     id="sq_te_start" oninput="updateSQTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE End:</label>
+                                    <label class="mb-0 align-self-center">TE End (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="16" name="te_end" id="sq_te_end"
                                     oninput="updateSQTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE Step:</label>
+                                    <label class="mb-0 align-self-center">TE Step (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="3" name="te_step"
                                     id="sq_te_step" oninput="updateSQTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TEs:</label>
+                                    <label class="mb-0 align-self-center">TEs (ms):</label>
                                 </div>
                                 <p class="col-sm form-control mb-0" id="sq_te"></p>
                             </div>
@@ -547,7 +547,7 @@
                         <div class="col tab-pane" id="params-TQ">
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">FA (Default 90):</label>
+                                    <label class="mb-0 align-self-center">FA (Default 90°):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="90" name="fa" id="tq_fa"
                                     oninput="updateTQTime()" />
@@ -568,28 +568,28 @@
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE Start:</label>
+                                    <label class="mb-0 align-self-center">TE Start (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="1" name="te_start"
                                     id="tq_te_start" oninput="updateTQTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE End:</label>
+                                    <label class="mb-0 align-self-center">TE End (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="16" name="te_end" id="tq_te_end"
                                     oninput="updateTQTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TE Step:</label>
+                                    <label class="mb-0 align-self-center">TE Step (ms):</label>
                                 </div>
                                 <input class="col-sm form-control" type="number" value="3" name="te_step"
                                     id="tq_te_step" oninput="updateTQTime()" />
                             </div>
                             <div class="row form-row">
                                 <div class="col-auto w-25">
-                                    <label class="mb-0 align-self-center">TEs:</label>
+                                    <label class="mb-0 align-self-center">TEs (ms):</label>
                                 </div>
                                 <p class="col-sm form-control mb-0" id="tq_te"></p>
                             </div>
@@ -617,17 +617,17 @@
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="pre" id="pre_visible" onchange="toggleImg()"
                         checked />
-                    <label class="form-check-label" for="pre_visible">Show previous image</label>
+                    <label class="form-check-label" for="pre_visible" id="pre_visible_label">Show previous image</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="cur" id="cur_visible" onchange="toggleImg()"
                         checked />
-                    <label class="form-check-label" for="cur_visible">Show current image</label>
+                    <label class="form-check-label" for="cur_visible" id="cur_visible_label">Show current image</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="cs" id="cs_visible" onchange="toggleImg()"
                         checked />
-                    <label class="form-check-label" for="cs_visible">Show compressed sensing image</label>
+                    <label class="form-check-label" for="cs_visible" id="cs_visible_label">Show compressed sensing image</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="crosshair" id="crosshair_visible" onchange="displayAndWindow3DImage()"
@@ -670,6 +670,7 @@
 
             <div class="row pt-3 hidden align-items-start" id="result">
                 <div class="col hidden" id="pre_image">
+                    <p class="row" id="pre_label">Previous Simulation</p>
                     <div class="row g-0">
                         <div class="col">
                             <div class="h-100 w-100 d-flex border" style="background-color: black; border-color: red !important;">
@@ -763,6 +764,7 @@
                     </div>
                 </div>
                 <div class="col" id="cur_image">
+                    <p class="row" id="cur_label">Current Simulation</p>
                     <div class="row g-0">
                         <div class="col">
                             <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: red !important;">
@@ -856,6 +858,7 @@
                     </div>
                 </div>
                 <div class="col hidden" id="cs_image">
+                    <p class="row" id="cs_label">Result from Compressed Sensing</p>
                     <div class="row g-0">
                         <div class="col">
                             <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: red !important;">

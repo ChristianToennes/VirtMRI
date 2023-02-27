@@ -140,9 +140,17 @@ const resultMessageHandler = function (data) {
         imgResultCache["pre"] = data[0];
         imgResultCache["cur"] = data[1];
         imgResultCache["cs"] = data[2];
+        document.getElementById("pre_label").textContent = "Full Simulation Result";
+        document.getElementById("cur_label").textContent = "Undersampled Simulation Result";
+        document.getElementById("pre_visible_label").textContent = "Show Full Simulation Result";
+        document.getElementById("cur_visible_label").textContent = "Show Undersampled Simulation Result";
     } else if (typeof (data) == "string") {
         console.log("Error occured: ", data);
     } else {
+        document.getElementById("pre_label").textContent = "Previous Simulation Result";
+        document.getElementById("cur_label").textContent = "Current Simulation Result";
+        document.getElementById("pre_visible_label").textContent = "Show Previous Simulation Result";
+        document.getElementById("cur_visible_label").textContent = "Show Current Simulation Result";
         if ("cs" in imgResultCache) {
             imgResultCache["pre"] = imgResultCache["cs"];
             delete imgResultCache["cs"];
@@ -704,7 +712,7 @@ function displayAndWindow3DImage(which) {
             if (z > (zdim - tra_slice - 10) && z < (zdim - tra_slice + 10)) {
                 continue;
             }
-            cor_result[4 * (sag_slice+ + (z+zoff) * size)] = 0
+            cor_result[4 * (sag_slice+xoff + (z+zoff) * size)] = 0
             cor_result[4 * (sag_slice+xoff + (z+zoff) * size) + 1] = 255
             cor_result[4 * (sag_slice+xoff + (z+zoff) * size) + 2] = 0
             cor_result[4 * (sag_slice+xoff + (z+zoff) * size) + 3] = 255
@@ -1414,14 +1422,21 @@ function displayDataSet() {
     //display3DImage(document.getElementById("imgT2s"), array_t2s);
 }
 
-function updateTime() {
+function updateScale() {
     var scale = parseFloat(document.getElementById("scale").value) * 0.01;
     var xdim = document.getElementById("xdim");
     xdim.value = Math.round(scale * parseFloat(xdim.max));
     var ydim = document.getElementById("ydim");
     ydim.value = Math.round(scale * parseFloat(ydim.max));
     var zdim = document.getElementById("zdim");
-    //zdim.value = Math.round(scale * parseFloat(zdim.max));
+    zdim.value = Math.round(scale * parseFloat(zdim.max));
+    updateRes();
+}
+
+function updateRes() {
+    var xdim = document.getElementById("xdim");
+    var ydim = document.getElementById("ydim");
+    var zdim = document.getElementById("zdim");
 
     scale = xdim.value/362.0;
     var xsize = document.getElementById("xsize");
@@ -1432,7 +1447,9 @@ function updateTime() {
     scale = zdim.value/362.0;
     var zsize = document.getElementById("zsize");
     zsize.value = (0.5 / scale).toFixed(2);
+}
 
+function updateTime() {
     var functionName = "update" + selectedSequence + "Time";
     if (this.hasOwnProperty(functionName)) {
         this[functionName]();
@@ -1590,6 +1607,12 @@ function updateTQTime() {
 }
 
 function updateTQSQRTime() {}
+
+function updateCB(which, ww, wc) {
+    var cb = document.getElementById(which+"_colorBarContainer");
+    cb.previousSibling.content = ((wc-0.5*ww)*140/255) + "mmol";
+    cb.nextSibling.content = ((wc+0.5*ww)*140/255) + "mmol";
+}
 
 function formatTime(time) {
     d = new Date(time);
