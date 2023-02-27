@@ -31,10 +31,13 @@ var array_na_t2f = new Uint16Array(256 * 256);
 var k_data_im_re, k_result;
 
 class MRImage {
-    constructor(xdim, ydim, zdim, kspace_filt, data, k_data, params, raw_data) {
+    constructor(xdim, ydim, zdim, ixdim, iydim, izdim, kspace_filt, data, k_data, params, raw_data) {
         this.xdim = xdim;
         this.ydim = ydim;
         this.zdim = zdim;
+        this.ixdim = ixdim;
+        this.iydim = iydim;
+        this.izdim = izdim;
         this.data = data;
         this.kSpace = k_data;
         this.kspace_filt = kspace_filt;
@@ -65,6 +68,19 @@ function onloadDataSet(xhr,resolve) {
 }
 
 async function loadDataSet(path) {
+    
+    array_pd = undefined;
+    array_t1 = undefined;
+    array_t2 = undefined;
+    array_t2s = undefined;
+    array_na_mm = undefined;
+    array_na_t1 = undefined;
+    array_na_ex_frac = undefined;
+    array_na_t2s = undefined;
+    array_na_t2f = undefined;
+    k_data_im_re = undefined;
+    k_result = undefined;
+
     array_pd = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.onload = onloadDataSet(xhr,resolve);
@@ -747,7 +763,7 @@ function compressed_sensing_mriquestions(k_space, params) {
     return initial_img;
 }
 
-function filter_kspace_cs(k_data_im_re, mask_cs, zdim) {
+function filter_kspace_cs(k_data_im_re, mask_cs, xdim, ydim, zdim) {
     var k_data_im_re_f = new Float32Array(k_data_im_re.length);
     for(var z=0;z<zdim;z++) {
         for(var y=0;y<ydim;y++) {
@@ -795,10 +811,10 @@ function compressed_sensing(f_data, params) {
 
     var ninner = "cs_ninner" in params ? parseInt(params["cs_ninner"]) : 1;
     var nbreg = "cs_nbreg" in params ? parseInt(params["cs_nbreg"]) : 80;
-    var lambda = 1.0;
-    var lambda2 = 0.3;
+    var lambda = "cs_lambda" in params ? parseInt(params["cs_lambda"]): 1.0;
+    var lambda2 = "cs_lambda2" in params ? parseInt(params["cs_lambda2"]) : 0.001;
     var mu = "cs_mu" in params ? params["cs_mu"] : 1.0;
-    var gam = 1;
+    var gam = "cs_gam" in params ? parseInt(params["cs_gam"]) : 1;
     
     var data_ndims = zdim == 1 ? 2 : 3;
     //mask = data ~= 0.0;   //% not perfect, but good enough
@@ -810,7 +826,7 @@ function compressed_sensing(f_data, params) {
     }
     //print_stats("mask", f_mask);
     //% normalize the data so that standard parameter values work
-    var norm_factor = get_norm_factor(k_ydim, f_data);
+    var norm_factor = get_norm_factor(ydim, f_data);
     for(var i=0;i<f_data.length;i++) {
         f_data[i] = norm_factor * f_data[i];
     }
@@ -819,6 +835,8 @@ function compressed_sensing(f_data, params) {
     var f_data0 = new Float32Array(f_data.length);
     f_data0.set(f_data);
     var img = new Float32Array(f_data.length);
+    img.fill(0);
+    var k_img = new Float32Array(f_data.length);
     img.fill(0);
     var X = new Float32Array(f_data.length*3);
     X.fill(0);
@@ -921,7 +939,7 @@ function compressed_sensing(f_data, params) {
             B[i+1] = B[i+1] - X[i+1];
         }
       }
-      var k_img = data_ndims==2? fft2d(img, xdim, ydim) : fft3d(img, xdim, ydim, zdim);
+      k_img = data_ndims==2? fft2d(img, xdim, ydim) : fft3d(img, xdim, ydim, zdim);
       for(var i=0;i<f_data.length;i++) {
         f_data[i] = f_data[i] + f_data0[i] - f_mask[i]*k_img[i] / scale;
       }
@@ -933,7 +951,7 @@ function compressed_sensing(f_data, params) {
         result_img[i] = Math.sqrt(img[2*i]*img[2*i]+img[2*i+1]*img[2*i+1]) / norm_factor / scale;
     }
     //print_stats("img out", result_img);
-    return result_img;
+    return [result_img, k_img]
 }
 
 function get_norm_factor(ydim, data) {
@@ -1079,6 +1097,9 @@ function addKSpaceNoise(kSpace, img, params) {
 function simulateImage(params) {
     try {
         call_count = 0;
+        var ixdim = params["ixdim"];
+        var iydim = params["iydim"];
+        var izdim = params["izdim"];
         var sequence = "sequence" in params ? params["sequence"] : undefined;
         var S = sequence in imageFunctions ? imageFunctions[sequence] : undefined;
         var xdim = Math.round(params["xdim"]);
@@ -1146,7 +1167,7 @@ function simulateImage(params) {
             }
         }
         result = addImageNoise(result, params);
-        result = new MRImage(xdim, ydim, zdim, [256,256,0,256], result, undefined, params);
+        result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256,256,0,256], result, undefined, params);
         var kspace;
         if (fft3d) {
             kspace = calcKSpace3d(result);
@@ -1162,7 +1183,7 @@ function simulateImage(params) {
             } else {
                 [result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
             }
-            result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], result, k_result, params);
+            result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], result, k_result, params);
         }
 
         var cs_result = undefined;
@@ -1181,33 +1202,35 @@ function simulateImage(params) {
                 filt_result = new MRImage(xdim, ydim, zdim, [256,256,0,256], filt_result, k_result, params);
                 break;
             case 2:
-                k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t, zdim);
+                k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t, xdim, ydim, zdim);
                 if(fft3d) {
                     [filt_result, k_result, p] = inverseKSpace3d(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
                 } else {
                     [filt_result, k_result, p] = inverseKSpace(k_data_im_re, xdim, ydim, zdim, 256, 256, 0, 256, false)
                 }
-                filt_result = new MRImage(xdim, ydim, zdim, [256,256,0,256], filt_result, k_result, params);
+                filt_result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256,256,0,256], filt_result, k_result, params);
                 //k_result = transformKSpace3d(k_data_im_re, fft3d);
                 cs_result = new Float32Array(xdim*ydim*zdim);
+                cs_k_result = new Float32Array(xdim*ydim*zdim*2);
                 if(fft3d) {
-                    cs_result = compressed_sensing(k_data_im_re, params);
+                    cs_result, cs_k_result = compressed_sensing(k_data_im_re, params);
                 } else {
                     for(var z=0;z<zdim;z++) {
                         //console.log("z", z);
                         reply('progress', 100*z/zdim);
-                        var k_data_slice = new Float32Array(k_xdim*k_ydim*2);
+                        var k_data_slice = new Float32Array(xdim*ydim*2);
                         for(var i=0;i<k_data_slice.length;i++) {
-                            k_data_slice[i] = k_data_im_re[i+k_xdim*k_ydim*2*z];
+                            k_data_slice[i] = k_data_im_re[i+xdim*ydim*2*z];
                         }
                         var nparams = Object.assign({}, params);
                         nparams["zdim"] = 1;
-                        var slice_result = compressed_sensing(k_data_slice, nparams);
+                        var [slice_result, k_slice_result] = compressed_sensing(k_data_slice, nparams);
                         cs_result.set(slice_result, z*xdim*ydim);
+                        cs_k_result.set(k_slice_result, z*xdim*ydim*2);
                     }
                     reply('progress', 100);
                 }
-                cs_result = new MRImage(xdim, ydim, zdim, [256,256,0,256], cs_result, k_result, params);
+                cs_result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256,256,0,256], cs_result, cs_k_result, params);
                 break;
             case 3:
                 k_data_im_re = filter_kspace_cs(k_data_im_re, cs_mask_t, zdim);
@@ -1269,6 +1292,7 @@ function simulateImage(params) {
             return result;
         }
     } catch (e) {
+        console.log(e);
         return e;
     }
 }
@@ -1289,6 +1313,9 @@ function simulateImageFast(params) {
         zdim = zdim > 0 ? zdim : k_zdim;
         zdim = zdim > k_zdim ? k_zdim : zdim;
         var nbreg = params["cs_nbreg"];
+        var ixdim = params["ixdim"];
+        var iydim = params["iydim"];
+        var izdim = params["izdim"];
 
         if (fft3d) {
             params["cs_callback"] = function (outer) {reply('progress', 100*outer/nbreg)};
@@ -1298,13 +1325,13 @@ function simulateImageFast(params) {
         [image, kspace, filt_image, filt_kspace, cs_image, cs_kspace] = simulate_fast(ds, params);
         delete params["cs_callback"];
 
-        var k_result = transformKSpace3d(kspace, fft3d, xdim, ydim, zdim);
-        result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], image, k_result, params, kspace);
+        var k_result = transformKSpace3d(kspace, fft3d, params["ixdim"], params["iydim"], params["izdim"]);
+        result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], image, k_result, params, kspace);
         if(cs_image != undefined) {
-            var cs_k_result = transformKSpace3d(cs_kspace, fft3d, xdim, ydim, zdim);
-            var filt_k_result = transformKSpace3d(filt_kspace, fft3d, xdim, ydim, zdim);
-            cs_result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], cs_image, cs_k_result, params, cs_kspace);
-            filt_result = new MRImage(xdim, ydim, zdim, [256, 256, 0, 256], filt_image, filt_k_result, params, filt_kspace);
+            var cs_k_result = transformKSpace3d(cs_kspace, fft3d, params["ixdim"], params["iydim"], params["izdim"]);
+            var filt_k_result = transformKSpace3d(filt_kspace, fft3d, params["ixdim"], params["iydim"], params["izdim"]);
+            cs_result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], cs_image, cs_k_result, params, cs_kspace);
+            filt_result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], filt_image, filt_k_result, params, filt_kspace);
             return [result, filt_result, cs_result];
         } else {
             return result;

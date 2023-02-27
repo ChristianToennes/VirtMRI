@@ -99,7 +99,7 @@ function make_params(params) {
     var [cs_params, callback_ptr] = make_cs_params(params);
     var noise_params = make_noise_params(params);
     var filter_params = make_filter_params(params);
-    c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["xstart"], params["ystart"], params["zstart"], params["nearest"], use_cs, fft3d, cs_params, noise_params, filter_params);
+    c_params = _make_params(sequence_enum[params["sequence"]], n_params, s_params.byteOffset, params["xdim"], params["ydim"], params["zdim"], params["ixdim"], params["iydim"], params["izdim"], params["xstart"], params["ystart"], params["zstart"], params["nearest"], use_cs, fft3d, cs_params, noise_params, filter_params);
     return [c_params, callback_ptr];
 }
 
@@ -111,16 +111,19 @@ function simulate_fast(ds, params) {
     var xdim = Math.round(params["xdim"]);
     xdim = xdim > 0 ? xdim : k_xdim;
     xdim = xdim > k_xdim ? k_xdim : xdim;
+    var ixdim = params["ixdim"];
     var ydim = Math.round(params["ydim"]);
     ydim = ydim > 0 ? ydim : k_ydim;
     ydim = ydim > k_ydim ? k_ydim : ydim;
+    var iydim = params["iydim"];
     var zdim = Math.round(params["zdim"]);
     zdim = zdim > 0 ? zdim : k_zdim;
     zdim = zdim > k_zdim ? k_zdim : zdim;
+    var izdim = params["izdim"];
 
-    var image_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+    var image_buff = alloc(ixdim*iydim*izdim*scalar_size*2);
     var image_ptr = image_buff.byteOffset;
-    var kspace_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+    var kspace_buff = alloc(ixdim*iydim*izdim*scalar_size*2);
     var kspace_ptr = kspace_buff.byteOffset;
     var use_cs = "cs" in params ? params["cs"]>0 : false;
     var cs_buff = undefined;
@@ -132,13 +135,13 @@ function simulate_fast(ds, params) {
     var filt_kspace_buff = undefined;
     var filt_kspace_ptr = 0;
     if(use_cs) {
-        cs_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+        cs_buff = alloc(ixdim*iydim*izdim*scalar_size*2);
         cs_ptr = cs_buff.byteOffset;
-        cs_kspace_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+        cs_kspace_buff = alloc(ixdim*iydim*izdim*scalar_size*2);
         cs_kspace_ptr = cs_kspace_buff.byteOffset;
-        filt_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+        filt_buff = alloc(ixdim*iydim*izdim*scalar_size*2);
         filt_ptr = filt_buff.byteOffset;
-        filt_kspace_buff = alloc(xdim*ydim*zdim*scalar_size*2);
+        filt_kspace_buff = alloc(ixdim*iydim*izdim*scalar_size*2);
         filt_kspace_ptr = filt_kspace_buff.byteOffset;
     }
     try {
@@ -146,33 +149,45 @@ function simulate_fast(ds, params) {
         [p, callback_ptr] = make_params(params);
         _simulate(p, image_ptr, kspace_ptr, filt_ptr, filt_kspace_ptr, cs_ptr, cs_kspace_ptr, ds);
         
-        var in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, image_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, image_ptr, xdim*ydim*zdim*2));
+        var in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, image_ptr, ixdim*iydim*izdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, image_ptr, ixdim*iydim*izdim*2));
         var image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
-        for(var i = 0;i<image.length;i++) {
-            image[i] = in_image[i*2];
+        for(var x=0;x<xdim;x++) {
+            for(var y=0;y<ydim;y++) {
+                for(var z=0;z<zdim;z++) {
+                    image[z*xdim*ydim+y*xdim+x] = in_image[(z*ixdim*iydim+y*ixdim+x)*2];
+                }
+            }
         }
-        var kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, kspace_ptr, xdim*ydim*zdim*2));
+        var kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, kspace_ptr, ixdim*iydim*izdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, kspace_ptr, ixdim*iydim*izdim*2));
 
         var filt_image = undefined;
         var filt_kspace = undefined;
         if(use_cs) {
-            in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_ptr, xdim*ydim*zdim*2));
+            in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_ptr, ixdim*iydim*izdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_ptr, ixdim*iydim*izdim*2));
             filt_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
-            for(var i = 0;i<filt_image.length;i++) {
-                filt_image[i] = in_image[i*2];
+            for(var x=0;x<xdim;x++) {
+                for(var y=0;y<ydim;y++) {
+                    for(var z=0;z<zdim;z++) {
+                        filt_image[z*xdim*ydim+y*xdim+x] = in_image[(z*ixdim*iydim+y*ixdim+x)*2];
+                    }
+                }
             }
-            filt_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_kspace_ptr, xdim*ydim*zdim*2));
+            filt_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, filt_kspace_ptr, ixdim*iydim*izdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, filt_kspace_ptr, ixdim*iydim*izdim*2));
         }
 
         var cs_image = undefined;
         var cs_kspace = undefined;
         if(use_cs) {
-            in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_ptr, xdim*ydim*zdim*2));
+            in_image = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_ptr, ixdim*iydim*izdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_ptr, ixdim*iydim*izdim*2));
             cs_image = scalar_size==4?new Float32Array(xdim*ydim*zdim):new Float64Array(xdim*ydim*zdim);
-            for(var i = 0;i<cs_image.length;i++) {
-                cs_image[i] = in_image[i*2];
+            for(var x=0;x<xdim;x++) {
+                for(var y=0;y<ydim;y++) {
+                    for(var z=0;z<zdim;z++) {
+                        cs_image[z*xdim*ydim+y*xdim+x] = in_image[(z*ixdim*iydim+y*ixdim+x)*2];
+                    }
+                }
             }
-            cs_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_kspace_ptr, xdim*ydim*zdim*2));
+            cs_kspace = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, cs_kspace_ptr, ixdim*iydim*izdim*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, cs_kspace_ptr, ixdim*iydim*izdim*2));
         }
     } catch (e) {
         console.log(e);

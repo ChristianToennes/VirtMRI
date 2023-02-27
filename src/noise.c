@@ -9,7 +9,7 @@ bool addKSpaceNoise(kiss_fft_cpx* kspace, struct Params *p) {
     bool modified = false;
     if(p->noise_params->noise & Gaussian) {
         modified = true;
-        addGaussianNoise(kspace, p->xdim*p->ydim*p->zdim, p->noise_params);
+        addGaussianNoise(kspace, p->ixdim*p->iydim*p->izdim, p->noise_params);
     }
     return modified;
 }

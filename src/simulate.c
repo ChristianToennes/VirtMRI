@@ -308,12 +308,12 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
     ys = (double)ds->k_ydim/(double)p->ydim/2.0;
     zs = (double)ds->k_zdim/(double)p->zdim/2.0;
 
-    for(int i=0;i<p->zdim*p->ydim*p->xdim;i++) {
+    for(int i=0;i<p->izdim*p->iydim*p->ixdim;i++) {
         ASSIGN(image[i], 0, 0);
         ASSIGN(kspace[i], 0, 0);
     }
     if(p->use_cs && cs_image != NULL) {
-        for(int i=0;i<p->zdim*p->ydim*p->xdim;i++) {
+        for(int i=0;i<p->izdim*p->iydim*p->ixdim;i++) {
             ASSIGN(filt_image[i], 0, 0);
             ASSIGN(filt_kspace[i], 0, 0);
             ASSIGN(cs_image[i], 0, 0);
@@ -321,12 +321,14 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
         }
     }
     
+    
+
     for(z = 0; z<p->zdim; z++) {
         nz = (double)z*(double)ds->k_zdim/(double)p->zdim + zs;
         for(y = 0;y<p->ydim; y++) {
             ny = (double)y*(double)ds->k_ydim/(double)p->ydim + ys;
             for(x = 0;x<p->xdim; x++) {
-                ipos = z*p->xdim*p->ydim + y*p->xdim + x;
+                ipos = z*p->ixdim*p->iydim + y*p->ixdim + x;
                 d = 0; s = 0;
                 nx = (double)x*(double)ds->k_xdim/(double)p->xdim + xs;
                 switch (p->nearest) {
@@ -385,25 +387,26 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
     addImageNoise(image, p);
 
     if(p->use_fft3) {
-        fft3d(image, kspace, p->ydim, p->zdim, p->xdim);
+        fft3d(image, kspace, p->iydim, p->izdim, p->ixdim);
     } else {
         for(z=0;z<p->zdim;z++) {
-            fft2d(&image[z*p->xdim*p->ydim], &kspace[z*p->xdim*p->ydim], p->xdim, p->ydim);
+            fft2d(&image[z*p->ixdim*p->iydim], &kspace[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
         }
     }
 
     bool modified = addKSpaceNoise(kspace, p);
     
     if(p->use_cs && cs_image != NULL) {
+        //modified = true;
         apply_kspace_filter(kspace, filt_kspace, p);
         if(p->use_fft3) {
-            ifft3d(filt_kspace, filt_image, p->ydim, p->zdim, p->xdim);
+            ifft3d(filt_kspace, filt_image, p->iydim, p->izdim, p->ixdim);
         } else {
             for(z=0;z<p->zdim;z++) {
-                ifft2d(&filt_kspace[z*p->xdim*p->ydim], &filt_image[z*p->xdim*p->ydim], p->xdim, p->ydim);
+                ifft2d(&filt_kspace[z*p->ixdim*p->iydim], &filt_image[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
             }
         }
-        for(int i=0;i<p->xdim*p->ydim*p->zdim;i++) {
+        for(int i=0;i<p->ixdim*p->iydim*p->izdim;i++) {
             cs_kspace[i] = filt_kspace[i];
             ASSIGN(cs_image[i], 0, 0);
         }
@@ -416,7 +419,7 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
                 } else {
                     fprintf(stderr, "%d\n", z);
                 }
-                compressed_sensing(&cs_kspace[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p);
+                compressed_sensing(&cs_kspace[z*p->ixdim*p->iydim], &cs_image[z*p->ixdim*p->iydim], p);
             }
         }
         /*double s;
@@ -433,10 +436,10 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
     
     if(modified) {
         if(p->use_fft3) {
-            ifft3d(kspace, image, p->ydim, p->zdim, p->xdim);
+            ifft3d(kspace, image, p->iydim, p->izdim, p->ixdim);
         } else {
             for(z=0;z<p->zdim;z++) {
-                ifft2d(&kspace[z*p->xdim*p->ydim], &image[z*p->xdim*p->ydim], p->xdim, p->ydim);
+                ifft2d(&kspace[z*p->ixdim*p->iydim], &image[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
             }
         }
         modified = 0;

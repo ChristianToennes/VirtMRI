@@ -634,6 +634,9 @@ function displayAndWindow3DImage(which) {
     var xdim = imgResult.xdim;
     var ydim = imgResult.ydim;
     var zdim = imgResult.zdim;
+    var ixdim = imgResult.ixdim;
+    var iydim = imgResult.iydim;
+    var izdim = imgResult.izdim;
 
     var size = Math.max(xdim,ydim,zdim);
     var xoff = Math.round((size-xdim)/2);
@@ -658,48 +661,34 @@ function displayAndWindow3DImage(which) {
     var cor_result = new Uint8ClampedArray(size * size * 4);
     var tra_result = new Uint8ClampedArray(size * size * 4);
     var sag_result = new Uint8ClampedArray(size * size * 4);
-
+    in_ww = document.getElementById(which + "_ww");
+    in_wc = document.getElementById(which + "_wc");
+    var ww = parseFloat(in_ww.value) * 0.5
+    var wc = parseFloat(in_wc.value)
+    for (var x = 0; x < xdim; x++) {
+        for (var z = 0; z < zdim; z++) {
+            val = imgResult.data[x + cor_slice * xdim + (zdim - z) * xdim * ydim] * 4096
+            if (val <= (wc - ww)) {
+                val = 0
+            } else if (val >= (wc + ww)) {
+                val = 255;
+            } else {
+                val = 255 * (val - (wc - ww)) / (ww)
+            }
+            if (isCurrentTabNa(which)) {
+                val = jetmap[val];
+                if (val == undefined) {
+                    val = [0, 0, 0];
+                }
+            }
+            cor_result[4 * (x+xoff + (z+zoff) * size)] = val
+            cor_result[4 * (x+xoff + (z+zoff) * size) + 1] = val
+            cor_result[4 * (x+xoff + (z+zoff) * size) + 2] = val
+            cor_result[4 * (x+xoff + (z+zoff) * size) + 3] = 255
+        }
+    }
     if (isCurrentTabNa(which)) {
-        for (var x = 0; x < xdim; x++) {
-            for (var z = 0; z < zdim; z++) {
-                var val = Math.round(imgResult.data[x + cor_slice * xdim + (zdim - z) * xdim * ydim] * 255);
-                if (val > 255) {
-                    val = 255;
-                }
-                if (val < 0) {
-                    val = 0;
-                }
-                var c = jetmap[val];
-                if (c == undefined) {
-                    c = [0, 0, 0];
-                }
-                cor_result[4 * (x+xoff + (z+zoff) * size)] = c[0] * 255
-                cor_result[4 * (x+xoff + (z+zoff) * size) + 1] = c[1] * 255
-                cor_result[4 * (x+xoff + (z+zoff) * size) + 2] = c[2] * 255
-                cor_result[4 * (x+xoff + (z+zoff) * size) + 3] = 255
-            }
-        }
-    } else {
-        in_ww = document.getElementById(which + "_ww");
-        in_wc = document.getElementById(which + "_wc");
-        var ww = parseFloat(in_ww.value) * 0.5
-        var wc = parseFloat(in_wc.value)
-        for (var x = 0; x < xdim; x++) {
-            for (var z = 0; z < zdim; z++) {
-                val = imgResult.data[x + cor_slice * xdim + (zdim - z) * xdim * ydim] * 4096
-                if (val <= (wc - ww)) {
-                    val = 0
-                } else if (val >= (wc + ww)) {
-                    val = 255;
-                } else {
-                    val = 255 * (val - (wc - ww)) / (ww)
-                }
-                cor_result[4 * (x+xoff + (z+zoff) * size)] = val
-                cor_result[4 * (x+xoff + (z+zoff) * size) + 1] = val
-                cor_result[4 * (x+xoff + (z+zoff) * size) + 2] = val
-                cor_result[4 * (x+xoff + (z+zoff) * size) + 3] = 255
-            }
-        }
+        updateCB(which, ww, wc);
     }
     if (show_crosshair) {
         for (var x = 0; x < xdim; x++) {
@@ -986,15 +975,19 @@ function displayAndWindow3DImage(which) {
 
     k_canvas = document.getElementById(which + "_kResult");
     k_ctx = k_canvas.getContext('2d');
+    size = size<128?128:size;
     k_canvas.width = size;
     k_canvas.height = size;
     kdata = k_ctx.createImageData(size, size);
 
     var mult = document.getElementById(which + "_kspacemult").valueAsNumber;
     k_result = new Uint8ClampedArray(size * size * 4);
-    for (var x = 0; x < xdim; x++) {
-        for (var y = 0; y < ydim; y++) {
-            val = imgResult.kSpace[x + y*xdim + tra_slice * xdim * ydim] * mult
+
+    xoff = Math.round((size-ixdim)/2);
+    yoff = Math.round((size-iydim)/2);
+    for (var x = 0; x < ixdim; x++) {
+        for (var y = 0; y < iydim; y++) {
+            val = imgResult.kSpace[x + y*ixdim + tra_slice * ixdim * iydim] * mult
             if (val < 0) val = 0;
             if (val > 255) val = 255;
             k_result[4 * (x+xoff+(y+yoff)*size)] = val
@@ -1178,6 +1171,17 @@ function read_params(param_div, params) {
     return params;
 }
 
+function check_size_fft(x) {
+    if(x>=128) return x;
+    if(x>64) return 128;
+    if(x>32) return 64;
+    if(x>16) return 32;
+    if(x>8) return 16;
+    if(x>4) return 8;
+    if(x>2) return 4;
+    return 2;
+}
+
 function startScan() {
     resultTimer = performance.now();
 
@@ -1195,6 +1199,13 @@ function startScan() {
     params["xdim"] = Math.ceil(params["xdim"] / 2) * 2;
     params["ydim"] = Math.ceil(params["ydim"] / 2) * 2;
     params["zdim"] = Math.ceil(params["zdim"] / 2) * 2;
+    params["ixdim"] = check_size_fft(params["xdim"]);
+    params["iydim"] = check_size_fft(params["ydim"]);
+    if("fft" in params && params["fft"] == "3D") {
+        params["izdim"] = check_size_fft(params["zdim"]);
+    } else {
+        params["izdim"] = params["zdim"];
+    }
     param_div = document.getElementById("params-noise");
     params = read_params(param_div, params);
     param_div = document.getElementById("params-kspace");
@@ -1410,13 +1421,15 @@ function updateTime() {
     var ydim = document.getElementById("ydim");
     ydim.value = Math.round(scale * parseFloat(ydim.max));
     var zdim = document.getElementById("zdim");
-    zdim.value = Math.round(scale * parseFloat(zdim.max));
+    //zdim.value = Math.round(scale * parseFloat(zdim.max));
 
-    scale = ydim.value/434.0;
+    scale = xdim.value/362.0;
     var xsize = document.getElementById("xsize");
     xsize.value = (0.5 / scale).toFixed(2);
+    scale = ydim.value/434.0;
     var ysize = document.getElementById("ysize");
     ysize.value = (0.5 / scale).toFixed(2);
+    scale = zdim.value/362.0;
     var zsize = document.getElementById("zsize");
     zsize.value = (0.5 / scale).toFixed(2);
 

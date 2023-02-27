@@ -26,9 +26,9 @@ void print_stats(char* name, kiss_fft_cpx* data, int length) {
 }
 
 void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, struct Params *params) {
-    int xdim = params->xdim;
-    int ydim = params->ydim;
-    int zdim = params->zdim;
+    int xdim = params->ixdim;
+    int ydim = params->iydim;
+    int zdim = params->izdim;
     if(!params->use_fft3) {
         zdim = 1;
     }
