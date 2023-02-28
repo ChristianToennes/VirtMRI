@@ -142,15 +142,17 @@ const resultMessageHandler = function (data) {
         imgResultCache["cs"] = data[2];
         document.getElementById("pre_label").textContent = "Full Simulation Result";
         document.getElementById("cur_label").textContent = "Undersampled Simulation Result";
-        document.getElementById("pre_visible_label").textContent = "Show Full Simulation Result";
-        document.getElementById("cur_visible_label").textContent = "Show Undersampled Simulation Result";
+        document.getElementById("pre_visible_label").textContent = "Show Full Simulation";
+        document.getElementById("cur_visible_label").textContent = "Show Undersampled Simulation";
+        document.getElementById("cs_visible").parentElement.style.display = "block";
     } else if (typeof (data) == "string") {
         console.log("Error occured: ", data);
     } else {
         document.getElementById("pre_label").textContent = "Previous Simulation Result";
         document.getElementById("cur_label").textContent = "Current Simulation Result";
-        document.getElementById("pre_visible_label").textContent = "Show Previous Simulation Result";
-        document.getElementById("cur_visible_label").textContent = "Show Current Simulation Result";
+        document.getElementById("pre_visible_label").textContent = "Show Previous Simulation";
+        document.getElementById("cur_visible_label").textContent = "Show Current Simulation";
+        document.getElementById("cs_visible").parentElement.style.display = "none";
         if ("cs" in imgResultCache) {
             imgResultCache["pre"] = imgResultCache["cs"];
             delete imgResultCache["cs"];
@@ -201,7 +203,7 @@ const resultMessageHandler = function (data) {
     var windowing = document.getElementById("cur_windowing");
     var colorBar = document.getElementById("cur_colorBarContainer");
     if (isCurrentTabNa("cur")) {
-        windowing.classList.add("hidden");
+        //windowing.classList.add("hidden");
         plot_colormap("cur_colorBar");
         colorBar.classList.remove("hidden");
         if (imgResultCache["cur"] != undefined && (imgResultCache["cur"].params["sequence"] == "SQ" || imgResultCache["cur"].params["sequence"] == "Na")) {
@@ -219,7 +221,7 @@ const resultMessageHandler = function (data) {
     var windowing = document.getElementById("pre_windowing");
     var colorBar = document.getElementById("pre_colorBarContainer");
     if (isCurrentTabNa("pre")) {
-        windowing.classList.add("hidden");
+        //windowing.classList.add("hidden");
         plot_colormap("pre_colorBar");
         colorBar.classList.remove("hidden");
         if (imgResultCache["pre"] != undefined && (imgResultCache["pre"].params["sequence"] == "SQ" || imgResultCache["pre"].params["sequence"] == "Na")) {
@@ -237,7 +239,7 @@ const resultMessageHandler = function (data) {
     var windowing = document.getElementById("cs_windowing");
     var colorBar = document.getElementById("cs_colorBarContainer");
     if (isCurrentTabNa("cs")) {
-        windowing.classList.add("hidden");
+        //windowing.classList.add("hidden");
         plot_colormap("cs_colorBar");
         colorBar.classList.remove("hidden");
         if (imgResultCache["cs"] != undefined && (imgResultCache["cs"].params["sequence"] == "SQ" || imgResultCache["cs"].params["sequence"] == "Na")) {
@@ -1609,9 +1611,14 @@ function updateTQTime() {
 function updateTQSQRTime() {}
 
 function updateCB(which, ww, wc) {
-    var cb = document.getElementById(which+"_colorBarContainer");
-    cb.previousSibling.content = ((wc-0.5*ww)*140/255) + "mmol";
-    cb.nextSibling.content = ((wc+0.5*ww)*140/255) + "mmol";
+    var cb = document.getElementById(which+"_colorBar");
+    if (imgResultCache[which] != undefined && (imgResultCache[which].params["sequence"] == "SQ" || imgResultCache[which].params["sequence"] == "Na")) {
+        cb.previousElementSibling.textContent = Math.round((wc-0.5*ww)*140/4096) + "mmol";
+        cb.nextElementSibling.textContent = Math.round((wc+0.5*ww)*140/4096) + "mmol";
+    } else {
+        cb.previousElementSibling.textContent = ((wc-0.5*ww)/4096) + "aU";
+        cb.nextElementSibling.textContent = ((wc+0.5*ww)/4096) + "aU";
+    }
 }
 
 function formatTime(time) {

@@ -542,12 +542,13 @@ app {
 .colorBar {
     height: 2rem;
     width: 50%;
+    flex-grow: 5;
     align-self: center;
     border: 1px solid;
     padding: 0;
 }
 
-.colorBarContainerSQ::before {
+/*.colorBarContainerSQ::before {
     content: '0mM';
     padding-right: 0.5rem;
 }
@@ -563,7 +564,7 @@ app {
 .colorBarContainerTQ::after {
     content: '1aU';
     padding-left: 0.5rem;
-}
+}*/
 
 
 .accordion-item {

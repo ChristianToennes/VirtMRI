@@ -617,17 +617,17 @@
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="pre" id="pre_visible" onchange="toggleImg()"
                         checked />
-                    <label class="form-check-label" for="pre_visible" id="pre_visible_label">Show previous image</label>
+                    <label class="form-check-label" for="pre_visible" id="pre_visible_label">Show Previous Simulation</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="cur" id="cur_visible" onchange="toggleImg()"
                         checked />
-                    <label class="form-check-label" for="cur_visible" id="cur_visible_label">Show current image</label>
+                    <label class="form-check-label" for="cur_visible" id="cur_visible_label">Show Current Simulation</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="cs" id="cs_visible" onchange="toggleImg()"
                         checked />
-                    <label class="form-check-label" for="cs_visible" id="cs_visible_label">Show compressed sensing image</label>
+                    <label class="form-check-label" for="cs_visible" id="cs_visible_label">Show Compressed Sensing</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="crosshair" id="crosshair_visible" onchange="displayAndWindow3DImage()"
@@ -670,7 +670,9 @@
 
             <div class="row pt-3 hidden align-items-start" id="result">
                 <div class="col hidden" id="pre_image">
-                    <p class="row" id="pre_label">Previous Simulation</p>
+                    <div class="row mb-1 border-bottom mx-1">
+                        <label id="pre_label" class="mb-0 text-center">Previous Simulation</label>
+                    </div>
                     <div class="row g-0">
                         <div class="col">
                             <div class="h-100 w-100 d-flex border" style="background-color: black; border-color: red !important;">
@@ -734,7 +736,9 @@
                         </div>
                     </div>
                     <div class="row my-2 colorBarContainer" id="pre_colorBarContainer">
-                        <canvas class="colorBar" id="pre_colorBar"></canvas>
+                        <label class="col text-end">0 mmol</label>
+                        <canvas class="col colorBar" id="pre_colorBar"></canvas>
+                        <label class="col">140 mmol</label>
                     </div>
                     <div class="row my-2" id="pre_other">
                         <div class="col">
@@ -764,7 +768,9 @@
                     </div>
                 </div>
                 <div class="col" id="cur_image">
-                    <p class="row" id="cur_label">Current Simulation</p>
+                    <div class="row mb-1 border-bottom mx-1">
+                        <label id="cur_label" class="mb-0 text-center">Current Simulation</label>
+                    </div>
                     <div class="row g-0">
                         <div class="col">
                             <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: red !important;">
@@ -828,7 +834,9 @@
                         </div>
                     </div>
                     <div class="row my-2 colorBarContainer" id="cur_colorBarContainer">
-                        <canvas class="colorBar" id="cur_colorBar"></canvas>
+                        <label class="col text-end">0 mmol</label>
+                        <canvas class="col colorBar" id="cur_colorBar"></canvas>
+                        <label class="col">140 mmol</label>
                     </div>
                     <div class="row my-2" id="cur_other">
                         <div class="col">
@@ -858,7 +866,9 @@
                     </div>
                 </div>
                 <div class="col hidden" id="cs_image">
-                    <p class="row" id="cs_label">Result from Compressed Sensing</p>
+                    <div class="row mb-1 border-bottom mx-1">
+                        <label id="cs_label" class="mb-0 text-center">Compressed Sensing Result</label>
+                    </div>
                     <div class="row g-0">
                         <div class="col">
                             <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: red !important;">
@@ -920,7 +930,9 @@
                         </div>
                     </div>
                     <div class="row my-2 colorBarContainer" id="cs_colorBarContainer">
-                        <canvas class="colorBar" id="cs_colorBar"></canvas>
+                        <label class="col text-end">0 mmol</label>
+                        <canvas class="col colorBar" id="cs_colorBar"></canvas>
+                        <label class="col">140 mmol</label>
                     </div>
                     <div class="row my-2" id="cs_other">
                         <div class="col">
