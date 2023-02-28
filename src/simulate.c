@@ -30,12 +30,12 @@ static inline void normalizeImage(kiss_fft_cpx* image, struct Params *p) {
         case NaTQ:
         case NaSQ:
             max = REAL(image[0]);
-            for(int i=0;i<p->ydim*p->zdim*p->xdim;i++) {
+            for(int i=0;i<p->iydim*p->izdim*p->ixdim;i++) {
                 if (max < REAL(image[i])) {
                     max = REAL(image[i]);
                 }
             }
-            for(int i=0;i<p->ydim*p->zdim*p->xdim;i++) {
+            for(int i=0;i<p->iydim*p->izdim*p->ixdim;i++) {
                 ASSIGN(image[i], REAL(image[i])/max, 0);
             }
             break;

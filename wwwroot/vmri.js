@@ -444,7 +444,11 @@ function windowResult(event, which) {
         wc = document.getElementById(which + "_wc")
 
         ww.value = ww.valueAsNumber - event.movementY * 4
+        if(ww.value < 0){ww.value=0};
+        if(ww.value > 4096){ww.value=4096};
         wc.value = wc.valueAsNumber - event.movementX * 4
+        if(wc.value < 0){wc.value=0};
+        if(wc.value > 4096){wc.value=4096};
 
         evt = new Event("change", {
             "bubbles": false,
@@ -677,28 +681,30 @@ function displayAndWindow3DImage(which) {
     var wc = parseFloat(in_wc.value)
     for (var x = 0; x < xdim; x++) {
         for (var z = 0; z < zdim; z++) {
-            val = imgResult.data[x + cor_slice * xdim + (zdim - z) * xdim * ydim] * 4096
+            var val = imgResult.data[x + cor_slice * xdim + (zdim - z) * xdim * ydim] * 4096;
             if (val <= (wc - ww)) {
-                val = 0
+                val = 0;
             } else if (val >= (wc + ww)) {
-                val = 255;
+                val = 1;
             } else {
-                val = 255 * (val - (wc - ww)) / (ww)
+                val = (val - (wc - ww)) / (2*ww);
             }
             if (isCurrentTabNa(which)) {
-                val = jetmap[val];
+                val = jetmap[Math.round(255*val)];
                 if (val == undefined) {
                     val = [0, 0, 0];
                 }
+            } else {
+                val = [val, val, val];
             }
-            cor_result[4 * (x+xoff + (z+zoff) * size)] = val
-            cor_result[4 * (x+xoff + (z+zoff) * size) + 1] = val
-            cor_result[4 * (x+xoff + (z+zoff) * size) + 2] = val
-            cor_result[4 * (x+xoff + (z+zoff) * size) + 3] = 255
+            cor_result[4 * (x+xoff + (z+zoff) * size)] = val[0]*255;
+            cor_result[4 * (x+xoff + (z+zoff) * size) + 1] = val[1]*255;
+            cor_result[4 * (x+xoff + (z+zoff) * size) + 2] = val[2]*255;
+            cor_result[4 * (x+xoff + (z+zoff) * size) + 3] = 255;
         }
     }
     if (isCurrentTabNa(which)) {
-        updateCB(which, ww, wc);
+        updateCB(which, 2*ww, wc);
     }
     if (show_crosshair) {
         for (var x = 0; x < xdim; x++) {
@@ -730,46 +736,32 @@ function displayAndWindow3DImage(which) {
     canvas.height = size;
     idata = ctx.createImageData(size, size);
 
-    if (isCurrentTabNa(which)) {
-        for (var y = 0; y < ydim; y++) {
-            for (var z = 0; z < zdim; z++) {
-                var val = Math.round(imgResult.data[sag_slice + y * xdim + (zdim - z) * xdim * ydim] * 255);
-                if (val > 255) {
-                    val = 255;
-                }
-                if (val < 0) {
-                    val = 0;
-                }
-                var c = jetmap[val];
-                if (c == undefined) {
-                    c = [0, 0, 0];
-                }
-                sag_result[4 * (y+yoff + (z+zoff) * size)] = c[0] * 255
-                sag_result[4 * (y+yoff + (z+zoff) * size) + 1] = c[1] * 255
-                sag_result[4 * (y+yoff + (z+zoff) * size) + 2] = c[2] * 255
-                sag_result[4 * (y+yoff + (z+zoff) * size) + 3] = 255
+    in_ww = document.getElementById(which + "_ww");
+    in_wc = document.getElementById(which + "_wc");
+    var ww = parseFloat(in_ww.value) * 0.5
+    var wc = parseFloat(in_wc.value)
+    for (var y = 0; y < ydim; y++) {
+        for (var z = 0; z < zdim; z++) {
+            var val = imgResult.data[sag_slice + y * xdim + (zdim - z) * xdim * ydim] * 4096;
+            if (val <= (wc - ww)) {
+                val = 0
+            } else if (val >= (wc + ww)) {
+                val = 1;
+            } else {
+                val = (val - (wc - ww)) / (2.0*ww)
             }
-        }
-    } else {
-        in_ww = document.getElementById(which + "_ww");
-        in_wc = document.getElementById(which + "_wc");
-        var ww = parseFloat(in_ww.value) * 0.5
-        var wc = parseFloat(in_wc.value)
-        for (var y = 0; y < ydim; y++) {
-            for (var z = 0; z < zdim; z++) {
-                val = imgResult.data[sag_slice + y * xdim + (zdim - z) * xdim * ydim] * 4096
-                if (val <= (wc - ww)) {
-                    val = 0
-                } else if (val >= (wc + ww)) {
-                    val = 255;
-                } else {
-                    val = 255 * (val - (wc - ww)) / (ww)
+            if(isCurrentTabNa(which)){
+                val = jetmap[Math.round(255*val)];
+                if (val == undefined) {
+                    val = [0, 0, 0];
                 }
-                sag_result[4 * (y+yoff + (z+zoff) * size)] = val
-                sag_result[4 * (y+yoff + (z+zoff) * size) + 1] = val
-                sag_result[4 * (y+yoff + (z+zoff) * size) + 2] = val
-                sag_result[4 * (y+yoff + (z+zoff) * size) + 3] = 255
+            } else {
+                val = [val, val, val];
             }
+            sag_result[4 * (y+yoff + (z+zoff) * size)] = val[0]*255;
+            sag_result[4 * (y+yoff + (z+zoff) * size) + 1] = val[1]*255;
+            sag_result[4 * (y+yoff + (z+zoff) * size) + 2] = val[2]*255;
+            sag_result[4 * (y+yoff + (z+zoff) * size) + 3] = 255;
         }
     }
     if (show_crosshair) {
@@ -802,46 +794,32 @@ function displayAndWindow3DImage(which) {
     canvas.height = size;
     idata = ctx.createImageData(size, size);
 
-    if (isCurrentTabNa(which)) {
-        for (var x = 0; x < xdim; x++) {
-            for (var y = 0; y < ydim; y++) {
-                var val = Math.round(imgResult.data[x + y * xdim + tra_slice * xdim * ydim] * 255);
-                if (val > 255) {
-                    val = 255;
-                }
-                if (val < 0) {
-                    val = 0;
-                }
-                var c = jetmap[val];
-                if (c == undefined) {
-                    c = [0, 0, 0];
-                }
-                tra_result[4 * (x+xoff + (y+yoff) * size)] = c[0] * 255
-                tra_result[4 * (x+xoff + (y+yoff) * size) + 1] = c[1] * 255
-                tra_result[4 * (x+xoff + (y+yoff) * size) + 2] = c[2] * 255
-                tra_result[4 * (x+xoff + (y+yoff) * size) + 3] = 255
+    in_ww = document.getElementById(which + "_ww");
+    in_wc = document.getElementById(which + "_wc");
+    var ww = parseFloat(in_ww.value) * 0.5
+    var wc = parseFloat(in_wc.value)
+    for (var x = 0; x < xdim; x++) {
+        for (var y = 0; y < ydim; y++) {
+            var val = imgResult.data[x + y * xdim + tra_slice * xdim * ydim] * 4096;
+            if (val <= (wc - ww)) {
+                val = 0
+            } else if (val >= (wc + ww)) {
+                val = 1;
+            } else {
+                val = (val - (wc - ww)) / (2.0*ww)
             }
-        }
-    } else {
-        in_ww = document.getElementById(which + "_ww");
-        in_wc = document.getElementById(which + "_wc");
-        var ww = parseFloat(in_ww.value) * 0.5
-        var wc = parseFloat(in_wc.value)
-        for (var x = 0; x < xdim; x++) {
-            for (var y = 0; y < ydim; y++) {
-                val = imgResult.data[x + y * xdim + tra_slice * xdim * ydim] * 4096
-                if (val <= (wc - ww)) {
-                    val = 0
-                } else if (val >= (wc + ww)) {
-                    val = 255;
-                } else {
-                    val = 255 * (val - (wc - ww)) / (ww)
+            if(isCurrentTabNa(which)){
+                val = jetmap[Math.round(255*val)];
+                if (val == undefined) {
+                    val = [0, 0, 0];
                 }
-                tra_result[4 * (x+xoff + (y+yoff) * size)] = val
-                tra_result[4 * (x+xoff + (y+yoff) * size) + 1] = val
-                tra_result[4 * (x+xoff + (y+yoff) * size) + 2] = val
-                tra_result[4 * (x+xoff + (y+yoff) * size) + 3] = 255
+            } else {
+                val = [val, val, val];
             }
+            tra_result[4 * (x+xoff + (y+yoff) * size)] = val[0]*255;
+            tra_result[4 * (x+xoff + (y+yoff) * size) + 1] = val[1]*255;
+            tra_result[4 * (x+xoff + (y+yoff) * size) + 2] = val[2]*255;
+            tra_result[4 * (x+xoff + (y+yoff) * size) + 3] = 255;
         }
     }
     if (show_crosshair) {
