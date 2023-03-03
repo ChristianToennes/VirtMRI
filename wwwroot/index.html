@@ -75,7 +75,8 @@
                                     </div>
                                     <input class="col-sm form-control" type="number" min="0" max="100" value="100"
                                         name="scale" id="scale" oninput="updateScale()" />
-                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xdim">X (&numero; Voxels):</label>
+                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xdim">X (&numero;
+                                            Voxels):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" min="1" max="256" value="256"
                                         name="xdim" id="xdim" oninput="updateRes()" />
@@ -94,7 +95,8 @@
                                     <div class="col-auto w-25">
                                         <label class="mb-0 align-self-center">Image Resolution:</label>
                                     </div>
-                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xsize">X (mm):</label>
+                                    <div class="col-sm"><label class="mb-0 align-self-center" for="xsize">X
+                                            (mm):</label>
                                     </div>
                                     <input class="col-sm form-control" type="number" name="xsize" id="xsize" oninput=""
                                         disabled />
@@ -294,21 +296,44 @@
             </div>
             <div class="row mt-2" onkeydown="sequenceParametersKeyDown(event)">
                 <div class="col" id="sequence">
-                    <div class="row">
-                        <div class="col nav nav-tabs">
-                            <div class="nav-link active" id="params-IR-tab" onclick="setSequence('IR')">Inversion
-                                Recovery</div>
-                            <div class="nav-link" id="params-SE-tab" onclick="setSequence('SE')">Spin Echo</div>
-                            <div class="nav-link" id="params-bSSFP-tab" onclick="setSequence('bSSFP')">Balanced SSFP
+                    <div class="row justify-content-between">
+                        <div class="col border border-bottom-0 rounded-top me-1">
+                            <div class="row border-bottom mb-1"><label class="text-center">Proton Imaging</label></div>
+                            <div class="row">
+                                <div class="col nav nav-tabs px-1">
+                                    <div class="nav-link active" id="params-IR-tab" onclick="setSequence('IR')">
+                                        <label>Inversion Recovery</label>
+                                    </div>
+                                    <div class="nav-link" id="params-SE-tab" onclick="setSequence('SE')">
+                                        <label>Spin Echo</label></div>
+                                    <div class="nav-link" id="params-bSSFP-tab" onclick="setSequence('bSSFP')">
+                                        <label>Balanced SSFP</label>
+                                    </div>
+                                    <div class="nav-link" id="params-FISP-tab" onclick="setSequence('FISP')">
+                                        <label>FISP</label></div>
+                                    <div class="nav-link" id="params-PSIF-tab" onclick="setSequence('PSIF')">
+                                        <label>PSIF</label></div>
+                                    <div class="nav-link" id="params-SGRE-tab" onclick="setSequence('SGRE')">
+                                        <label>Spoiled GRE</label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="nav-link" id="params-FISP-tab" onclick="setSequence('FISP')">FISP</div>
-                            <div class="nav-link" id="params-PSIF-tab" onclick="setSequence('PSIF')">PSIF</div>
-                            <div class="nav-link" id="params-SGRE-tab" onclick="setSequence('SGRE')">Spoiled GRE</div>
-                            <div class="" style="flex-grow: 4"></div>
-                            <div class="nav-link" id="params-Na-tab" onclick="setSequence('Na')">Natrium</div>
-                            <div class="nav-link" id="params-SQ-tab" onclick="setSequence('SQ')">Na SQ</div>
-                            <div class="nav-link" id="params-TQ-tab" onclick="setSequence('TQ')">Na TQ</div>
-                            <div class="nav-link" id="params-TQSQR-tab" onclick="setSequence('TQSQR')">Na TQ/SQ</div>
+                        </div>
+                        <div id="sodium_sequences" class="col border border-bottom-0 rounded-top ms-1">
+                            <div class="row border-bottom mb-1"><label class="text-center">Sodium Imaging</label></div>
+                            <div class="row">
+                                <div class="col nav nav-tabs px-1">
+                                    <div class="nav-link" id="params-Na-tab" onclick="setSequence('Na')">
+                                        <label>GRE</label></div>
+                                    <div class="nav-link" id="params-SQ-tab" onclick="setSequence('SQ')">
+                                        <label>Single-Quantum (CHRISTINA)</label></div>
+                                    <div class="nav-link" id="params-TQ-tab" onclick="setSequence('TQ')">
+                                        <label>Triple-Quantum (CHRISTINA)</label></div>
+                                    <div class="nav-link" id="params-TQSQR-tab" onclick="setSequence('TQSQR')">
+                                        <label>TQ/SQ</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="row border py-2 tab-content" id="params">
@@ -605,58 +630,35 @@
             </div>
 
             <div class="row">
-                <!--<div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="kspace" id="kspace_visible"
-                        onchange="toggleImg()" checked />
-                    <label class="form-check-label" for="kspace_visible">Show k-Space</label>
-                </div>-->
-                <!--<div class="col">
-                <input type="number" class="ps-0 pe-0 form-control form-control-range" min="1"
-                            name="kspacemult" id="kspacemult" value="20" onchange="displayAndWindow3DImage();" />
-                </div>-->
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="pre" id="pre_visible" onchange="toggleImg()"
                         checked />
-                    <label class="form-check-label" for="pre_visible" id="pre_visible_label">Show Previous Simulation</label>
+                    <label class="form-check-label" for="pre_visible" id="pre_visible_label">Show Previous
+                        Simulation</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="cur" id="cur_visible" onchange="toggleImg()"
                         checked />
-                    <label class="form-check-label" for="cur_visible" id="cur_visible_label">Show Current Simulation</label>
+                    <label class="form-check-label" for="cur_visible" id="cur_visible_label">Show Current
+                        Simulation</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="cs" id="cs_visible" onchange="toggleImg()"
                         checked />
-                    <label class="form-check-label" for="cs_visible" id="cs_visible_label">Show Compressed Sensing</label>
+                    <label class="form-check-label" for="cs_visible" id="cs_visible_label">Show Compressed
+                        Sensing</label>
                 </div>
                 <div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="crosshair" id="crosshair_visible" onchange="displayAndWindow3DImage()"
-                        checked />
+                    <input type="checkbox" class="form-check-input" name="crosshair" id="crosshair_visible"
+                        onchange="displayAndWindow3DImage()" checked />
                     <label class="form-check-label" for="crosshair_visible">Show crosshair</label>
                 </div>
                 <div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="kspace" id="kspace_visible" onchange="toggleImg()"
-                        checked />
+                    <input type="checkbox" class="form-check-input" name="kspace" id="kspace_visible"
+                        onchange="toggleImg()" checked />
                     <label class="form-check-label" for="kspace_visible">Show k-Space</label>
                 </div>
             </div>
-            <!--<div class="row">
-                <div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="cor" id="cor_visible" onchange="toggleImg()"
-                        checked />
-                    <label class="form-check-label" for="cor_visible">Show coronal slice</label>
-                </div>
-                <div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="sag" id="sag_visible" onchange="toggleImg()"
-                        checked />
-                    <label class="form-check-label" for="sag_visible">Show sagittal slice</label>
-                </div>
-                <div class="col form-check form-switch">
-                    <input type="checkbox" class="form-check-input" name="tra" id="tra_visible" onchange="toggleImg()"
-                        checked />
-                    <label class="form-check-label" for="tra_visible">Show transversal slice</label>
-                </div>
-            </div>-->
 
             <div class="row d-flex justify-content-center hidden" id="scanningSpinner">
                 <div class="spinner-border" role="status">
@@ -675,7 +677,8 @@
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="h-100 w-100 d-flex border" style="background-color: black; border-color: red !important;">
+                            <div class="h-100 w-100 d-flex border"
+                                style="background-color: black; border-color: red !important;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                                     onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')"
@@ -683,7 +686,8 @@
                             </div>
                         </div>
                         <div class="col">
-                            <div class="h-100 w-100 d-flex border" style="background-color: black; border-color: green !important;">
+                            <div class="h-100 w-100 d-flex border"
+                                style="background-color: black; border-color: green !important;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'sag')"
                                     onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                                     onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')"
@@ -693,7 +697,8 @@
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="h-100 w-100 d-flex border" style="background-color: black; border-color: blue !important;">
+                            <div class="h-100 w-100 d-flex border"
+                                style="background-color: black; border-color: blue !important;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'cor')"
                                     onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                                     onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')"
@@ -773,7 +778,8 @@
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: red !important;">
+                            <div class="border h-100 w-100 d-flex"
+                                style="background-color: black; border-color: red !important;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                                     onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')"
@@ -781,7 +787,8 @@
                             </div>
                         </div>
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: green !important;">
+                            <div class="border h-100 w-100 d-flex"
+                                style="background-color: black; border-color: green !important;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'sag')"
                                     onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                                     onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')"
@@ -791,7 +798,8 @@
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: blue !important;">
+                            <div class="border h-100 w-100 d-flex"
+                                style="background-color: black; border-color: blue !important;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'cor')"
                                     onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                                     onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')"
@@ -871,7 +879,8 @@
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: red !important;">
+                            <div class="border h-100 w-100 d-flex"
+                                style="background-color: black; border-color: red !important;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                                     onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')"
@@ -879,7 +888,8 @@
                             </div>
                         </div>
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: green !important;">
+                            <div class="border h-100 w-100 d-flex"
+                                style="background-color: black; border-color: green !important;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'sag')"
                                     onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                                     onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')"
@@ -889,7 +899,8 @@
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex" style="background-color: black; border-color: blue !important;">
+                            <div class="border h-100 w-100 d-flex"
+                                style="background-color: black; border-color: blue !important;">
                                 <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'cor')"
                                     onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                                     onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')"

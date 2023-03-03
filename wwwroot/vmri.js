@@ -116,20 +116,23 @@ const loadDataMessageHandler = function (data) {
     spin = document.getElementById("datasetLoading");
     spin.classList.add("hidden");
     setSequence("IR");
+    var na = document.getElementById("sodium_sequences");
     if (array_na_mm == null) {
-        for (var tab in na_tabs) {
+        na.classList.add("hidden");
+        /*for (var tab in na_tabs) {
             t = document.getElementById(na_tabs[tab]);
             if (t != null) {
                 t.classList.add("hidden");
             }
-        }
+        }*/
     } else {
-        for (var tab in na_tabs) {
+        na.classList.remove("hidden");
+        /*for (var tab in na_tabs) {
             t = document.getElementById(na_tabs[tab]);
             if (t != null) {
                 t.classList.remove("hidden");
             }
-        }
+        }*/
     }
 };
 w.addListener('loadData', loadDataMessageHandler);
@@ -253,15 +256,6 @@ const resultMessageHandler = function (data) {
         windowing.classList.remove("hidden");
         colorBar.classList.add("hidden");
     }
-
-    //var zdim = imgResultCache["cur"].zdim;
-
-    /*for (var node in document.querySelectorAll('input[type="range"]')) {
-        if(node != undefined && node.id != undefined && node.id.endsWith("slice")) {
-            node.max = zdim;
-            node.value = Math.round(zdim/2);
-        }
-    }*/
 
     displayAndWindow3DImage();
     toggleImg();
