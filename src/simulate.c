@@ -83,7 +83,7 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
             e_tr_t2 = exp(-tr/t2);
             sfa = sin(fa);
             cfa = cos(fa);
-            s = fabs(pd*sfa*(1.0-e_tr_t1)/(1.0-(e_tr_t1+e_tr_t2)*cfa-e_tr_t1*e_tr_t2)*exp(-te/t2) );
+            s = fabs(pd*sfa*(1.0-e_tr_t1)/(1.0-(e_tr_t1-e_tr_t2)*cfa-e_tr_t1*e_tr_t2)*exp(-te/t2) );
             break;
         case pcbSSFP:
             te = p->s_params[0];
