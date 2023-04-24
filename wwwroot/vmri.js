@@ -143,18 +143,18 @@ const resultMessageHandler = function (data) {
         imgResultCache["pre"] = data[0];
         imgResultCache["cur"] = data[1];
         imgResultCache["cs"] = data[2];
-        document.getElementById("pre_label").textContent = "Full Simulation Result";
-        document.getElementById("cur_label").textContent = "Undersampled Simulation Result";
-        document.getElementById("pre_visible_label").textContent = "Show Full Simulation";
-        document.getElementById("cur_visible_label").textContent = "Show Undersampled Simulation";
+        document.getElementById("pre_label").textContent = "Full Image";
+        document.getElementById("cur_label").textContent = "Undersampled Image";
+        document.getElementById("pre_visible_label").textContent = "Show Full Image";
+        document.getElementById("cur_visible_label").textContent = "Show Undersampled Image";
         document.getElementById("cs_visible").parentElement.style.display = "block";
     } else if (typeof (data) == "string") {
         console.log("Error occured: ", data);
     } else {
-        document.getElementById("pre_label").textContent = "Previous Simulation Result";
-        document.getElementById("cur_label").textContent = "Current Simulation Result";
-        document.getElementById("pre_visible_label").textContent = "Show Previous Simulation";
-        document.getElementById("cur_visible_label").textContent = "Show Current Simulation";
+        document.getElementById("pre_label").textContent = "Previous Image Result";
+        document.getElementById("cur_label").textContent = "Current Image Result";
+        document.getElementById("pre_visible_label").textContent = "Show Previous Image";
+        document.getElementById("cur_visible_label").textContent = "Show Current Image";
         document.getElementById("cs_visible").parentElement.style.display = "none";
         if ("cs" in imgResultCache) {
             imgResultCache["pre"] = imgResultCache["cs"];

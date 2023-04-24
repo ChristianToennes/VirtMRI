@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link rel="shortcut icon" href="./favicon.ico">
-    <title>SimMRI</title>
+    <title>VirtMRI</title>
     <script src="./vmri.js"></script>
     <link rel="stylesheet" href="./custom.css" />
 </head>
@@ -25,9 +25,9 @@
             <button class="btn-secondary" style="display:none" onclick="profile()" value="profile"
                 id="profile">Profile</button>
             <div class="flex-fill"></div>
-            <p class="h-100 mr-3 nav-item"><a class="cp1" href="https://github.com/ChristianToennes/SimMRI">Source
+            <p class="h-100 mr-3 nav-item"><a class="cp1" href="https://github.com/ChristianToennes/VirtMRI">Source
                     Code</a></p>
-            <h1 class="cp1">SimMRI</h1>
+            <h1 class="cp1">VirtMRI</h1>
         </div>
         <div class="content px-4 pt-2 hidden" id="content">
             <div class="row hidden" id="dataset" onwheel="scrollDataset(event)">
@@ -634,13 +634,13 @@
                     <input type="checkbox" class="form-check-input" name="pre" id="pre_visible" onchange="toggleImg()"
                         checked />
                     <label class="form-check-label" for="pre_visible" id="pre_visible_label">Show Previous
-                        Simulation</label>
+                        Image</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="cur" id="cur_visible" onchange="toggleImg()"
                         checked />
                     <label class="form-check-label" for="cur_visible" id="cur_visible_label">Show Current
-                        Simulation</label>
+                        Image</label>
                 </div>
                 <div class="col form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="cs" id="cs_visible" onchange="toggleImg()"
@@ -670,25 +670,25 @@
                     aria-valuemax="100"></div>
             </div>
 
-            <div class="row pt-3 hidden align-items-start" id="result">
-                <div class="col hidden" id="pre_image">
+            <div class="row pt-3 hidden align-items-start result-view" id="result">
+                <div class="col hidden mh-100" id="pre_image">
                     <div class="row mb-1 border-bottom mx-1">
-                        <label id="pre_label" class="mb-0 text-center">Previous Simulation</label>
+                        <label id="pre_label" class="mb-0 text-center">Previous Image</label>
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="h-100 w-100 d-flex border"
+                            <div class="border img-result ml-auto"
                                 style="background-color: black; border-color: red !important;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
+                                <canvas onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                                     onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')"
                                     id="pre_traResult"></canvas>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="h-100 w-100 d-flex border"
+                            <div class="border img-result"
                                 style="background-color: black; border-color: green !important;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'sag')"
+                                <canvas onwheel="scrollResult(event, 'sag')"
                                     onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                                     onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')"
                                     id="pre_sagResult"></canvas>
@@ -697,25 +697,25 @@
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="h-100 w-100 d-flex border"
+                            <div class="border img-result ml-auto"
                                 style="background-color: black; border-color: blue !important;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'cor')"
+                                <canvas onwheel="scrollResult(event, 'cor')"
                                     onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                                     onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')"
                                     id="pre_corResult"></canvas>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="h-100 w-100 d-flex border" style="background-color: black;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, '3d')"
+                            <div class="border img-result" style="background-color: black;">
+                                <canvas onwheel="scrollResult(event, '3d')"
                                     onmousedown="startRotation(event, 'pre')" onmouseup="endRotation('pre')"
                                     onmouseout="endRotation('pre')" onmousemove="rotateResult(event, 'pre')"
                                     id="pre_3dResult"></canvas>
                             </div>
                         </div>
                         <div class="col hidden">
-                            <div class="h-100 w-100 d-flex border" style="background-color: black;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
+                            <div class="border img-result" style="background-color: black;">
+                                <canvas onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('pre')" onmouseup="endWindowing('pre')"
                                     onmouseout="endWindowing('pre')" onmousemove="windowResult(event, 'pre')"
                                     id="pre_kResult"></canvas>
@@ -735,7 +735,7 @@
                                 id="pre_ww" min="0" max="4096" value="4096"
                                 onchange="displayAndWindow3DImage('pre');" />
                         </div>
-                        <div class="col">
+                        <div class="col my-auto">
                             <input type="button" class="btn-secondary align-self-center" value="Auto Window"
                                 onclick="autoWindow('pre')" />
                         </div>
@@ -772,24 +772,24 @@
                         </div>
                     </div>
                 </div>
-                <div class="col" id="cur_image">
+                <div class="col mh-100" id="cur_image">
                     <div class="row mb-1 border-bottom mx-1">
-                        <label id="cur_label" class="mb-0 text-center">Current Simulation</label>
+                        <label id="cur_label" class="mb-0 text-center">Current Image</label>
                     </div>
-                    <div class="row g-0">
+                    <div class="row g-0 ">
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex"
+                            <div class="border img-result ml-auto"
                                 style="background-color: black; border-color: red !important;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
+                                <canvas onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                                     onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')"
                                     id="cur_traResult"></canvas>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex"
+                            <div class="border img-result"
                                 style="background-color: black; border-color: green !important;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'sag')"
+                                <canvas onwheel="scrollResult(event, 'sag')"
                                     onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                                     onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')"
                                     id="cur_sagResult"></canvas>
@@ -798,25 +798,25 @@
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex"
+                            <div class="border img-result ml-auto"
                                 style="background-color: black; border-color: blue !important;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'cor')"
+                                <canvas onwheel="scrollResult(event, 'cor')"
                                     onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                                     onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')"
                                     id="cur_corResult"></canvas>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="h-100 w-100 d-flex border" style="background-color: black;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, '3d')"
+                            <div class="border img-result" style="background-color: black;">
+                                <canvas onwheel="scrollResult(event, '3d')"
                                     onmousedown="startRotation(event, 'cur')" onmouseup="endRotation('cur')"
                                     onmouseout="endRotation('cur')" onmousemove="rotateResult(event, 'cur')"
                                     id="cur_3dResult"></canvas>
                             </div>
                         </div>
                         <div class="hidden col">
-                            <div class="border h-100 w-100 d-flex" style="background-color: black;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
+                            <div class="border img-result" style="background-color: black;">
+                                <canvas onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('cur')" onmouseup="endWindowing('cur')"
                                     onmouseout="endWindowing('cur')" onmousemove="windowResult(event, 'cur')"
                                     id="cur_kResult"></canvas>
@@ -836,7 +836,7 @@
                                 id="cur_ww" min="0" max="4096" value="4096"
                                 onchange="displayAndWindow3DImage('cur');" />
                         </div>
-                        <div class="col">
+                        <div class="col my-auto">
                             <input type="button" class="btn-secondary align-self-center" value="Auto Window"
                                 onclick="autoWindow('cur')" />
                         </div>
@@ -873,24 +873,24 @@
                         </div>
                     </div>
                 </div>
-                <div class="col hidden" id="cs_image">
+                <div class="col hidden mh-100" id="cs_image">
                     <div class="row mb-1 border-bottom mx-1">
                         <label id="cs_label" class="mb-0 text-center">Compressed Sensing Result</label>
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex"
+                            <div class="border img-result ml-auto"
                                 style="background-color: black; border-color: red !important;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
+                                <canvas onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                                     onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')"
                                     id="cs_traResult"></canvas>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex"
+                            <div class="border img-result"
                                 style="background-color: black; border-color: green !important;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'sag')"
+                                <canvas onwheel="scrollResult(event, 'sag')"
                                     onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                                     onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')"
                                     id="cs_sagResult"></canvas>
@@ -899,25 +899,25 @@
                     </div>
                     <div class="row g-0">
                         <div class="col">
-                            <div class="border h-100 w-100 d-flex"
+                            <div class="border img-result ml-auto"
                                 style="background-color: black; border-color: blue !important;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'cor')"
+                                <canvas onwheel="scrollResult(event, 'cor')"
                                     onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                                     onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')"
                                     id="cs_corResult"></canvas>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="h-100 w-100 d-flex border" style="background-color: black;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, '3d')"
+                            <div class="border img-result" style="background-color: black;">
+                                <canvas onwheel="scrollResult(event, '3d')"
                                     onmousedown="startRotation(event, 'cs')" onmouseup="endRotation('cs')"
                                     onmouseout="endRotation('cs')" onmousemove="rotateResult(event, 'cs')"
                                     id="cs_3dResult"></canvas>
                             </div>
                         </div>
                         <div class="hidden col">
-                            <div class="border h-100 w-100 d-flex" style="background-color: black;">
-                                <canvas class="img-result w-100 my-auto" onwheel="scrollResult(event, 'tra')"
+                            <div class="border img-result" style="background-color: black;">
+                                <canvas onwheel="scrollResult(event, 'tra')"
                                     onmousedown="startWindowing('cs')" onmouseup="endWindowing('cs')"
                                     onmouseout="endWindowing('cs')" onmousemove="windowResult(event, 'cs')"
                                     id="cs_kResult"></canvas>
@@ -935,7 +935,7 @@
                             <input type="number" class="ps-0 pe-0 form-control form-control-range" name="cs_ww"
                                 id="cs_ww" min="0" max="4096" value="4096" onchange="displayAndWindow3DImage('cs');" />
                         </div>
-                        <div class="col">
+                        <div class="col my-auto">
                             <input type="button" class="btn-secondary align-self-center" value="Auto Window"
                                 onclick="autoWindow('cs')" />
                         </div>

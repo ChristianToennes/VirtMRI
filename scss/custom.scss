@@ -548,6 +548,20 @@ app {
     padding: 0;
 }
 
+.ml-auto {
+    margin-left: auto !important;
+}
+
+.img-result {
+    max-height: 38vh;
+    aspect-ratio: 1;
+    > canvas {
+        height: 100%;
+        width: 100%;
+        aspect-ratio: 1;
+    }
+}
+
 /*.colorBarContainerSQ::before {
     content: '0mM';
     padding-right: 0.5rem;
