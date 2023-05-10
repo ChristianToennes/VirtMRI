@@ -1,4 +1,4 @@
-# SimMRI
+# VirtMRI
 Simulation of MRI images written in JavaScript and C compiled to WebASM
 
 Live version reachable at: https://SimMRI.keks.li
