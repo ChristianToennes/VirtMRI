@@ -1,3 +1,4 @@
+# pip install libsass watchdog
 import sass
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from functools import partial
