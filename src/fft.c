@@ -5,7 +5,7 @@
 
 #include "_kiss_fft_guts.h"
 
-void fft(kiss_fft_cpx *in, kiss_fft_cpx *out, int m) {
+void kfft(kiss_fft_cpx *in, kiss_fft_cpx *out, int m) {
    kiss_fft_cfg cfg;
 
    cfg = kiss_fft_alloc(m, 0, NULL, NULL);
@@ -13,7 +13,7 @@ void fft(kiss_fft_cpx *in, kiss_fft_cpx *out, int m) {
    free(cfg);
 }
 
-void ifft(kiss_fft_cpx *in, kiss_fft_cpx *out, int m) {
+void kifft(kiss_fft_cpx *in, kiss_fft_cpx *out, int m) {
    kiss_fft_cfg cfg;
 
    cfg = kiss_fft_alloc(m, 1, NULL, NULL);
@@ -24,7 +24,7 @@ void ifft(kiss_fft_cpx *in, kiss_fft_cpx *out, int m) {
    free(cfg);
 }
 
-void fft_stride(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int nl) {
+void kfft_stride(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int nl) {
    for(int i=0;i<nl;i++) {
       kiss_fft_cfg cfg;
       cfg = kiss_fft_alloc (m, 0, NULL, NULL);

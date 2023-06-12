@@ -5,7 +5,7 @@
 
 #include "_kiss_fft_guts.h"
 
-void fft2d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n) {
+void kfft2d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n) {
    int dims[] = {n, m};
    kiss_fftnd_cfg cfg;
 
@@ -14,7 +14,7 @@ void fft2d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n) {
    free(cfg);
 }
 
-void ifft2d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n) {
+void kifft2d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n) {
    int dims[] = {n, m};
    kiss_fftnd_cfg cfg;
 

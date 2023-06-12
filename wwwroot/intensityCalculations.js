@@ -1377,6 +1377,13 @@ function profile(params, times) {
     return [params, times];
 }
 
+function debug(msg) {
+    switch(msg) {
+        case "bartVersion": return bart_version();
+        default: return "not found";
+    }
+}
+
 var imageFunctions = {
     SE: calcSpinEcho,
     IR: calcInversionRecovery,
@@ -1410,6 +1417,9 @@ var queryableFunctions = {
     },
     kspace: async function() {
         reply('kspace', k_data_im_re);
+    },
+    debug: function(msg) {
+        reply('debug', debug(msg));
     },
 };
 

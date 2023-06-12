@@ -435,3 +435,7 @@ function alloc(nbytes) {
 function free(heapArray) {
     Module._free(heapArray.byteOffset);
 }
+
+function bart_version() {
+    return _bart_version;
+}

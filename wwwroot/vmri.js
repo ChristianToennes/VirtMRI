@@ -87,6 +87,14 @@ function sequenceParametersKeyDown(e) {
     }
 }
 
+const debugMessageHandler = function(data) {
+    console.log(data);
+};
+w.addListener('debug', debugMessageHandler);
+
+function debug_send_message(msg) {
+    w.sendQuery("debug", msg);
+}
 
 const loadDataMessageHandler = function (data) {
     var array_na_mm = data[4];

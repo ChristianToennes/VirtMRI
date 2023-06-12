@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <math.h>
 #include "stdbool.h"
+#include "fft2.h"
+#include "fft3.h"
 #include "kissfft/_kiss_fft_guts.h"
 
 void print_stats(char* name, kiss_fft_cpx* data, int length) {
@@ -105,7 +107,7 @@ void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, struct Params *
       ASSIGN(f_uker[xdim*ydim*(zdim-1)], -1, 0);
     }
     //print_stats("uker in", f_uker, data_length);
-    data_ndims==2 ? fft2d(f_uker, f_uker, xdim, ydim) : fft3d(f_uker, f_uker, ydim, zdim, xdim);
+    data_ndims==2 ? kfft2d(f_uker, f_uker, xdim, ydim) : kfft3d(f_uker, f_uker, ydim, zdim, xdim);
     //print_stats("uker mid", f_uker);
     //console.log(mu, lambda, gam);
     //fprintf(stderr, "fft\n");
@@ -129,7 +131,7 @@ void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, struct Params *
         C_MULBYSCALAR(i_rhs[i], mu*f_mask[i]);
       }
       //print_stats("murf in", i_rhs, data_length);
-      data_ndims==2? ifft2d(i_rhs, i_murf, k_xdim, k_ydim) : ifft3d(i_rhs, i_murf, k_ydim, k_zdim, k_xdim);
+      data_ndims==2? kifft2d(i_rhs, i_murf, k_xdim, k_ydim) : kifft3d(i_rhs, i_murf, k_ydim, k_zdim, k_xdim);
       //print_stats("murf out", i_murf, data_length);
       for(int inner = 0;inner < ninner;inner++) {
         //% update u
@@ -185,14 +187,14 @@ void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, struct Params *
         }
         //fprintf(stderr, "%f\n", scale);
         //print_stats("rhs in", i_rhs, data_length);
-        data_ndims==2? fft2d(i_rhs, f_rhs, k_xdim, k_ydim) : fft3d(i_rhs, f_rhs, k_ydim, k_zdim, k_xdim);
+        data_ndims==2? kfft2d(i_rhs, f_rhs, k_xdim, k_ydim) : kfft3d(i_rhs, f_rhs, k_ydim, k_zdim, k_xdim);
         //print_stats("rhs out", f_rhs, data_length);
         for(i=0;i<data_length;i++) {
             C_MUL(tmp, f_rhs[i], f_uker[i]);
             ASSIGN(f_rhs[i], REAL(tmp), IMAG(tmp));
         }
         //print_stats("img_in", f_rhs, data_length);
-        data_ndims==2? ifft2d(f_rhs, img, k_xdim, k_ydim) : ifft3d(f_rhs, img, k_ydim, k_zdim, k_xdim);
+        data_ndims==2? kifft2d(f_rhs, img, k_xdim, k_ydim) : kifft3d(f_rhs, img, k_ydim, k_zdim, k_xdim);
         //print_stats("img", img, data_length);
         //% update x and y
         for(x=0;x<xdim;x++) {
@@ -241,7 +243,7 @@ void compressed_sensing(kiss_fft_cpx *f_data, kiss_fft_cpx *out, struct Params *
             C_SUBFROM(B[i+2], X[i+2]);
         }
       }
-      data_ndims==2? fft2d(img, k_img, k_xdim, k_ydim) : fft3d(img, k_img, k_ydim, k_zdim, k_xdim);
+      data_ndims==2? kfft2d(img, k_img, k_xdim, k_ydim) : kfft3d(img, k_img, k_ydim, k_zdim, k_xdim);
       //print_stats("k_img", k_img, data_length);
       for(i=0;i<data_length;i++) {
         C_ADDTO(f_data[i], f_data0[i]);

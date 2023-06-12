@@ -387,10 +387,10 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
     addImageNoise(image, p);
 
     if(p->use_fft3) {
-        fft3d(image, kspace, p->iydim, p->izdim, p->ixdim);
+        kfft3d(image, kspace, p->iydim, p->izdim, p->ixdim);
     } else {
         for(z=0;z<p->zdim;z++) {
-            fft2d(&image[z*p->ixdim*p->iydim], &kspace[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
+            kfft2d(&image[z*p->ixdim*p->iydim], &kspace[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
         }
     }
 
@@ -400,10 +400,10 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
         //modified = true;
         apply_kspace_filter(kspace, filt_kspace, p);
         if(p->use_fft3) {
-            ifft3d(filt_kspace, filt_image, p->iydim, p->izdim, p->ixdim);
+            kifft3d(filt_kspace, filt_image, p->iydim, p->izdim, p->ixdim);
         } else {
             for(z=0;z<p->zdim;z++) {
-                ifft2d(&filt_kspace[z*p->ixdim*p->iydim], &filt_image[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
+                kifft2d(&filt_kspace[z*p->ixdim*p->iydim], &filt_image[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
             }
         }
         for(int i=0;i<p->ixdim*p->iydim*p->izdim;i++) {
@@ -436,10 +436,10 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
     
     if(modified) {
         if(p->use_fft3) {
-            ifft3d(kspace, image, p->iydim, p->izdim, p->ixdim);
+            kifft3d(kspace, image, p->iydim, p->izdim, p->ixdim);
         } else {
             for(z=0;z<p->zdim;z++) {
-                ifft2d(&kspace[z*p->ixdim*p->iydim], &image[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
+                kifft2d(&kspace[z*p->ixdim*p->iydim], &image[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
             }
         }
         modified = 0;
