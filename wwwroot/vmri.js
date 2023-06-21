@@ -683,7 +683,7 @@ function displayAndWindow3DImage(which) {
     var wc = parseFloat(in_wc.value)
     for (var x = 0; x < xdim; x++) {
         for (var z = 0; z < zdim; z++) {
-            var val = imgResult.data[x + cor_slice * xdim + (zdim - z) * xdim * ydim] * 4096;
+            var val = imgResult.data[x + (ydim-cor_slice) * xdim + (zdim - z) * xdim * ydim] * 4096;
             if (val <= (wc - ww)) {
                 val = 0;
             } else if (val >= (wc + ww)) {
@@ -818,10 +818,10 @@ function displayAndWindow3DImage(which) {
             } else {
                 val = [val, val, val];
             }
-            tra_result[4 * (x+xoff + (y+yoff) * size)] = val[0]*255;
-            tra_result[4 * (x+xoff + (y+yoff) * size) + 1] = val[1]*255;
-            tra_result[4 * (x+xoff + (y+yoff) * size) + 2] = val[2]*255;
-            tra_result[4 * (x+xoff + (y+yoff) * size) + 3] = 255;
+            tra_result[4 * (x+xoff + (ydim-y+yoff) * size)] = val[0]*255;
+            tra_result[4 * (x+xoff + (ydim-y+yoff) * size) + 1] = val[1]*255;
+            tra_result[4 * (x+xoff + (ydim-y+yoff) * size) + 2] = val[2]*255;
+            tra_result[4 * (x+xoff + (ydim-y+yoff) * size) + 3] = 255;
         }
     }
     if (show_crosshair) {
