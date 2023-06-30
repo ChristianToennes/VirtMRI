@@ -289,21 +289,56 @@ function compressed_sensing_fast(data, params) {
     return [img, kspace];
 }
 
-/** Compute the FFT of a real-valued mxn matrix. */
-function fft(data, m) {
-    /* Allocate input and output arrays on the heap. */
-    var heapData = scalar_size==4 ? allocFromArray(data) : allocFromArray(Float64Array.from(data));
-    var heapSpectrum = alloc(2*m*scalar_size);
+function calc_phantom(dims) {
+    var sstrs = Array(DIMS);
+    var samples = 0;
+    var d3 = false;
+    var kspace = false;
+    var popts  = _pha_opts_defaults;
 
-    _fft(heapData.byteOffset, heapSpectrum.byteOffset, m);
+    for(var i=0;i<DIMS;i++) {sstrs[i] = 0;}
+    
+    var size = 2;
+    for(var dim in dims) {
+        size = size*dims[dim];
+    }
+    var data = alloc(size*scalar_size);
+
+    _num_init();
+    _calc_phantom(dims, data.byteOffset, d3, kspace, sstrs, samples, popts);
+    //_calc_bart(dims, data.byteOffset, kspace, sstrs, samples, popts);
+    _calc_circ(dims, data.byteOffset, d3, kspace, sstrs, samples, popts);
+
+    var pdata = new Float32Array(size);
+    pdata.set(new Float32Array(Module.HEAPU8.buffer, data.byteOffset, size));
+
+    free(data);
+    return pdata;
+}
+
+/** Compute the FFT of a real-valued mxn matrix. */
+function fft(data, dims, flags=0) {
+    /* Allocate input and output arrays on the heap. */
+    
+    var size = 2
+    for(var dim in dims) {
+        size = size*dims[dim];
+    }
+    var outData = alloc(size*scalar_size);
+    var inData = alloc(size*scalar_size);
+    for(var i=0;i<data.length;i++) {
+        inData[2*i] = data[i];
+    }
+
+    _fft(dims.length, dims, flags, inData.byteOffset, outData.byteOffset);
 
     /* Get spectrum from the heap, copy it to local array. */
-    var spectrum = new Float32Array(m*2);
+    var spectrum = new Float32Array(size);
     if(scalar_size==8) {
-        var tmp = new Float64Array(Module.HEAPU8.buffer, heapSpectrum.byteOffset, m*2);
+        var tmp = new Float64Array(Module.HEAPU8.buffer, heapSpectrum.byteOffset, size);
         for(var i=0;i<tmp.length;i++) { spectrum[i] = tmp[i]; }
     } else {
-        spectrum.set(new Float32Array(Module.HEAPU8.buffer, heapSpectrum.byteOffset, m*2));
+        spectrum.set(new Float32Array(Module.HEAPU8.buffer, heapSpectrum.byteOffset, size));
     }   
 
     /* Free heap objects. */
@@ -314,100 +349,27 @@ function fft(data, m) {
 }
 
 /** Compute the inverse FFT of a real-valued mxn matrix. */
-function ifft(spectrum, m) {
-    var heapSpectrum = scalar_size==4 ? allocFromArray(spectrum) : allocFromArray(Float64Array.from(spectrum));
-    var heapData = alloc(2*m*scalar_size);
+function ifft(data, dims, flags=0) {
+    var size = 2
+    for(var dim in dims) {
+        size = size*dims[dim];
+    }
+    var outData = alloc(size*scalar_size);
+    var inData = alloc(size*scalar_size);
+    for(var i=0;i<data.length;i++) {
+        inData[2*i] = data[i];
+    }
 
-    _ifft(heapSpectrum.byteOffset, heapData.byteOffset, m);
+    _ifft(dims.length, dims, flags, inData.byetOffset, outData.byteOffset);
 
-    var data = scalar_size==4 ? Float32Array.from(new Float32Array(Module.HEAPU8.buffer,heapData.byteOffset, m*2)): Float32Array.from(new Float64Array(Module.HEAPU8.buffer,heapData.byteOffset, m*2));
+    var data = scalar_size==4 ? Float32Array.from(new Float32Array(Module.HEAPU8.buffer,heapData.byteOffset, size)): Float32Array.from(new Float64Array(Module.HEAPU8.buffer,heapData.byteOffset, size));
 
-    //for (i=0;i<m*2;i++) {
-        //data[i] /= m;
+    //for (i=0;i<size;i++) {
+        //data[i] /= size;
     //}
 
     free(heapSpectrum);
     free(heapData);
-
-    return data;
-}
-
-/** Compute the FFT of a real-valued mxn matrix. */
-function kfft2d(data, m, n) {
-    /* Allocate input and output arrays on the heap. */
-    var heapData = scalar_size==4?allocFromArray(data):allocFromArray(Float64Array.from(data));
-    var heapSpectrum = alloc(2*m*n*scalar_size);
-
-    _fft2d(heapData.byteOffset, heapSpectrum.byteOffset, m, n);
-
-    /* Get spectrum from the heap, copy it to local array. */
-    var spectrum = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, heapSpectrum.byteOffset, m*n*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, heapSpectrum.byteOffset, m*n*2));
-
-    /* Free heap objects. */
-    free(heapData);
-    free(heapSpectrum);
-
-    return spectrum;
-}
-
-/** Compute the inverse FFT of a real-valued mxn matrix. */
-function kifft2d(spectrum, m, n) {
-    var heapSpectrum = scalar_size==4?allocFromArray(spectrum):allocFromArray(Float64Array.from(spectrum));
-    var heapData = alloc(2*m*n*scalar_size);
-
-    _ifft2d(heapSpectrum.byteOffset, heapData.byteOffset, m, n);
-
-    var data = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, heapData.byteOffset, m*n*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, heapData.byteOffset, m*n*2));
-
-    //for (i=0;i<m*n*2;i++) {
-        //data[i] /= m*n;
-    //}
-
-    free(heapSpectrum);
-    free(heapData);
-
-    return data;
-}
-
-/** Compute the FFT of a real-valued mxn matrix. */
-function kfft3d(data, m, n, l) {
-    /* Allocate input and output arrays on the heap. */
-    var heapData = scalar_size==4?allocFromArray(data):allocFromArray(Float64Array.from(data));
-    var heapData_ptr = heapData.byteOffset;
-    var heapSpectrum = alloc(2*m*n*l*scalar_size);
-    var heapSpectrum_ptr = heapSpectrum.byteOffset;
-
-    _fft3d(heapData_ptr, heapSpectrum_ptr, m, n, l);
-
-    /* Get spectrum from the heap, copy it to local array. */
-    var spectrum = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer, heapSpectrum_ptr, m*n*l*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer, heapSpectrum_ptr, m*n*l*2));
-
-    /* Free heap objects. */
-
-    Module._free(heapData_ptr);
-    Module._free(heapSpectrum_ptr);
-
-    return spectrum;
-}
-
-
-/** Compute the inverse FFT of a real-valued mxn matrix. */
-function kifft3d(spectrum, m, n, l) {
-    var heapSpectrum = scalar_size==4?allocFromArray(spectrum):allocFromArray(Float64Array.from(spectrum));
-    var heapSpectrum_ptr = heapSpectrum.byteOffset;
-    var heapData = alloc(m*n*l*scalar_size);
-    var heapData_ptr = heapData.byteOffset;
-
-    _ifft3d(heapSpectrum_ptr, heapData_ptr, m, n, l);
-
-    var data = scalar_size==4?Float32Array.from(new Float32Array(Module.HEAPU8.buffer,heapData_ptr, m*n*l*2)):Float32Array.from(new Float64Array(Module.HEAPU8.buffer,heapData_ptr, m*n*l*2));
-
-    //for (i=0;i<m*n*l*2;i++) {
-        //data[i] /= m*n*l;
-    //}
-
-    Module._free(heapSpectrum_ptr);
-    Module._free(heapData_ptr);
 
     return data;
 }
@@ -423,13 +385,11 @@ function allocFromArray(ar) {
     return heapArray;
 }
 
-
 /** Allocate a heap array to be passed to a compiled function. */
 function alloc(nbytes) {
     var ptr = Module._malloc(nbytes)>>>0;
     return new Uint8Array(Module.HEAPU8.buffer, ptr, nbytes);
 }
-
 
 /** Free a heap array. */
 function free(heapArray) {

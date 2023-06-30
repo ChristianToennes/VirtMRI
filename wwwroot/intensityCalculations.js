@@ -16,6 +16,7 @@ const na_t2f = 4;
 const na_t2fr = 60;
 const na_mm = 140;
 const na_vol = 0.7;
+const DIMS = 16;
 
 var ds = undefined;
 
@@ -1377,10 +1378,28 @@ function profile(params, times) {
     return [params, times];
 }
 
+function fftTest() {
+    var dims = Array(DIMS);
+    for(var i=0;i<DIMS;i++) {dims[i] = 1;}
+    dims[0] = 128;
+    dims[1] = 128;
+    var pdata = calc_phantom(dims);
+    var result = new Float32Array(pdata.length/2);
+    for(var i=0;i<result.length;i++) {
+        result[i] = pdata[i*2];
+    }
+    //var fdata = fft(pdata, dims, 0);
+    var fdata = kfft2d(result, 128, 128);
+    var k_result = transformKSpace3d(fdata, false, 128, 128, 1);
+    params = {"sequence": "sim"}
+    return new MRImage(128, 128, 1, 128, 128, 1, [256, 256, 0, 256], result, k_result, params, fdata);
+}
+
 function debug(msg) {
     switch(msg) {
-        case "bartVersion": return bart_version();
-        default: return "not found";
+        case "bartVersion": return ['debug', bart_version()];
+        case "fftTest": return ['result', fftTest()];
+        default: return ['debug', "not found"];
     }
 }
 
@@ -1419,7 +1438,8 @@ var queryableFunctions = {
         reply('kspace', k_data_im_re);
     },
     debug: function(msg) {
-        reply('debug', debug(msg));
+        result = debug(msg);
+        reply(result[0], result[1]);
     },
 };
 

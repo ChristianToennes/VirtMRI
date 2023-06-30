@@ -4,16 +4,19 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+#include <complex.h>
 
-#include "fft.h"
-#include "fft2.h"
-#include "fft3.h"
+//#include "fft.h"
+//#include "fft2.h"
+//#include "fft3.h"
 #include "kspace_filter.h"
 #include "tinycs.h"
 #include "noise.h"
 #include "stdbool.h"
 
-#include "_kiss_fft_guts.h"
+#include "num/fft.h"
+
+//#include "_kiss_fft_guts.h"
 #include "params.h"
 
 #define NA_SCALE 140
@@ -23,20 +26,20 @@ const float na_t2fr = 60;
 const float na_mm = 140;
 const float na_t1 = 39.2;
 
-static inline void normalizeImage(kiss_fft_cpx* image, struct Params *p) {
+static inline void normalizecimage(complex float* cimage, struct Params *p) {
     double max = 0;
     switch(p->sequence) {
         case Na:
         case NaTQ:
         case NaSQ:
-            max = REAL(image[0]);
+            max = creal(cimage[0]);
             for(int i=0;i<p->iydim*p->izdim*p->ixdim;i++) {
-                if (max < REAL(image[i])) {
-                    max = REAL(image[i]);
+                if (max < creal(cimage[i])) {
+                    max = creal(cimage[i]);
                 }
             }
             for(int i=0;i<p->iydim*p->izdim*p->ixdim;i++) {
-                ASSIGN(image[i], REAL(image[i])/max, 0);
+                cimage[i]=creal(cimage[i])/max+0*I;
             }
             break;
         default:
@@ -257,15 +260,15 @@ static inline double simVoxel(struct Params *p, int pos, struct Dataset *ds) {
     return s;
 }
 
-double ssim(kiss_fft_cpx* img1, kiss_fft_cpx* img2, int size) {
+double ssim(complex float* img1, complex float* img2, int size) {
     double mu1, mu2, var1, var2, sig_co, c1, c2, L, k1, k2;
     k1 = 0.01;
     k2 = 0.03;
     //L = pow(2.0, sizeof(kiss_fft_scalar)*8)-1;
     L = 0;
     for(int i=0;i<size;i++) {
-        if(REAL(img1[i]) > L) {
-            L = REAL(img1[i]);
+        if(creal(img1[i]) > L) {
+            L = creal(img1[i]);
         }
     }
     c1 = (L*k1)*(L*k1);
@@ -273,8 +276,8 @@ double ssim(kiss_fft_cpx* img1, kiss_fft_cpx* img2, int size) {
     mu1 = 0.0;
     mu2 = 0.0;
     for(int i=0;i<size;i++) {
-        mu1 += REAL(img1[i]);
-        mu2 += REAL(img2[i]);
+        mu1 += creal(img1[i]);
+        mu2 += creal(img2[i]);
     }
     mu1 /= size;
     mu2 /= size;
@@ -282,9 +285,9 @@ double ssim(kiss_fft_cpx* img1, kiss_fft_cpx* img2, int size) {
     var2 = 0.0;
     sig_co = 0.0;
     for(int i=0;i<size;i++) {
-        var1 += (mu1-REAL(img1[i]))*(mu1-REAL(img1[i]));
-        var2 += (mu2-REAL(img2[i]))*(mu2-REAL(img2[i]));
-        sig_co += (mu2-REAL(img2[i]))*(mu1-REAL(img1[i]));
+        var1 += (mu1-creal(img1[i]))*(mu1-creal(img1[i]));
+        var2 += (mu2-creal(img2[i]))*(mu2-creal(img2[i]));
+        sig_co += (mu2-creal(img2[i]))*(mu1-creal(img1[i]));
     }
     var1 /= size;
     var2 /= size;
@@ -294,7 +297,7 @@ double ssim(kiss_fft_cpx* img1, kiss_fft_cpx* img2, int size) {
     return ssim;
 }
 
-void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_fft_cpx *filt_image, kiss_fft_cpx *filt_kspace, kiss_fft_cpx *cs_image, kiss_fft_cpx *cs_kspace, struct Dataset *ds) {
+void simulate(struct Params *p, complex float *cimage, complex float *kspace, complex float *filt_cimage, complex float *filt_kspace, complex float *cs_cimage, complex float *cs_kspace, struct Dataset *ds) {
     int x,y,z,ipos,ds_pos;
     double nx,ny,nz;
     int xi,x_start,x_end,yi,y_start,y_end,zi,z_start,z_end;
@@ -309,15 +312,15 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
     zs = (double)ds->k_zdim/(double)p->zdim/2.0;
 
     for(int i=0;i<p->izdim*p->iydim*p->ixdim;i++) {
-        ASSIGN(image[i], 0, 0);
-        ASSIGN(kspace[i], 0, 0);
+        cimage[i] =  0+ 0*I;
+        kspace[i] =  0+ 0*I;
     }
-    if(p->use_cs && cs_image != NULL) {
+    if(p->use_cs && cs_cimage != NULL) {
         for(int i=0;i<p->izdim*p->iydim*p->ixdim;i++) {
-            ASSIGN(filt_image[i], 0, 0);
-            ASSIGN(filt_kspace[i], 0, 0);
-            ASSIGN(cs_image[i], 0, 0);
-            ASSIGN(cs_kspace[i], 0, 0);
+            filt_cimage[i] =  0+ 0*I;
+            filt_kspace[i] =  0+ 0*I;
+            cs_cimage[i] =  0+ 0*I;
+            cs_kspace[i] =  0+ 0*I;
         }
     }
     
@@ -377,41 +380,46 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
                         s /= d;
                         break;
                 }
-                ASSIGN(image[ipos], (kiss_fft_scalar)s, 0);
+                cimage[ipos] =  s+ 0*I;
             }
         }
     }
 
-    normalizeImage(image, p);
+    normalizecimage(cimage, p);
 
-    addImageNoise(image, p);
-
+    addImageNoise(cimage, p);
+    long dims3[] = {p->iydim, p->ixdim, p->izdim};
+    long dims2[] = {p->iydim, p->ixdim};
     if(p->use_fft3) {
-        kfft3d(image, kspace, p->iydim, p->izdim, p->ixdim);
+        fft(3, dims3, 7, kspace, cimage);
+        //kfft(cimage, kspace, p->iydim, p->izdim, p->ixdim);
     } else {
         for(z=0;z<p->zdim;z++) {
-            kfft2d(&image[z*p->ixdim*p->iydim], &kspace[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
+            fft(2, dims2, 3, &kspace[z*p->ixdim*p->iydim], &cimage[z*p->ixdim*p->iydim]);
+            //kfft(&cimage[z*p->ixdim*p->iydim], &kspace[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
         }
     }
 
     bool modified = addKSpaceNoise(kspace, p);
     
-    if(p->use_cs && cs_image != NULL) {
+    if(p->use_cs && cs_cimage != NULL) {
         //modified = true;
         apply_kspace_filter(kspace, filt_kspace, p);
         if(p->use_fft3) {
-            kifft3d(filt_kspace, filt_image, p->iydim, p->izdim, p->ixdim);
+            ifft(3, dims3, 7, filt_cimage, filt_kspace);
+            //kifft3d(filt_kspace, filt_cimage, p->iydim, p->izdim, p->ixdim);
         } else {
             for(z=0;z<p->zdim;z++) {
-                kifft2d(&filt_kspace[z*p->ixdim*p->iydim], &filt_image[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
+                ifft(2, dims2, 3, &filt_cimage[z*p->ixdim*p->iydim], &filt_kspace[z*p->ixdim*p->iydim]);
+                //kifft2d(&filt_kspace[z*p->ixdim*p->iydim], &filt_cimage[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
             }
         }
         for(int i=0;i<p->ixdim*p->iydim*p->izdim;i++) {
             cs_kspace[i] = filt_kspace[i];
-            ASSIGN(cs_image[i], 0, 0);
+            cs_cimage[i] = 0+0*I;
         }
         if(p->use_fft3) {
-            compressed_sensing(cs_kspace, cs_image, p);
+            compressed_sensing(cs_kspace, cs_cimage, p);
         } else {
             for(z=0;z<p->zdim;z++) {
                 if (p->cs_params->callback != 0) {
@@ -419,15 +427,15 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
                 } else {
                     fprintf(stderr, "%d\n", z);
                 }
-                compressed_sensing(&cs_kspace[z*p->ixdim*p->iydim], &cs_image[z*p->ixdim*p->iydim], p);
+                compressed_sensing(&cs_kspace[z*p->ixdim*p->iydim], &cs_cimage[z*p->ixdim*p->iydim], p);
             }
         }
         /*double s;
         for(z=0;z<p->zdim;z++) {
-            s = ssim(&image[z*p->xdim*p->ydim], &cs_image[z*p->xdim*p->ydim], p->xdim*p->ydim);
+            s = ssim(&cimage[z*p->xdim*p->ydim], &cs_cimage[z*p->xdim*p->ydim], p->xdim*p->ydim);
             fprintf(stdout, "ssim %d: %f ", z, s);
         }
-        s = ssim(image, cs_image, p->xdim*p->ydim);
+        s = ssim(cimage, cs_cimage, p->xdim*p->ydim);
         fprintf(stdout, "ssim: %f l1: %f l2: %f mu: %f gam: %f ninner: %d nreg: %d\n", s, p->cs_params->lambda, p->cs_params->lambda2, p->cs_params->mu, p->cs_params->gam, p->cs_params->ninner, p->cs_params->nbreg);
         */
     } else {
@@ -436,10 +444,12 @@ void simulate(struct Params *p, kiss_fft_cpx *image, kiss_fft_cpx *kspace, kiss_
     
     if(modified) {
         if(p->use_fft3) {
-            kifft3d(kspace, image, p->iydim, p->izdim, p->ixdim);
+            ifft(3, dims3, 7, filt_cimage, filt_kspace);
+            //kifft3d(kspace, cimage, p->iydim, p->izdim, p->ixdim);
         } else {
             for(z=0;z<p->zdim;z++) {
-                kifft2d(&kspace[z*p->ixdim*p->iydim], &image[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
+                ifft(2, dims2, 3, &filt_cimage[z*p->ixdim*p->iydim], &filt_kspace[z*p->ixdim*p->iydim]);
+                //kifft2d(&kspace[z*p->ixdim*p->iydim], &cimage[z*p->ixdim*p->iydim], p->ixdim, p->iydim);
             }
         }
         modified = 0;

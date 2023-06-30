@@ -1,8 +1,10 @@
 #include "kspace_filter.h"
+#include <complex.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-#include "kissfft/_kiss_fft_guts.h"
-
-void apply_pseudo_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Params *params) {
+void apply_pseudo_random_filter(complex float* kspace, complex float* out_kspace, struct Params *params) {
     int x,y,z,pos;
     double r,rn,a,b,c;
     bool filter = false;
@@ -49,7 +51,7 @@ void apply_pseudo_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, 
                 pos = x+y*xdim+z*xdim*ydim;
                 if(filter) {
                     count2++;
-                    ASSIGN(out_kspace[pos], 0, 0);
+                    out_kspace[pos] = 0+0*I;
                 } else {
                     count++;
                     out_kspace[pos] = kspace[pos];
@@ -60,7 +62,7 @@ void apply_pseudo_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, 
     //fprintf(stdout, "pseudo randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
-void apply_pseudo_random_points_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Params *params) {
+void apply_pseudo_random_points_filter(complex float* kspace, complex float* out_kspace, struct Params *params) {
     int x,y,z,pos;
     double r,rn,a,b,c;
     bool filter = false;
@@ -116,7 +118,7 @@ void apply_pseudo_random_points_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_k
                 pos = x+y*xdim+z*xdim*ydim;
                 if(filter) {
                     count2++;
-                    ASSIGN(out_kspace[pos], 0, 0);
+                    out_kspace[pos] = 0+0*I;
                 } else {
                     count++;
                     out_kspace[pos] = kspace[pos];
@@ -127,7 +129,7 @@ void apply_pseudo_random_points_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_k
     //fprintf(stdout, "pseudo randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
-void apply_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Params *params) {
+void apply_random_filter(complex float* kspace, complex float* out_kspace, struct Params *params) {
     int count = 0;
     int count2 = 0;
     int x,y,z,pos;
@@ -142,7 +144,7 @@ void apply_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct 
                 pos = x+y*xdim+z*xdim*ydim;
                 if(rn < params->filter_params->filter_fraction == 0) {
                     count2++;
-                    ASSIGN(out_kspace[pos], 0, 0);
+                    out_kspace[pos] = 0+0*I;
                 } else {
                     count++;
                     out_kspace[pos] = kspace[pos];
@@ -153,7 +155,7 @@ void apply_random_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct 
     //fprintf(stdout, "randomly sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
-void apply_random_lines_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Params *params) {
+void apply_random_lines_filter(complex float* kspace, complex float* out_kspace, struct Params *params) {
     int count = 0;
     int count2 = 0;
     int x,y,z,pos;
@@ -168,7 +170,7 @@ void apply_random_lines_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, s
                 pos = x+y*xdim+z*xdim*ydim;
                 if(rn < params->filter_params->filter_fraction == 0) {
                     count2++;
-                    ASSIGN(out_kspace[pos], 0, 0);
+                    out_kspace[pos] = 0+0*I;
                 } else {
                     count++;
                     out_kspace[pos] = kspace[pos];
@@ -179,7 +181,7 @@ void apply_random_lines_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, s
     //fprintf(stdout, "random lines sampled: %f discarded: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim));
 }
 
-void apply_regular_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Params *params) {
+void apply_regular_filter(complex float* kspace, complex float* out_kspace, struct Params *params) {
     int count = 0;
     int count2 = 0;
     int x,y,z,pos;
@@ -205,7 +207,7 @@ void apply_regular_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct
                 pos = x+y*xdim+z*xdim*ydim;
                 if(filtered) {
                     count2++;
-                    ASSIGN(out_kspace[pos], 0, 0);
+                    out_kspace[pos] = 0+0*I;
                 } else {
                     count++;
                     out_kspace[pos] = kspace[pos];
@@ -216,7 +218,7 @@ void apply_regular_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct
     //fprintf(stdout, "regularly spaced sampled ceil: %f discarded: %f frac: %f nth: %f\n", (double)count/((double)zdim*(double)ydim*(double)xdim),(double)count2/((double)zdim*(double)ydim*(double)xdim), params->filter_params->filter_fraction, nth);
 }
 
-void apply_freq_cutoff(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Params *params) {
+void apply_freq_cutoff(complex float* kspace, complex float* out_kspace, struct Params *params) {
     int xdim = params->ixdim;
     int ydim = params->iydim;
     int zdim = params->izdim;
@@ -235,30 +237,30 @@ void apply_freq_cutoff(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Pa
                     int i = x+y*xdim+z*ydim*xdim;
                     if(i>=256*256*256) fprintf(stdout, "1 %i %i %i %i %i\n", x,y,z,i,256*256*256);
                     if(d<fmin || d>fmax) {
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         if(i>=256*256*256) fprintf(stdout, "2 %i %i %i %i %i\n", x,y,z,i,256*256*256);
                         i = (xdim-x-1)+y*xdim+z*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         if(i>=256*256*256) fprintf(stdout, "3 %i %i %i %i %i\n", x,y,z,i,256*256*256);
                         i = x+(ydim-y-1)*xdim+z*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         if(i>=256*256*256) fprintf(stdout, "4 %i %i %i %i %i\n", x,y,z,i,256*256*256);
                         i = x+y*xdim+(zdim-z-1)*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         if(i>=256*256*256) fprintf(stdout, "5 %i %i %i %i %i\n", x,y,z,i,256*256*256);
 
                         i = (xdim-x-1)+(ydim-y-1)*xdim+z*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         if(i>=256*256*256) fprintf(stdout, "6 %i %i %i %i %i\n", x,y,z,i,256*256*256);
                         i = x+(ydim-y-1)*xdim+(zdim-z-1)*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         if(i>=256*256*256) fprintf(stdout, "7 %i %i %i %i %i\n", x,y,z,i,256*256*256);
                         i = (xdim-x-1)+y*xdim+(zdim-z-1)*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         if(i>=256*256*256) fprintf(stdout, "8 %i %i %i %i %i\n", x,y,z,i,256*256*256);
 
                         i = (xdim-x-1)+(ydim-y-1)*xdim+(zdim-z-1)*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         if(i>=256*256*256) fprintf(stdout, "9 %i %i %i %i %i\n", x,y,z,i,256*256*256);
                         
                     } else {
@@ -302,14 +304,14 @@ void apply_freq_cutoff(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Pa
                 for(int z=0;z<zdim;z++) {
                     int i = x+y*xdim+z*ydim*xdim;
                     if(d<fmin || d>fmax) {
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         i = (xdim-x-1)+y*xdim+z*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                         i = x+(ydim-y-1)*xdim+z*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
 
                         i = (xdim-x-1)+(ydim-y-1)*xdim+z*ydim*xdim;
-                        ASSIGN(out_kspace[i], 0, 0);
+                        out_kspace[i] = 0+0*I;
                     } else {
                         out_kspace[i] = kspace[i];
                         i = xdim-x+y*xdim+z*ydim*xdim;
@@ -326,7 +328,7 @@ void apply_freq_cutoff(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Pa
     }
 }
 
-bool apply_kspace_filter(kiss_fft_cpx* kspace, kiss_fft_cpx* out_kspace, struct Params *params) {
+bool apply_kspace_filter(complex float* kspace, complex float* out_kspace, struct Params *params) {
     bool modified = false;
     switch(params->filter_params->filter_mode) {
         case PseudoRandomLines:

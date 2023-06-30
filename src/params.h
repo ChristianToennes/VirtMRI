@@ -1,12 +1,7 @@
 #ifndef __params_h
 #define __params_h
 #include "stdbool.h"
-#include "kissfft/kiss_fft.h"
-
-void fft2d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n);
-void ifft2d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n);
-void fft3d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n, int l);
-void ifft3d(kiss_fft_cpx *in, kiss_fft_cpx *out, int m, int n, int l);
+#include <complex.h>
 
 typedef enum NoiseType {
     Gaussian = 1,
