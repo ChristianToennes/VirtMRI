@@ -107,7 +107,52 @@ function free_params(params) {
     _free_params(params);
 }
 
+function normalize_image(image) {
+    if (image == undefined) { return image; }
+    var min = image[0];
+    var max = image[0];
+    for(var i=0;i<image.length;i++) {
+        if(image[i]<min) { min = image[i]; }
+        if(image[i]>max) { max = image[i]; }
+    }
+    console.log(min, max);
+    for(var i=0;i<image.length;i++) {
+        image[i] = (image[i]-min)/(max-min);
+    }
+    return image;
+}
+
 function simulate_fast(ds, params) {
+    var xdim = Math.round(params["xdim"]);
+    xdim = xdim > 0 ? xdim : k_xdim;
+    xdim = xdim > k_xdim ? k_xdim : xdim;
+    var ixdim = params["ixdim"];
+    var ydim = Math.round(params["ydim"]);
+    ydim = ydim > 0 ? ydim : k_ydim;
+    ydim = ydim > k_ydim ? k_ydim : ydim;
+    var iydim = params["iydim"];
+    var zdim = Math.round(params["zdim"]);
+    zdim = zdim > 0 ? zdim : k_zdim;
+    zdim = zdim > k_zdim ? k_zdim : zdim;
+    var izdim = params["izdim"];
+
+    var [p, callback_ptr] = make_params(params);
+    _simulate(p, ds);
+    Module.removeFunction(callback_ptr);
+    free_params(p);
+
+    var [image, image_dim] = from_memcfl("img_sim.mem");
+    var [kspace, kspace_dim] = from_memcfl("kspace_sim.mem");
+    //var sen = from_memcfl(_sen_sim)[0];
+    var [cs_kspace, cs_kspace_dim] = from_memcfl("kspace_cs.mem");
+    var [cs_image, cs_image_dim] = from_memcfl("img_cs.mem");
+    var [filt_kspace, filt_kspace_dim] = from_memcfl("kspace_filt.mem");
+    var [filt_image, filt_image_dim] = from_memcfl("img_filt.mem");
+
+    return [normalize_image(image), normalize_image(kspace), normalize_image(filt_image), normalize_image(filt_kspace), normalize_image(cs_image), normalize_image(cs_kspace)];
+}
+
+function simulate_fast_old(ds, params) {
     var xdim = Math.round(params["xdim"]);
     xdim = xdim > 0 ? xdim : k_xdim;
     xdim = xdim > k_xdim ? k_xdim : xdim;
@@ -398,4 +443,82 @@ function free(heapArray) {
 
 function bart_version() {
     return _bart_version;
+}
+
+function to_memcfl(name, dims, data) {
+    var heapDims = allocFromArray(dims);
+    var heapDims_byteOffset = heapDims.byteOffset;
+    var heapName = allocFromString(name);
+    var heapName_byteOffset = heapName.byteOffset
+    var memcfl_byteoffset = _memcfl_create(heapName_byteOffset, dims.length, heapDims_byteOffset);
+    var memcfl = new Float32Array(Module.HEAPU8.buffer, memcfl_byteoffset, data.length);
+    memcfl.set(data);
+    return name;
+}
+
+function from_memcfl(name) {
+    var heapName = allocFromString(name);
+    var heapName_byteOffset = heapName.byteOffset;
+
+    if(!_memcfl_exists(heapName_byteOffset)) {
+        return [undefined, undefined];
+    }
+
+    var heapDims = alloc(DIMS*scalar_size);
+    var heapDims_byteOffset = heapDims.byteOffset;
+    var out_data = _memcfl_load(heapName_byteOffset, DIMS, heapDims_byteOffset);
+    
+    var dims = Int32Array.from(new Int32Array(Module.HEAPU8.buffer, heapDims_byteOffset, DIMS));
+    var size = 2;
+    for(var dim in dims) {
+        size = size*dims[dim];
+    }
+    var data = Float32Array.from(new Float32Array(Module.HEAPU8.buffer, out_data, size));
+    //_memcfl_unmap(out_data);
+    return [data, dims];
+}
+
+function list_memcfl() {
+    var list_ptr = _memcfl_list_all();
+    var list_count = new Int32Array(Module.HEAPU8.buffer, list_ptr, 1)[0];
+    var list = new Int32Array(Module.HEAPU8.buffer, list_ptr+4, list_count);
+    var files = [];
+    for(var i=0;i<list_count;i++) {
+        var ptr = list[i];
+        if (ptr==0) {continue;}
+        var name = "";
+        for(;Module.HEAPU8[ptr]!=0&&Module.HEAPU8[ptr]!=undefined;ptr++) {
+            name += String.fromCharCode(Module.HEAPU8[ptr]);
+        }
+        files.push(name);   
+    }
+    return files;
+}
+
+function unlink_memcfl(name) {
+    heapName = allocFromString(name);
+    heapName_byteOffset = heapName.byteOffset;
+    _memcfl_unlink(heapName_byteOffset);
+    free(heapName);
+}
+
+function allocFromString(string) {
+    var heapArray = alloc(string.length+1);
+    heapArray.fill(0);
+    for(var i=0;i<string.length;i++) {
+        heapArray[i] = string.charCodeAt(i);
+    }
+    return heapArray;
+}
+
+function allocFromStringArray(inArgv) {
+    var heapArgv = alloc(inArgv.length*4);
+    var heapArgv32 = new Int32Array(Module.HEAPU8.buffer, heapArgv.byteOffset, inArgv.length);
+    for(var k in inArgv) {
+        var heapArray = allocFromString(inArgv[k]);
+        var heapArray_byteOffset = heapArray.byteOffset;
+        heapArgv32[k] = heapArray_byteOffset;
+    }
+    
+    return heapArgv;
 }

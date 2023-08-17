@@ -9,9 +9,10 @@ struct Params* make_params(enum Sequence sequence, int n_params, float* s_params
     p->xdim = xdim;
     p->ydim = ydim;
     p->zdim = zdim;
-    p->ixdim = ixdim;
-    p->iydim = iydim;
-    p->izdim = izdim;
+    p->ncoils = 1;
+    //p->ixdim = ixdim;
+    //p->iydim = iydim;
+    //p->izdim = izdim;
     p->xstart = xstart;
     p->ystart = ystart;
     p->zstart = zstart;

@@ -1326,13 +1326,13 @@ function simulateImageFast(params) {
         [image, kspace, filt_image, filt_kspace, cs_image, cs_kspace] = simulate_fast(ds, params);
         delete params["cs_callback"];
 
-        var k_result = transformKSpace3d(kspace, fft3d, params["ixdim"], params["iydim"], params["izdim"]);
-        result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], image, k_result, params, kspace);
+        //var k_result = transformKSpace3d(kspace, fft3d, params["ixdim"], params["iydim"], params["izdim"]);
+        result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], image, kspace, params, kspace);
         if(cs_image != undefined) {
-            var cs_k_result = transformKSpace3d(cs_kspace, fft3d, params["ixdim"], params["iydim"], params["izdim"]);
-            var filt_k_result = transformKSpace3d(filt_kspace, fft3d, params["ixdim"], params["iydim"], params["izdim"]);
-            cs_result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], cs_image, cs_k_result, params, cs_kspace);
-            filt_result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], filt_image, filt_k_result, params, filt_kspace);
+            //var cs_k_result = transformKSpace3d(cs_kspace, fft3d, params["ixdim"], params["iydim"], params["izdim"]);
+            //var filt_k_result = transformKSpace3d(filt_kspace, fft3d, params["ixdim"], params["iydim"], params["izdim"]);
+            cs_result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], cs_image, cs_kspace, params, cs_kspace);
+            filt_result = new MRImage(xdim, ydim, zdim, ixdim, iydim, izdim, [256, 256, 0, 256], filt_image, filt_kspace, params, filt_kspace);
             return [result, filt_result, cs_result];
         } else {
             return result;

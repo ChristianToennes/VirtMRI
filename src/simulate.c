@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
+//#include <time.h>
+long long time(int);
 #include <complex.h>
 
 //#include "fft.h"
@@ -14,7 +15,43 @@
 #include "noise.h"
 #include "stdbool.h"
 
+
+#include "calib/calib.h"
+#include "calib/estvar.h"
+
+#include "num/multind.h"
+#include "num/flpmath.h"
 #include "num/fft.h"
+#include "num/init.h"
+#include "num/ops_p.h"
+#include "num/ops.h"
+#include "num/iovec.h"
+
+#include "iter/misc.h"
+#include "iter/monitor.h"
+
+#include "linops/linop.h"
+#include "linops/fmac.h"
+#include "linops/someops.h"
+
+#include "noncart/nufft.h"
+
+#include "sense/recon.h"
+#include "sense/model.h"
+#include "sense/optcom.h"
+#include "sense/pocs.h"
+
+#include "misc/debug.h"
+#include "misc/memcfl.h"
+#include "misc/mri.h"
+#include "misc/utils.h"
+#include "misc/mmio.h"
+#include "misc/misc.h"
+#include "misc/opts.h"
+
+#include "grecon/optreg.h"
+#include "grecon/italgo.h"
+
 
 //#include "_kiss_fft_guts.h"
 #include "params.h"
@@ -26,6 +63,22 @@ const float na_t2fr = 60;
 const float na_mm = 140;
 const float na_t1 = 39.2;
 
+const char* img_sim = "img_sim.mem";
+const char* kspace_sim = "kspace_sim.mem";
+const char* sen_sim = "sen_sim.mem";
+const char* kspace_cs = "kspace_cs.mem";
+const char* img_cs = "img_cs.mem";
+const char* kspace_filt = "kspace_filt.mem";
+const char* img_filt = "img_filt.mem";
+
+const static int D = 16;
+
+int main_ecalib(int argc, const char* argv[]);
+int main_pics(int argc, const char* argv[]);
+int main_fft(int argc, const char* argv[]);
+int main_zeros(int argc, const char* argv[]);
+
+
 static inline void normalizecimage(complex float* cimage, struct Params *p) {
     double max = 0;
     switch(p->sequence) {
@@ -33,12 +86,12 @@ static inline void normalizecimage(complex float* cimage, struct Params *p) {
         case NaTQ:
         case NaSQ:
             max = creal(cimage[0]);
-            for(int i=0;i<p->iydim*p->izdim*p->ixdim;i++) {
+            for(int i=0;i<p->ydim*p->zdim*p->xdim;i++) {
                 if (max < creal(cimage[i])) {
                     max = creal(cimage[i]);
                 }
             }
-            for(int i=0;i<p->iydim*p->izdim*p->ixdim;i++) {
+            for(int i=0;i<p->ydim*p->zdim*p->xdim;i++) {
                 cimage[i]=creal(cimage[i])/max+0*I;
             }
             break;
@@ -296,8 +349,8 @@ double ssim(complex float* img1, complex float* img2, int size) {
     //fprintf(stdout, "ssim: %f\n", ssim);
     return ssim;
 }
-
-void simulate(struct Params *p, complex float *cimage, complex float *kspace, complex float *filt_cimage, complex float *filt_kspace, complex float *cs_cimage, complex float *cs_kspace, struct Dataset *ds) {
+/*
+void simulate_old(struct Params *p, complex float *cimage, complex float *kspace, complex float *filt_cimage, complex float *filt_kspace, complex float *cs_cimage, complex float *cs_kspace, struct Dataset *ds) {
     int x,y,z,ipos,ds_pos;
     double nx,ny,nz;
     int xi,x_start,x_end,yi,y_start,y_end,zi,z_start,z_end;
@@ -323,8 +376,6 @@ void simulate(struct Params *p, complex float *cimage, complex float *kspace, co
             cs_kspace[i] =  0+ 0*I;
         }
     }
-    
-    
 
     for(z = 0; z<p->zdim; z++) {
         nz = (double)z*(double)ds->k_zdim/(double)p->zdim + zs;
@@ -430,14 +481,6 @@ void simulate(struct Params *p, complex float *cimage, complex float *kspace, co
                 compressed_sensing(&cs_kspace[z*p->ixdim*p->iydim], &cs_cimage[z*p->ixdim*p->iydim], p);
             }
         }
-        /*double s;
-        for(z=0;z<p->zdim;z++) {
-            s = ssim(&cimage[z*p->xdim*p->ydim], &cs_cimage[z*p->xdim*p->ydim], p->xdim*p->ydim);
-            fprintf(stdout, "ssim %d: %f ", z, s);
-        }
-        s = ssim(cimage, cs_cimage, p->xdim*p->ydim);
-        fprintf(stdout, "ssim: %f l1: %f l2: %f mu: %f gam: %f ninner: %d nreg: %d\n", s, p->cs_params->lambda, p->cs_params->lambda2, p->cs_params->mu, p->cs_params->gam, p->cs_params->ninner, p->cs_params->nbreg);
-        */
     } else {
         modified = apply_kspace_filter(kspace, kspace, p) || modified;
     }
@@ -454,5 +497,219 @@ void simulate(struct Params *p, complex float *cimage, complex float *kspace, co
         }
         modified = 0;
     }
+    //fprintf(stdout, "voxel sim call count: %d overlap: %f\n", call_count, (double)call_count/(256.0*256.0*256.0));
+}
+*/
+
+void debug_print_files() {
+    struct memcfl* mem = get_list();
+    debug_printf(DP_INFO, "Files:\n");
+	while (NULL != mem) {
+        //debug_printf(DP_INFO, "%i %i %i %i\n", mem->name, mem->refcount, mem->managed, mem->next);
+        debug_printf(DP_INFO, "%s\n", mem->name);
+		mem = mem->next;
+	}
+}
+
+void remove_all_files() {
+    struct memcfl* mem = get_list();
+	while (NULL != mem) {
+        mem->refcount = 0;
+        debug_printf(DP_INFO, "%s %i\n", mem->name, mem->refcount);
+        memcfl_unlink(mem->name);
+        mem = get_list();
+	}
+}
+
+void sim_multi_coil(const char* in_file, const char* out_file, long cal_dims[D], long ncoils) {
+    int N = D;
+	long ksp_dims[N];
+	complex float* in_data = memcfl_load(in_file, N, ksp_dims);
+
+    md_copy_dims(DIMS, cal_dims, ksp_dims);
+    cal_dims[COIL_DIM] = ncoils;
+    complex float* coil_data = memcfl_create(out_file, D, cal_dims);
+
+    for(int x=0;x<cal_dims[0];x++) {
+        for(int y=0;y<cal_dims[1];y++) {
+            for(int z=0;z<cal_dims[2];z++) {
+                for(int c=0;c<cal_dims[COIL_DIM];c++) {
+                    int opos = x + y*cal_dims[0] + z*cal_dims[0]*cal_dims[1] + c*cal_dims[0]*cal_dims[1]*cal_dims[2];
+                    int ipos = x + y*cal_dims[0] + z*cal_dims[0]*cal_dims[1];
+                    float w = 1;
+                    switch(c) {
+                        case 0:
+                            w = (double)x/(double)cal_dims[0];
+                            break;
+                        case 1:
+                            w = 1.0-(double)x/(double)cal_dims[0];
+                            break;
+                        case 2:
+                            w = (double)y/(double)cal_dims[1];
+                            break;
+                        case 3:
+                            w = 1.0-(double)y/(double)cal_dims[1];
+                            break;
+                    }
+                    coil_data[opos] = in_data[ipos]*w;
+                }
+            }
+        }
+    }
+    unmap_cfl(D, cal_dims, coil_data);
+    unmap_cfl(D, ksp_dims, in_data);
+}
+
+void simulate(struct Params *p, struct Dataset *ds) {
+    
+    double xs,ys,zs, nx,ny,nz, d,s;
+    int x,y,z, ipos,ds_pos;
+    int xi,x_start,x_end,yi,y_start,y_end,zi,z_start,z_end;
+
+    complex float *sim_img, *sim_kspace, *cs_kspace, *filt_img, *filt_kspace;
+
+    char *flags = NULL;
+    if(p->use_fft3) {
+        flags = "7";
+    } else {
+        flags = "3";
+    }
+
+    long dims[D] = {p->xdim, p->ydim, p->zdim, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
+    remove_all_files();
+
+    char sxdim[8];
+    char sydim[8];
+    char szdim[8];
+    sprintf(sxdim, "%i", p->xdim);
+    sprintf(sydim, "%i", p->ydim);
+    sprintf(szdim, "%i", p->zdim); 
+    const char* argv_zeros[] = {"zeros", "16", sxdim, sydim, szdim, "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "img_sim.mem"};
+    main_zeros(19, argv_zeros);
+    sim_img = memcfl_load(img_sim, D, dims);
+
+    srand(time(0));
+
+    call_count = 0;
+    xs = (double)ds->k_xdim/(double)p->xdim/2.0;
+    ys = (double)ds->k_ydim/(double)p->ydim/2.0;
+    zs = (double)ds->k_zdim/(double)p->zdim/2.0;
+
+    for(int i=0;i<p->zdim*p->ydim*p->xdim;i++) {
+        sim_img[i] =  0+ 0*I;
+    }
+
+    p->ncoils = 1;
+    for(z = 0; z<p->zdim; z++) {
+        nz = (double)z*(double)ds->k_zdim/(double)p->zdim + zs;
+        for(y = 0;y<p->ydim; y++) {
+            ny = (double)y*(double)ds->k_ydim/(double)p->ydim + ys;
+            for(x = 0;x<p->xdim; x++) {
+                ipos = z*p->xdim*p->ydim + y*p->xdim + x;
+                d = 0; s = 0;
+                nx = (double)x*(double)ds->k_xdim/(double)p->xdim + xs;
+                switch (p->nearest) {
+                    case Nearest:
+                        ds_pos = round(nz-0.5)*ds->k_xdim*ds->k_ydim+round(ny-0.5)*ds->k_xdim+round(nx-0.5);
+                        s = simVoxel(p, ds_pos, ds);
+                        break;
+                    case KNearest:
+                        ds_pos = floor(nz)*ds->k_xdim*ds->k_ydim+floor(ny)*ds->k_xdim+floor(nx);
+                        s = simVoxel(p, ds_pos, ds);
+                        ds_pos = floor(nz)*ds->k_xdim*ds->k_ydim+floor(ny)*ds->k_xdim+ceil(nx);
+                        s += simVoxel(p, ds_pos, ds);
+                        ds_pos = floor(nz)*ds->k_xdim*ds->k_ydim+ceil(ny)*ds->k_xdim+floor(nx);
+                        s += simVoxel(p, ds_pos, ds);
+                        ds_pos = floor(nz)*ds->k_xdim*ds->k_ydim+ceil(ny)*ds->k_xdim+ceil(nx);
+                        s += simVoxel(p, ds_pos, ds);
+                        ds_pos = ceil(nz)*ds->k_xdim*ds->k_ydim+floor(ny)*ds->k_xdim+floor(nx);
+                        s += simVoxel(p, ds_pos, ds);
+                        ds_pos = ceil(nz)*ds->k_xdim*ds->k_ydim+floor(ny)*ds->k_xdim+ceil(nx);
+                        s += simVoxel(p, ds_pos, ds);
+                        ds_pos = ceil(nz)*ds->k_xdim*ds->k_ydim+ceil(ny)*ds->k_xdim+floor(nx);
+                        s += simVoxel(p, ds_pos, ds);
+                        ds_pos = ceil(nz)*ds->k_xdim*ds->k_ydim+ceil(ny)*ds->k_xdim+ceil(nx);
+                        s += simVoxel(p, ds_pos, ds);
+                        s /= 8.0;
+                        break;
+                    case Average:
+                    default:
+                        x_start=floor(nx-xs);
+                        x_end=ceil(x_start+2*xs);
+                        y_start=floor(ny-ys);
+                        y_end=ceil(y_start+2*ys);
+                        z_start=floor(nz-zs);
+                        z_end=ceil(z_start+2*zs);
+                        for(xi=x_start;xi<x_end;xi+=1) {
+                            for(yi=y_start;yi<y_end;yi+=1) {
+                                for(zi=z_start;zi<z_end;zi+=1) {
+                                    if(zi>=0&&zi<ds->k_zdim&&yi>=0&&yi<ds->k_ydim&&xi>=0&&xi<ds->k_xdim) {
+                                        ds_pos = zi*ds->k_xdim*ds->k_ydim+yi*ds->k_xdim+xi;
+                                        s += simVoxel(p, ds_pos, ds);
+                                        d += 1.0;
+                                    }
+                                }
+                            }
+                        }
+                        s /= d;
+                        break;
+                }
+                sim_img[ipos] =  s+ 0*I;
+            }
+        }
+    }
+
+    normalizecimage(sim_img, p);
+
+    addImageNoise(sim_img, p);
+
+    memcfl_unmap(sim_img);
+
+    const char* argv_fft[] = {"fft", "-u", flags, "img_sim.mem", "kspace_sim.mem"};
+    main_fft(5, argv_fft);
+
+    long *idims = NULL;
+    sim_kspace = memcfl_load("kspace_sim.mem", D, idims);
+    if (addKSpaceNoise(sim_kspace, p)) {
+        fprintf(stdout, "ifft kspace_sim img_sim\n");
+        memcfl_unlink("img_sim.mem");
+        const char* argv_ifft[] = {"fft", "-i", "-u", flags, "kspace_sim.mem", "img_sim.mem"};
+        main_fft(6, argv_ifft);
+    }
+    memcfl_unmap(sim_kspace);
+    
+    if(p->use_cs) {
+        long nc_dims[D];
+        sim_multi_coil(img_sim, kspace_cs, nc_dims, 4);
+        p->ncoils = 4;
+        const char* argv_fft2[] = {"fft", "-u", flags, "kspace_cs.mem", "kspace_filt.mem"};
+        main_fft(5, argv_fft2);
+        filt_kspace = memcfl_load(kspace_filt, D, nc_dims);
+        apply_kspace_filter(filt_kspace, filt_kspace, p);
+        const char* argv_ifft2[] = {"fft", "-i", "-u", flags, "kspace_filt.mem", "img_filt.mem"};
+        main_fft(6, argv_ifft2);
+        cs_kspace = memcfl_load(kspace_cs, D, nc_dims);
+        for(int i=0;i<io_calc_size(D, nc_dims, 1);i++) {
+            cs_kspace[i] = filt_kspace[i];
+        }
+        memcfl_unmap(filt_kspace);
+        memcfl_unmap(cs_kspace);
+        fprintf(stdout, "ecalib\n");
+        const char* argv_ecalib[] = {"ecalib","kspace_filt.mem","sen_sim.mem"};
+        main_ecalib(3, argv_ecalib);
+        const char* argv_pics[] = {"pics", "-l1", "-r0.001", "kspace_cs.mem", "sen_sim.mem", "img_cs.mem"};
+        main_pics(6, argv_pics);
+    } else {
+        sim_kspace = memcfl_load(kspace_sim, D, idims);
+        if(apply_kspace_filter(sim_kspace, sim_kspace, p)) {
+            fprintf(stdout, "ifft kspace_sim img_sim\n");
+            memcfl_unlink("img_sim.mem");
+            const char* argv_ifft[] = {"fft", "-i", "-u", flags, "kspace_sim.mem", "img_sim.mem"};
+            main_fft(6, argv_ifft);
+        }
+        memcfl_unmap(sim_kspace);
+    }
+
     //fprintf(stdout, "voxel sim call count: %d overlap: %f\n", call_count, (double)call_count/(256.0*256.0*256.0));
 }

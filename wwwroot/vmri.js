@@ -650,9 +650,9 @@ function displayAndWindow3DImage(which) {
     var xdim = imgResult.xdim;
     var ydim = imgResult.ydim;
     var zdim = imgResult.zdim;
-    var ixdim = imgResult.ixdim;
-    var iydim = imgResult.iydim;
-    var izdim = imgResult.izdim;
+    //var ixdim = imgResult.ixdim;
+    //var iydim = imgResult.iydim;
+    //var izdim = imgResult.izdim;
 
     var size = Math.max(xdim,ydim,zdim);
     var xoff = Math.round((size-xdim)/2);
@@ -683,7 +683,7 @@ function displayAndWindow3DImage(which) {
     var wc = parseFloat(in_wc.value)
     for (var x = 0; x < xdim; x++) {
         for (var z = 0; z < zdim; z++) {
-            var val = imgResult.data[x + (ydim-cor_slice) * xdim + (zdim - z) * xdim * ydim] * 4096;
+            var val = imgResult.data[2*(x + (ydim-cor_slice) * xdim + (zdim - z) * xdim * ydim)] * 4096;
             if (val <= (wc - ww)) {
                 val = 0;
             } else if (val >= (wc + ww)) {
@@ -744,7 +744,7 @@ function displayAndWindow3DImage(which) {
     var wc = parseFloat(in_wc.value)
     for (var y = 0; y < ydim; y++) {
         for (var z = 0; z < zdim; z++) {
-            var val = imgResult.data[sag_slice + y * xdim + (zdim - z) * xdim * ydim] * 4096;
+            var val = imgResult.data[2*(sag_slice + y * xdim + (zdim - z) * xdim * ydim)] * 4096;
             if (val <= (wc - ww)) {
                 val = 0
             } else if (val >= (wc + ww)) {
@@ -802,7 +802,7 @@ function displayAndWindow3DImage(which) {
     var wc = parseFloat(in_wc.value)
     for (var x = 0; x < xdim; x++) {
         for (var y = 0; y < ydim; y++) {
-            var val = imgResult.data[x + y * xdim + tra_slice * xdim * ydim] * 4096;
+            var val = imgResult.data[2*(x + y * xdim + tra_slice * xdim * ydim)] * 4096;
             if (val <= (wc - ww)) {
                 val = 0
             } else if (val >= (wc + ww)) {
@@ -973,11 +973,13 @@ function displayAndWindow3DImage(which) {
     var mult = document.getElementById(which + "_kspacemult").valueAsNumber;
     k_result = new Uint8ClampedArray(size * size * 4);
 
-    xoff = Math.round((size-ixdim)/2);
-    yoff = Math.round((size-iydim)/2);
-    for (var x = 0; x < ixdim; x++) {
-        for (var y = 0; y < iydim; y++) {
-            val = imgResult.kSpace[x + y*ixdim + tra_slice * ixdim * iydim] * mult
+    xoff = Math.round((size-xdim)/2);
+    yoff = Math.round((size-ydim)/2);
+    for (var x = 0; x < xdim; x++) {
+        for (var y = 0; y < ydim; y++) {
+            val_re = imgResult.kSpace[2*(x + y*xdim + tra_slice * xdim * ydim)];
+            val_im = imgResult.kSpace[2*(x + y*xdim + tra_slice * xdim * ydim)+1];
+            val = mult*(Math.sqrt(val_re*val_re+val_im*val_im));
             if (val < 0) val = 0;
             if (val > 255) val = 255;
             k_result[4 * (x+xoff+(y+yoff)*size)] = val

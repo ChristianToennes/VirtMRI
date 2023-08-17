@@ -2,14 +2,14 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "_kiss_fft_guts.h"
 #include "stdbool.h"
+#include "stdlib.h"
 
 bool addKSpaceNoise(complex float* kspace, struct Params *p) {
     bool modified = false;
     if(p->noise_params->noise & Gaussian) {
         modified = true;
-        addGaussianNoise(kspace, p->ixdim*p->iydim*p->izdim, p->noise_params);
+        addGaussianNoise(kspace, p->xdim*p->ydim*p->zdim, p->noise_params);
     }
     return modified;
 }

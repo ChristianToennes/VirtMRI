@@ -82,9 +82,10 @@ typedef struct Params {
     int xdim;
     int ydim;
     int zdim;
-    int ixdim;
-    int iydim;
-    int izdim;
+    int ncoils;
+    //int ixdim;
+    //int iydim;
+    //int izdim;
     int xstart;
     int ystart;
     int zstart;
