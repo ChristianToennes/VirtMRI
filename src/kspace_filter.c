@@ -11,8 +11,8 @@ void apply_pseudo_random_filter(complex float* kspace, complex float* out_kspace
     int xdim = params->xdim;
     int ydim = params->ydim;
     int zdim = params->zdim;
-    int count = 0;
-    int count2 = 0;
+    //int count = 0;
+    //int count2 = 0;
     double in_frac = 0.1;
     if((params->filter_params->filter_fraction-in_frac) < 0.5) {
         // p = b*(1-in_frac)*0.5
@@ -51,10 +51,10 @@ void apply_pseudo_random_filter(complex float* kspace, complex float* out_kspace
                 for(coil=0;coil<params->ncoils;coil++) {
                     pos = x+((y+ydim/2)%ydim)*xdim+z*xdim*ydim+coil*xdim*ydim*zdim;
                     if(filter) {
-                        count2++;
+                        //count2++;
                         out_kspace[pos] = 0+0*I;
                     } else {
-                        count++;
+                        //count++;
                         out_kspace[pos] = kspace[pos];
                     }
                 }
@@ -71,8 +71,8 @@ void apply_pseudo_random_points_filter(complex float* kspace, complex float* out
     int xdim = params->xdim;
     int ydim = params->ydim;
     int zdim = params->zdim;
-    int count = 0;
-    int count2 = 0;
+    //int count = 0;
+    //int count2 = 0;
     double in_frac = 0.1;
     if((params->filter_params->filter_fraction-in_frac) < 0.5) {
         // p = b*(1-in_frac)*0.5
@@ -120,10 +120,10 @@ void apply_pseudo_random_points_filter(complex float* kspace, complex float* out
                     }
                     pos = ((x+xdim/2)%xdim)+((y+ydim/2)%ydim)*xdim+z*xdim*ydim+coil*xdim*ydim*zdim;
                     if(filter) {
-                        count2++;
+                        //count2++;
                         out_kspace[pos] = 0+0*I;
                     } else {
-                        count++;
+                        //count++;
                         out_kspace[pos] = kspace[pos];
                     }
                 }
@@ -134,8 +134,8 @@ void apply_pseudo_random_points_filter(complex float* kspace, complex float* out
 }
 
 void apply_random_filter(complex float* kspace, complex float* out_kspace, struct Params *params) {
-    int count = 0;
-    int count2 = 0;
+    //int count = 0;
+    //int count2 = 0;
     int x,y,z,pos,coil;
     int xdim = params->xdim;
     int ydim = params->ydim;
@@ -148,10 +148,10 @@ void apply_random_filter(complex float* kspace, complex float* out_kspace, struc
                     rn = (double)rand()/(double)RAND_MAX;
                     pos = x+y*xdim+z*xdim*ydim;
                     if(rn < params->filter_params->filter_fraction == 0) {
-                        count2++;
+                        //count2++;
                         out_kspace[pos] = 0+0*I;
                     } else {
-                        count++;
+                        //count++;
                         out_kspace[pos] = kspace[pos];
                     }
                 }
@@ -162,8 +162,8 @@ void apply_random_filter(complex float* kspace, complex float* out_kspace, struc
 }
 
 void apply_random_lines_filter(complex float* kspace, complex float* out_kspace, struct Params *params) {
-    int count = 0;
-    int count2 = 0;
+    //int count = 0;
+    //int count2 = 0;
     int x,y,z,pos,coil;
     int xdim = params->xdim;
     int ydim = params->ydim;
@@ -176,10 +176,10 @@ void apply_random_lines_filter(complex float* kspace, complex float* out_kspace,
                 for(coil=0;coil<params->ncoils;coil++) {
                     pos = x+y*xdim+z*xdim*ydim+coil*xdim*ydim*zdim;
                     if(rn < params->filter_params->filter_fraction == 0) {
-                        count2++;
+                        //count2++;
                         out_kspace[pos] = 0+0*I;
                     } else {
-                        count++;
+                        //count++;
                         out_kspace[pos] = kspace[pos];
                     }
                 }
@@ -190,8 +190,8 @@ void apply_random_lines_filter(complex float* kspace, complex float* out_kspace,
 }
 
 void apply_regular_filter(complex float* kspace, complex float* out_kspace, struct Params *params) {
-    int count = 0;
-    int count2 = 0;
+    //int count = 0;
+    //int count2 = 0;
     int x,y,z,pos,coil;
     int xdim = params->xdim;
     int ydim = params->ydim;
@@ -215,10 +215,10 @@ void apply_regular_filter(complex float* kspace, complex float* out_kspace, stru
                 for(coil=0;coil<params->ncoils;coil++) {
                     pos = x+y*xdim+z*xdim*ydim+coil*xdim*ydim*zdim;
                     if(filtered) {
-                        count2++;
+                        //count2++;
                         out_kspace[pos] = 0+0*I;
                     } else {
-                        count++;
+                        //count++;
                         out_kspace[pos] = kspace[pos];
                     }
                 }

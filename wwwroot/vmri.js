@@ -320,35 +320,6 @@ const params = {
     11: ["Bone Marrow", 11, 500.0, 70, 61, 0.77, "subject04_marrow_v.bin"]
 }
 
-function display3DImage(canvas, data) {
-    //canvas = document.createElement('canvas');
-    ctx = canvas.getContext('2d');
-    canvas.width = xdim;
-    canvas.height = ydim;
-    idata = ctx.createImageData(xdim, ydim);
-
-    slice = parseInt(document.getElementById("slice").value);
-
-    image_result = new Uint8ClampedArray(xdim * ydim * 4);
-    min = data[0];
-    max = data[0];
-    for (var x = 0; x < data.length; x++) {
-        if (data[x] < min) min = data[x];
-        if (data[x] > max) max = data[x];
-    }
-    for (var x = 0; x < xdim * ydim; x++) {
-        image_result[4 * x] = 255.0 * ((data[x + slice * xdim * ydim] - min) / (max - min))
-        image_result[4 * x + 1] = 255.0 * ((data[x + slice * xdim * ydim] - min) / (max - min))
-        image_result[4 * x + 2] = 255.0 * ((data[x + slice * xdim * ydim] - min) / (max - min))
-        image_result[4 * x + 3] = 255
-    }
-
-    idata.data.set(image_result);
-    ctx.putImageData(idata, 0, 0);
-    //dataUri = canvas.toDataURL();
-    //element.src = dataUri;
-}
-
 function autoWindow(which) {
     var histo = new Int32Array(2048);
     for (var i = 0; i < histo.length; i++) {
@@ -650,9 +621,6 @@ function displayAndWindow3DImage(which) {
     var xdim = imgResult.xdim;
     var ydim = imgResult.ydim;
     var zdim = imgResult.zdim;
-    //var ixdim = imgResult.ixdim;
-    //var iydim = imgResult.iydim;
-    //var izdim = imgResult.izdim;
 
     var size = Math.max(xdim,ydim,zdim);
     var xoff = Math.round((size-xdim)/2);
@@ -980,6 +948,7 @@ function displayAndWindow3DImage(which) {
             val_re = imgResult.kSpace[2*(x + y*xdim + tra_slice * xdim * ydim)];
             val_im = imgResult.kSpace[2*(x + y*xdim + tra_slice * xdim * ydim)+1];
             val = mult*(Math.sqrt(val_re*val_re+val_im*val_im));
+            val = mult*Math.abs(val_re);
             if (val < 0) val = 0;
             if (val > 255) val = 255;
             k_result[4 * (x+xoff+(y+yoff)*size)] = val
@@ -1191,13 +1160,6 @@ function startScan() {
     params["xdim"] = Math.ceil(params["xdim"] / 2) * 2;
     params["ydim"] = Math.ceil(params["ydim"] / 2) * 2;
     params["zdim"] = Math.ceil(params["zdim"] / 2) * 2;
-    params["ixdim"] = check_size_fft(params["xdim"]);
-    params["iydim"] = check_size_fft(params["ydim"]);
-    if("fft" in params && params["fft"] == "3D") {
-        params["izdim"] = check_size_fft(params["zdim"]);
-    } else {
-        params["izdim"] = params["zdim"];
-    }
     param_div = document.getElementById("params-noise");
     params = read_params(param_div, params);
     param_div = document.getElementById("params-kspace");
