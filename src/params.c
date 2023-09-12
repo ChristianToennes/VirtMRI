@@ -61,20 +61,20 @@ void free_dataset(struct Dataset* ds) {
     free(ds);
 }
 
-struct CSParams* make_cs_params(int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, int callback) {
+struct CSParams* make_cs_params(const char* algorithm, const char* regularizer, const char* lambda, int callback) {
     struct CSParams* params = malloc(sizeof(struct CSParams));
-    params->ninner = ninner;
-    params->nbreg = nbreg;
+    params->algorithm = algorithm;
+    params->regularizer = regularizer;
     params->lambda = lambda;
-    params->lambda2 = lambda2;
-    params->mu = mu;
-    params->gam = gam;
     params->callback = callback;
     //fprintf(stdout, "%i %i %i %i %i %f %f %f %f %i %f\n", xdim, ydim, zdim, ninner, nbreg, lambda, lambda2, mu, gam, filter_mode, filter_fraction);
     return params;
 }
 
 void free_cs_params(struct CSParams* params) {
+    free(params->algorithm);
+    free(params->regularizer);
+    free(params->lambda);
     free(params);
 }
 
