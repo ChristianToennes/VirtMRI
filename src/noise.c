@@ -5,23 +5,23 @@
 #include "stdbool.h"
 #include "stdlib.h"
 
-bool addKSpaceNoise(complex float* kspace, struct Params *p) {
+bool addKSpaceNoise(complex float* kspace, const long dims[], struct Params *p) {
     bool modified = false;
     if(p->noise_params->noise & Gaussian) {
         modified = true;
-        addGaussianNoise(kspace, p->xdim*p->ydim*p->zdim, p->noise_params);
+        addGaussianNoise(kspace, dims[0]*dims[1]*dims[2]*dims[3], p->noise_params);
     }
     return modified;
 }
 
-void addImageNoise(complex float* image, struct Params *p) {
+void addImageNoise(complex float* image, const long dims[], struct Params *p) {
 
 }
 
-void addGaussianNoise(complex float* image, int image_len, struct NoiseParams *params) {
+void addGaussianNoise(complex float* image, const long image_len, struct NoiseParams *params) {
     double u,v,s,x,y;
     complex float r;
-    for(int i=0;i<image_len;i++) {
+    for(long i=0;i<image_len;i++) {
         do {
             u = (double)rand()/(double)RAND_MAX;
         } while(u == 0);

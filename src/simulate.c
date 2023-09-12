@@ -351,7 +351,7 @@ void debug_print_files() {
     debug_printf(DP_INFO, "Files:\n");
 	while (NULL != mem) {
         //debug_printf(DP_INFO, "%i %i %i %i\n", mem->name, mem->refcount, mem->managed, mem->next);
-        debug_printf(DP_INFO, "%s\n", mem->name);
+        debug_printf(DP_INFO, "%s %i\n", mem->name, mem->refcount);
 		mem = mem->next;
 	}
 }
@@ -373,7 +373,8 @@ void sim_multi_coil(const char* in_file, const char* out_file, long cal_dims[D],
 
     md_copy_dims(DIMS, cal_dims, ksp_dims);
     cal_dims[COIL_DIM] = ncoils;
-    complex float* coil_data = memcfl_create(out_file, D, cal_dims);
+    complex float* coil_data = xmalloc(io_calc_size(D, cal_dims, sizeof(complex float)));
+    //complex float* coil_data = memcfl_create(out_file, D, cal_dims);
 
     for(int x=0;x<cal_dims[0];x++) {
         for(int y=0;y<cal_dims[1];y++) {
@@ -401,8 +402,12 @@ void sim_multi_coil(const char* in_file, const char* out_file, long cal_dims[D],
             }
         }
     }
-    unmap_cfl(D, cal_dims, coil_data);
     unmap_cfl(D, ksp_dims, in_data);
+    if(strcmp(in_file, out_file)==0) {
+        memcfl_unlink(in_file);
+    }
+    memcfl_register(out_file, D, cal_dims, coil_data, true);
+    unmap_cfl(D, cal_dims, coil_data);
 }
 
 void simulate(struct Params *p, struct Dataset *ds) {
@@ -411,7 +416,7 @@ void simulate(struct Params *p, struct Dataset *ds) {
     int x,y,z, ipos,ds_pos;
     int xi,x_start,x_end,yi,y_start,y_end,zi,z_start,z_end;
 
-    complex float *sim_img, *sim_kspace, *cs_kspace, *filt_img, *filt_kspace;
+    complex float *data;
 
     char *flags = NULL;
     if(p->use_fft3) {
@@ -420,7 +425,7 @@ void simulate(struct Params *p, struct Dataset *ds) {
         flags = "3";
     }
 
-    long dims[D] = {p->xdim, p->ydim, p->zdim, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    long dims[] = {p->xdim, p->ydim, p->zdim, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     remove_all_files();
 
@@ -432,7 +437,7 @@ void simulate(struct Params *p, struct Dataset *ds) {
     sprintf(szdim, "%i", p->zdim); 
     const char* argv_zeros[] = {"zeros", "16", sxdim, sydim, szdim, "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "img_sim.mem"};
     main_zeros(19, argv_zeros);
-    sim_img = memcfl_load(img_sim, D, dims);
+    data = memcfl_load(img_sim, D, dims);
 
     srand(time(0));
 
@@ -442,7 +447,7 @@ void simulate(struct Params *p, struct Dataset *ds) {
     zs = (double)ds->k_zdim/(double)p->zdim/2.0;
 
     for(int i=0;i<p->zdim*p->ydim*p->xdim;i++) {
-        sim_img[i] =  0+ 0*I;
+        data[i] =  0+ 0*I;
     }
 
     p->ncoils = 1;
@@ -500,60 +505,69 @@ void simulate(struct Params *p, struct Dataset *ds) {
                         s /= d;
                         break;
                 }
-                sim_img[ipos] =  s+ 0*I;
+                data[ipos] =  s+ 0*I;
             }
         }
     }
 
-    normalizecimage(sim_img, p);
+    normalizecimage(data, p);
+    memcfl_unmap(data);
 
-    addImageNoise(sim_img, p);
+    if(p->use_cs) {
+        p->ncoils = 4;
+    }
+    if(p->ncoils>1) {
+        sim_multi_coil(img_sim, "img_sim_nc.mem", dims, p->ncoils);
+        data = memcfl_load("img_sim_nc.mem", D, dims);
+        addImageNoise(data, dims, p);
+        memcfl_unmap(data);
+        debug_print_files();
+    }
 
-    memcfl_unmap(sim_img);
+    data = memcfl_load(img_sim, D, dims);
+    addImageNoise(data, dims, p);
+    memcfl_unmap(data);
 
     const char* argv_fft[] = {"fft", "-u", flags, "img_sim.mem", "kspace_sim.mem"};
     main_fft(5, argv_fft);
 
-    long *idims = NULL;
-    sim_kspace = memcfl_load("kspace_sim.mem", D, idims);
-    if (addKSpaceNoise(sim_kspace, p)) {
+    data = memcfl_load("kspace_sim.mem", D, dims);
+    if (addKSpaceNoise(data, dims, p)) {
         //fprintf(stdout, "ifft kspace_sim img_sim\n");
         memcfl_unlink("img_sim.mem");
         const char* argv_ifft[] = {"fft", "-i", "-u", flags, "kspace_sim.mem", "img_sim.mem"};
         main_fft(6, argv_ifft);
     }
-    memcfl_unmap(sim_kspace);
+    memcfl_unmap(data);
     
     if(p->use_cs) {
-        long nc_dims[D];
-        sim_multi_coil(img_sim, kspace_cs, nc_dims, 4);
-        p->ncoils = 4;
-        const char* argv_fft2[] = {"fft", "-u", flags, "kspace_cs.mem", "kspace_filt.mem"};
+        debug_print_files();
+        const char* argv_fft2[] = {"fft", "-u", flags, "img_sim_nc.mem", "kspace_filt.mem"};
         main_fft(5, argv_fft2);
-        filt_kspace = memcfl_load(kspace_filt, D, nc_dims);
-        apply_kspace_filter(filt_kspace, filt_kspace, p);
+        data = memcfl_load(kspace_filt, D, dims);
+        addKSpaceNoise(data, dims, p);
+        apply_kspace_filter(data, data, p);
+        memcfl_unmap(data);
         const char* argv_ifft2[] = {"fft", "-i", "-u", flags, "kspace_filt.mem", "img_filt.mem"};
         main_fft(6, argv_ifft2);
-        cs_kspace = memcfl_load(kspace_cs, D, nc_dims);
-        for(int i=0;i<io_calc_size(D, nc_dims, 1);i++) {
-            cs_kspace[i] = filt_kspace[i];
-        }
-        memcfl_unmap(filt_kspace);
-        memcfl_unmap(cs_kspace);
         //fprintf(stdout, "ecalib\n");
         const char* argv_ecalib[] = {"ecalib","kspace_filt.mem","sen_sim.mem"};
         main_ecalib(3, argv_ecalib);
-        const char* argv_pics[] = {"pics", "-l1", "-r0.001", "kspace_cs.mem", "sen_sim.mem", "img_cs.mem"};
+        const char* argv_pics[] = {"pics", "-l1", "-r0.0001", "kspace_filt.mem", "sen_sim.mem", "img_cs.mem"};
         main_pics(6, argv_pics);
+        fprintf(stdout, "fft cs\n");
+        const char* argv_fft3[] = {"fft", "-u", flags, "img_cs.mem", "kspace_cs.mem"};
+        main_fft(5, argv_fft3);
+        debug_print_files();
     } else {
-        sim_kspace = memcfl_load(kspace_sim, D, idims);
-        if(apply_kspace_filter(sim_kspace, sim_kspace, p)) {
+        data = memcfl_load(kspace_sim, D, dims);
+        if(apply_kspace_filter(data, data, p)) {
             //fprintf(stdout, "ifft kspace_sim img_sim\n");
             memcfl_unlink("img_sim.mem");
             const char* argv_ifft[] = {"fft", "-i", "-u", flags, "kspace_sim.mem", "img_sim.mem"};
             main_fft(6, argv_ifft);
         }
-        memcfl_unmap(sim_kspace);
+        memcfl_unmap(data);
     }
 
     //fprintf(stdout, "voxel sim call count: %d overlap: %f\n", call_count, (double)call_count/(256.0*256.0*256.0));
