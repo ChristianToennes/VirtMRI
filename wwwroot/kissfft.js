@@ -95,7 +95,7 @@ function make_params(params) {
     }
     var s_params = scalar_size == 4 ? allocFromArray(Float32Array.from(s_params)) : allocFromArray(Float64Array.from(s_params));
     var fft3d = 'fft' in params ? params['fft'] == '3d' : true;
-    var use_cs = "cs" in params ? params["cs"]>0 : false;
+    var use_cs = "cs" in params ? params["cs"]!=0 : false;
     var [cs_params, callback_ptr] = make_cs_params(params);
     var noise_params = make_noise_params(params);
     var filter_params = make_filter_params(params);
@@ -150,18 +150,33 @@ function simulate_fast(ds, params) {
 }
 
 function make_cs_params(params) {
-    var ninner = "cs_ninner" in params ? parseInt(params["cs_ninner"]) : 1;
-    var nbreg = "cs_nbreg" in params ? parseInt(params["cs_nbreg"]) : 80;
-    var lambda = "cs_lambda1" in params ? parseFloat(params["cs_lambda1"]):1.0;
-    var lambda2 = "cs_lambda2" in params? parseFloat(params["cs_lambda2"]):0.15;
-    var mu = "cs_mu" in params ? params["cs_mu"] : 1.0;
-    var gam = "cs_gam" in params? parseFloat(params["cs_gam"]):1;
+    var lambda = "cs_lambda" in params ? "-r" + params["cs_lambda"] : "-r0.001";
+    var reg = "cs_reg" in params ? params["cs_reg"] : "-l1";
+    var cs = "cs" in params ? parseInt(params["cs"]) : 0;
+    var cs_algo = "--fista";
+    switch(cs) {
+        default:
+        case 0:
+            break;
+        case 1:
+            cs_algo = "--ist";
+            break;
+        case 2:
+            cs_algo = "--fista";
+            break;
+        case 3:
+            cs_algo = "--admm";
+            break;
+        case 4:
+            cs_algo = "--pridu";
+            break;
+    }
     var callback_ptr = 0;
     if ("cs_callback" in params) {
         callback_ptr = Module.addFunction(params["cs_callback"], "vi")
     }
     
-    var cs_params = _make_cs_params(ninner, nbreg, lambda, lambda2, mu, gam, callback_ptr)
+    var cs_params = _make_cs_params(allocFromString(cs_algo), allocFromString(reg), allocFromString(lambda), callback_ptr)
     return [cs_params, callback_ptr];
 }
 

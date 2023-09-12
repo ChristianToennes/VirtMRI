@@ -553,7 +553,8 @@ void simulate(struct Params *p, struct Dataset *ds) {
         //fprintf(stdout, "ecalib\n");
         const char* argv_ecalib[] = {"ecalib","kspace_filt.mem","sen_sim.mem"};
         main_ecalib(3, argv_ecalib);
-        const char* argv_pics[] = {"pics", "-l1", "-r0.0001", "kspace_filt.mem", "sen_sim.mem", "img_cs.mem"};
+        //const char* argv_pics[] = {"pics", "-l1", "-r0.001", "kspace_cs.mem", "sen_sim.mem", "img_cs.mem"};
+        const char* argv_pics[] = {"pics", p->cs_params->algorithm, p->cs_params->regularizer, p->cs_params->lambda, "kspace_filt.mem", "sen_sim.mem", "img_cs.mem"};
         main_pics(6, argv_pics);
         fprintf(stdout, "fft cs\n");
         const char* argv_fft3[] = {"fft", "-u", flags, "img_cs.mem", "kspace_cs.mem"};

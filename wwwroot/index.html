@@ -244,7 +244,10 @@
                                     <select class="col-sm form-select" type="select" id="cs" name="cs"
                                         oninput="updateTime()">
                                         <option value="0" selected>Disable</option>
-                                        <option value="2">Enabled</option>
+                                        <option value="1">ISTA</option>
+                                        <option value="2">FISTA</option>
+                                        <option value="3">ADMM</option>
+                                        <option value="4">Primal Dual</option>
                                         <!--<option value="3">CS Enabled fast</option>-->
                                         <!--<option value="4">fft3 test</option>-->
                                     </select>
@@ -254,40 +257,20 @@
                                         <label class="mb-0 align-self-center">Compressed Sensing Parameters:</label>
                                     </div>
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">&numero; inner loops:</label>
+                                        <label class="mb-0 align-self-center">&numero; Regularizer:</label>
                                     </div>
-                                    <input class="col-sm form-control" type="number" name="cs_ninner" id="cs_ninner"
-                                        value="1" oninput="updateTime()" />
+                                    <select class="col-sm form-select" type="select" id="cs_reg" name="cs_reg"
+                                        oninput="updateTime()">
+                                        <option value="-l1" selected>L1 Wavelet</option>
+                                        <option value="-l2">L2 Regularizer</option>
+                                        <!--<option value="3">CS Enabled fast</option>-->
+                                        <!--<option value="4">fft3 test</option>-->
+                                    </select>
                                     <div class="col-sm">
-                                        <label class="mb-0 align-self-center">&numero; outer loops:</label>
+                                        <label class="mb-0 align-self-center">&numero; lambda:</label>
                                     </div>
-                                    <input class="col-sm form-control" type="number" name="cs_nbreg" id="cs_nbreg"
-                                        value="80" oninput="updateTime()" />
-                                </div>
-                                <div class="row form-row">
-                                    <div class="col-auto w-25">
-                                        <!--<label class="mb-0 align-self-center">Compressed Sensing Parameters:</label>-->
-                                    </div>
-                                    <div class="col-sm">
-                                        <label class="mb-0 align-self-center">lambda 1:</label>
-                                    </div>
-                                    <input class="col-sm form-control" type="number" name="cs_lambda1" id="cs_lambda1"
-                                        value="1" oninput="updateTime()" />
-                                    <div class="col-sm">
-                                        <label class="mb-0 align-self-center">lambda 2:</label>
-                                    </div>
-                                    <input class="col-sm form-control" type="number" name="cs_lambda2" id="cs_lambda2"
+                                    <input class="col-sm form-control" type="number" name="cs_lambda" id="cs_lambda"
                                         value="0.001" oninput="updateTime()" />
-                                    <div class="col-sm">
-                                        <label class="mb-0 align-self-center">mu:</label>
-                                    </div>
-                                    <input class="col-sm form-control" type="number" name="cs_mu" id="cs_mu" value="1"
-                                        oninput="updateTime()" />
-                                    <div class="col-sm">
-                                        <label class="mb-0 align-self-center">gamma:</label>
-                                    </div>
-                                    <input class="col-sm form-control" type="number" name="cs_gam" id="cs_gam" value="1"
-                                        oninput="updateTime()" />
                                 </div>
                             </div>
                         </div>

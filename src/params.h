@@ -37,16 +37,13 @@ struct FilterParams* make_filter_params(enum FilterMode filter_mode, double filt
 void free_filter_params(struct FilterParams* params);
 
 typedef struct CSParams {
-    int ninner;
-    int nbreg;
-    double lambda;
-    double lambda2;
-    double mu;
-    double gam;
+    const char* algorithm;
+    const char* regularizer;
+    const char* lambda;
     int callback;
 } cs_params;
 
-struct CSParams* make_cs_params(int ninner, int nbreg, double lambda, double lambda2, double mu, double gam, int callback);
+struct CSParams* make_cs_params(const char* algorithm, const char* regularizer, const char* lambda, int callback);
 void free_cs_params(struct CSParams* params);
 
 typedef struct Dataset {
