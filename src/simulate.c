@@ -521,7 +521,6 @@ void simulate(struct Params *p, struct Dataset *ds) {
         data = memcfl_load("img_sim_nc.mem", D, dims);
         addImageNoise(data, dims, p);
         memcfl_unmap(data);
-        debug_print_files();
     }
 
     data = memcfl_load(img_sim, D, dims);
@@ -541,7 +540,6 @@ void simulate(struct Params *p, struct Dataset *ds) {
     memcfl_unmap(data);
     
     if(p->use_cs) {
-        debug_print_files();
         const char* argv_fft2[] = {"fft", "-u", flags, "img_sim_nc.mem", "kspace_filt.mem"};
         main_fft(5, argv_fft2);
         data = memcfl_load(kspace_filt, D, dims);
@@ -555,11 +553,11 @@ void simulate(struct Params *p, struct Dataset *ds) {
         main_ecalib(3, argv_ecalib);
         //const char* argv_pics[] = {"pics", "-l1", "-r0.001", "kspace_cs.mem", "sen_sim.mem", "img_cs.mem"};
         const char* argv_pics[] = {"pics", p->cs_params->algorithm, p->cs_params->regularizer, p->cs_params->lambda, "kspace_filt.mem", "sen_sim.mem", "img_cs.mem"};
-        main_pics(6, argv_pics);
+        fprintf(stdout, "pics %s %s %s\n", argv_pics[1], argv_pics[2], argv_pics[3]);
+        main_pics(7, argv_pics);
         fprintf(stdout, "fft cs\n");
         const char* argv_fft3[] = {"fft", "-u", flags, "img_cs.mem", "kspace_cs.mem"};
         main_fft(5, argv_fft3);
-        debug_print_files();
     } else {
         data = memcfl_load(kspace_sim, D, dims);
         if(apply_kspace_filter(data, data, p)) {

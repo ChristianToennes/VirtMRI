@@ -175,8 +175,10 @@ function make_cs_params(params) {
     if ("cs_callback" in params) {
         callback_ptr = Module.addFunction(params["cs_callback"], "vi")
     }
-    
-    var cs_params = _make_cs_params(allocFromString(cs_algo), allocFromString(reg), allocFromString(lambda), callback_ptr)
+    var heap_algo = allocFromString(cs_algo);
+    var heap_reg = allocFromString(reg);
+    var heap_lambda = allocFromString(lambda)
+    var cs_params = _make_cs_params(heap_algo.byteOffset, heap_reg.byteOffset, heap_lambda.byteOffset, callback_ptr)
     return [cs_params, callback_ptr];
 }
 
